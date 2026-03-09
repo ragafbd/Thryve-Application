@@ -67,7 +67,7 @@ export default function MemberLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#2E375B] to-[#1a2038] flex items-center justify-center p-4 relative">
+    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 relative">
       {/* Admin Login Badge - Bottom Left, same style as Emergent badge */}
       <Link to="/admin/login" className="fixed bottom-4 left-4 z-50">
         <span className="text-sm text-white font-medium bg-[#1a1a1a] h-10 px-4 rounded-full shadow-md flex items-center gap-2 hover:bg-[#333] transition-colors">
@@ -84,11 +84,11 @@ export default function MemberLogin() {
             alt="Thryve Coworking" 
             className="h-20 mx-auto mb-4"
           />
-          <h1 className="text-2xl font-bold text-white font-[Manrope]">Manage your World</h1>
-          <p className="text-white/60 mt-1">Member Portal - Access your invoices, bookings & support</p>
+          <h1 className="text-2xl font-bold text-[#2E375B] font-[Manrope]">Manage your World</h1>
+          <p className="text-slate-500 mt-1">Member Portal - Access your invoices, bookings & support</p>
         </div>
 
-        <Card className="border-0 shadow-2xl">
+        <Card className="border border-slate-200 shadow-lg">
           <CardContent className="p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2 mb-6">
