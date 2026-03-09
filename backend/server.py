@@ -561,8 +561,12 @@ async def generate_invoice_pdf(invoice_id: str):
     buffer.seek(0)
     pdf_content = buffer.getvalue()
     
-    # Create filename from invoice number (replace / with -)
-    filename = invoice.get('invoice_number', 'invoice').replace('/', '-') + '.pdf'
+    # Create filename from invoice number and client name (replace special chars)
+    invoice_num = invoice.get('invoice_number', 'invoice').replace('/', '-')
+    client_name = invoice.get('client', {}).get('company_name', '').replace(' ', '_').replace('/', '-').replace('\\', '-')
+    # Remove any other special characters
+    client_name = ''.join(c for c in client_name if c.isalnum() or c in ['_', '-'])
+    filename = f"{invoice_num}_{client_name}.pdf"
     
     return Response(
         content=pdf_content,
