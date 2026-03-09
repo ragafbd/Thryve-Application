@@ -133,8 +133,10 @@ export default function Layout() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => {
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          {/* Invoice Section */}
+          <p className="text-xs text-white/40 uppercase tracking-wider px-4 py-2">Invoicing</p>
+          {invoiceNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <NavLink
@@ -142,7 +144,7 @@ export default function Layout() {
                 to={item.path}
                 data-testid={`nav-${item.label.toLowerCase().replace(/\s/g, '-')}`}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                  "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200",
                   isActive 
                     ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
                     : "text-white/70 hover:bg-white/10 hover:text-white"
@@ -153,21 +155,60 @@ export default function Layout() {
               </NavLink>
             );
           })}
-          {/* Admin-only User Management Link */}
+          
+          {/* Management Section */}
+          <p className="text-xs text-white/40 uppercase tracking-wider px-4 py-2 mt-4">Management</p>
+          {managementNavItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                data-testid={`nav-${item.label.toLowerCase().replace(/\s/g, '-')}`}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200",
+                  isActive 
+                    ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
+                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <item.icon className="w-5 h-5" strokeWidth={1.5} />
+                <span className="text-sm">{item.label}</span>
+              </NavLink>
+            );
+          })}
+          
+          {/* Admin Section */}
           {isAdmin() && (
-            <NavLink
-              to="/users"
-              data-testid="nav-users"
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-                location.pathname === "/users"
-                  ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
-              )}
-            >
-              <Shield className="w-5 h-5" strokeWidth={1.5} />
-              <span className="text-sm">User Management</span>
-            </NavLink>
+            <>
+              <p className="text-xs text-white/40 uppercase tracking-wider px-4 py-2 mt-4">Admin</p>
+              <NavLink
+                to="/clients"
+                data-testid="nav-clients"
+                className={cn(
+                  "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200",
+                  location.pathname === "/clients"
+                    ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
+                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <Users className="w-5 h-5" strokeWidth={1.5} />
+                <span className="text-sm">Clients (Legacy)</span>
+              </NavLink>
+              <NavLink
+                to="/users"
+                data-testid="nav-users"
+                className={cn(
+                  "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200",
+                  location.pathname === "/users"
+                    ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
+                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <Shield className="w-5 h-5" strokeWidth={1.5} />
+                <span className="text-sm">User Management</span>
+              </NavLink>
+            </>
           )}
         </nav>
 
