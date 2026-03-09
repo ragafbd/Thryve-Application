@@ -594,7 +594,7 @@ async def get_management_stats():
 
 async def seed_default_data(database=None):
     """Seed default plans and meeting rooms if not exist"""
-    _db = database if database else db
+    _db = database if database is not None else db
     
     # Default plan types
     default_plans = [
