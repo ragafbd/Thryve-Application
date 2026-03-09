@@ -28,11 +28,33 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const MAX_ADVANCE_DAYS = 10;
 const MIN_CANCEL_DAYS = 2;
 
+// Public holidays in India 2026 (example list - can be expanded)
+const PUBLIC_HOLIDAYS = [
+  "2026-01-26", // Republic Day
+  "2026-03-10", // Holi
+  "2026-04-03", // Good Friday
+  "2026-04-14", // Ambedkar Jayanti
+  "2026-05-01", // May Day
+  "2026-08-15", // Independence Day
+  "2026-10-02", // Gandhi Jayanti
+  "2026-10-20", // Dussehra
+  "2026-11-09", // Diwali
+  "2026-11-10", // Diwali Holiday
+  "2026-12-25", // Christmas
+];
+
 export default function Bookings() {
   const [rooms, setRooms] = useState([]);
   const [members, setMembers] = useState([]);
   const [bookings, setBookings] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(() => {
+    // Initialize with today, but skip if Sunday
+    let date = new Date();
+    while (date.getDay() === 0 || PUBLIC_HOLIDAYS.includes(date.toISOString().split('T')[0])) {
+      date.setDate(date.getDate() + 1);
+    }
+    return date.toISOString().split('T')[0];
+  });
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [slots, setSlots] = useState([]);
   const [selectedSlots, setSelectedSlots] = useState([]);
@@ -55,6 +77,12 @@ export default function Bookings() {
   
   const minDateStr = today.toISOString().split('T')[0];
   const maxDateStr = maxDate.toISOString().split('T')[0];
+
+  // Check if date is a Sunday or public holiday
+  const isBlockedDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.getDay() === 0 || PUBLIC_HOLIDAYS.includes(dateStr);
+  };
 
   const fetchRooms = async () => {
     try {
@@ -90,6 +118,13 @@ export default function Bookings() {
 
   const fetchAvailability = async () => {
     if (!selectedRoom) return;
+    
+    // Don't fetch slots for blocked dates
+    if (isBlockedDate(selectedDate)) {
+      setSlots([]);
+      return;
+    }
+    
     try {
       const response = await axios.get(`${API}/management/bookings/availability?room_id=${selectedRoom.id}&date=${selectedDate}`);
       setSlots(response.data.slots);
@@ -110,18 +145,32 @@ export default function Bookings() {
   }, [selectedDate, selectedRoom]);
 
   const changeDate = (days) => {
-    const date = new Date(selectedDate);
+    let date = new Date(selectedDate);
     date.setDate(date.getDate() + days);
-    const newDateStr = date.toISOString().split('T')[0];
+    let newDateStr = date.toISOString().split('T')[0];
+    
+    // Skip Sundays and holidays when navigating
+    while (isBlockedDate(newDateStr) && newDateStr >= minDateStr && newDateStr <= maxDateStr) {
+      date.setDate(date.getDate() + (days > 0 ? 1 : -1));
+      newDateStr = date.toISOString().split('T')[0];
+    }
     
     // Enforce date limits
-    if (newDateStr >= minDateStr && newDateStr <= maxDateStr) {
+    if (newDateStr >= minDateStr && newDateStr <= maxDateStr && !isBlockedDate(newDateStr)) {
       setSelectedDate(newDateStr);
     }
   };
 
   const handleDateChange = (e) => {
     const newDate = e.target.value;
+    
+    if (isBlockedDate(newDate)) {
+      const date = new Date(newDate);
+      const dayName = date.getDay() === 0 ? 'Sunday' : 'public holiday';
+      toast.error(`Bookings are not available on ${dayName}s`);
+      return;
+    }
+    
     if (newDate >= minDateStr && newDate <= maxDateStr) {
       setSelectedDate(newDate);
     } else {
@@ -250,53 +299,65 @@ export default function Bookings() {
   
   // Calculate total duration for selected slots
   const totalMinutes = selectedSlots.length * (selectedRoom?.slot_duration || 30);
+  
+  // Check if current date is blocked
+  const currentDateBlocked = isBlockedDate(selectedDate);
 
   return (
     <div className="space-y-6 animate-fade-in" data-testid="bookings-page">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight font-[Manrope]">
-            Meeting Room Bookings
+          <h1 className="text-3xl font-bold text-[#2E375B] tracking-tight font-[Manrope]">
+            Meeting Room Booking
           </h1>
-          <p className="text-slate-600 mt-1">
-            Book conference and meeting rooms (10 AM - 6 PM)
+          <p className="text-[#2E375B]/60 mt-1">
+            Book meeting rooms (10 AM - 6 PM, Mon-Sat)
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-slate-500 bg-amber-50 px-3 py-2 rounded-lg">
-          <AlertCircle className="w-4 h-4 text-amber-600" />
-          <span>Max {MAX_ADVANCE_DAYS} days advance • Cancel {MIN_CANCEL_DAYS}+ days prior</span>
+        <div className="flex items-center gap-2 text-sm text-[#2E375B]/70 bg-[#FFA14A]/10 px-3 py-2 rounded-lg">
+          <AlertCircle className="w-4 h-4 text-[#FFA14A]" />
+          <span>Max {MAX_ADVANCE_DAYS} days advance • Cancel {MIN_CANCEL_DAYS}+ days prior • Closed Sundays</span>
         </div>
       </div>
 
-      {/* Date Navigation */}
-      <Card className="border border-slate-200">
+      {/* Date Navigation - Simplified */}
+      <Card className="border border-[#2E375B]/10">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center gap-4">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => changeDate(-1)}
               disabled={selectedDate <= minDateStr}
+              className="text-[#2E375B] hover:bg-[#2E375B]/10"
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <div className="text-center">
-              <p className="text-lg font-semibold text-slate-900">{formatDate(selectedDate)}</p>
-              <Input
-                type="date"
-                value={selectedDate}
-                onChange={handleDateChange}
-                min={minDateStr}
-                max={maxDateStr}
-                className="w-auto mx-auto mt-2"
-              />
+            
+            <div className="flex items-center gap-3">
+              <Calendar className="w-5 h-5 text-[#2E375B]" />
+              <div className="relative">
+                <span className="text-lg font-semibold text-[#2E375B] cursor-pointer">
+                  {formatDate(selectedDate)}
+                </span>
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                  min={minDateStr}
+                  max={maxDateStr}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                />
+              </div>
             </div>
+            
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => changeDate(1)}
               disabled={selectedDate >= maxDateStr}
+              className="text-[#2E375B] hover:bg-[#2E375B]/10"
             >
               <ChevronRight className="w-5 h-5" />
             </Button>
@@ -304,13 +365,27 @@ export default function Bookings() {
         </CardContent>
       </Card>
 
+      {/* Sunday/Holiday Warning */}
+      {currentDateBlocked && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+          <p className="text-red-700 font-medium">
+            {new Date(selectedDate).getDay() === 0 
+              ? "Bookings are not available on Sundays" 
+              : "Bookings are not available on this public holiday"}
+          </p>
+          <p className="text-red-600 text-sm mt-1">Please select a different date</p>
+        </div>
+      )}
+
       {/* Room Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">
         {rooms.map(room => (
           <Button
             key={room.id}
             variant={selectedRoom?.id === room.id ? "default" : "outline"}
-            className={selectedRoom?.id === room.id ? "bg-[#2E375B] hover:bg-[#232B47]" : ""}
+            className={selectedRoom?.id === room.id 
+              ? "bg-[#2E375B] hover:bg-[#232B47]" 
+              : "border-[#2E375B]/20 text-[#2E375B] hover:bg-[#2E375B]/10"}
             onClick={() => setSelectedRoom(room)}
           >
             <Building2 className="w-4 h-4 mr-2" />
@@ -321,29 +396,29 @@ export default function Bookings() {
       </div>
 
       {/* Room Info & Slots */}
-      {selectedRoom && (
+      {selectedRoom && !currentDateBlocked && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Room Details */}
-          <Card className="border border-slate-200">
+          <Card className="border border-[#2E375B]/10">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold font-[Manrope]">
+              <CardTitle className="text-lg font-semibold font-[Manrope] text-[#2E375B]">
                 {selectedRoom.display_name}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center gap-2 text-sm">
-                <Users className="w-4 h-4 text-slate-500" />
+              <div className="flex items-center gap-2 text-sm text-[#2E375B]/70">
+                <Users className="w-4 h-4" />
                 <span>{selectedRoom.capacity} seats</span>
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Clock className="w-4 h-4 text-slate-500" />
+              <div className="flex items-center gap-2 text-sm text-[#2E375B]/70">
+                <Clock className="w-4 h-4" />
                 <span>{selectedRoom.slot_duration} min slots</span>
               </div>
-              <div className="flex items-center gap-2 text-sm font-semibold">
+              <div className="flex items-center gap-2 text-sm font-semibold text-[#2E375B]">
                 <span>Rs. {selectedRoom.hourly_rate}/hour</span>
               </div>
-              <div className="pt-2 border-t">
-                <p className="text-xs text-slate-500">
+              <div className="pt-2 border-t border-[#2E375B]/10">
+                <p className="text-xs text-[#2E375B]/60">
                   Select multiple consecutive slots, then click "Book Selected"
                 </p>
               </div>
@@ -351,10 +426,10 @@ export default function Bookings() {
           </Card>
 
           {/* Time Slots */}
-          <Card className="border border-slate-200 lg:col-span-2">
+          <Card className="border border-[#2E375B]/10 lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg font-semibold font-[Manrope] flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-[#2E375B]" />
+              <CardTitle className="text-lg font-semibold font-[Manrope] flex items-center gap-2 text-[#2E375B]">
+                <Clock className="w-5 h-5" />
                 Available Slots (10 AM - 6 PM)
               </CardTitle>
               {selectedSlots.length > 0 && (
@@ -372,6 +447,7 @@ export default function Bookings() {
                   <Button 
                     size="sm" 
                     variant="outline"
+                    className="border-[#2E375B]/20 text-[#2E375B]"
                     onClick={() => setSelectedSlots([])}
                   >
                     Clear
@@ -392,8 +468,8 @@ export default function Bookings() {
                         isSelected
                           ? "bg-[#2E375B] text-white ring-2 ring-[#FFA14A]"
                           : slot.is_available
-                          ? "bg-green-100 text-green-700 hover:bg-green-200 cursor-pointer"
-                          : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                          ? "bg-[#2E375B]/10 text-[#2E375B] hover:bg-[#2E375B]/20 cursor-pointer"
+                          : "bg-[#2E375B]/5 text-[#2E375B]/30 cursor-not-allowed"
                       }`}
                     >
                       {slot.start_time}
@@ -401,9 +477,9 @@ export default function Bookings() {
                   );
                 })}
               </div>
-              <div className="flex items-center gap-4 mt-4 text-xs">
+              <div className="flex items-center gap-4 mt-4 text-xs text-[#2E375B]/70">
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-green-100"></div>
+                  <div className="w-3 h-3 rounded bg-[#2E375B]/10"></div>
                   <span>Available</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -411,7 +487,7 @@ export default function Bookings() {
                   <span>Selected</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-slate-100"></div>
+                  <div className="w-3 h-3 rounded bg-[#2E375B]/5"></div>
                   <span>Booked</span>
                 </div>
               </div>
@@ -421,17 +497,17 @@ export default function Bookings() {
       )}
 
       {/* Today's Bookings */}
-      <Card className="border border-slate-200">
+      <Card className="border border-[#2E375B]/10">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold font-[Manrope]">
+          <CardTitle className="text-lg font-semibold font-[Manrope] text-[#2E375B]">
             Bookings for {formatDate(selectedDate)}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-slate-500">Loading...</p>
+            <p className="text-[#2E375B]/60">Loading...</p>
           ) : bookings.length === 0 ? (
-            <p className="text-slate-500">No bookings for this date</p>
+            <p className="text-[#2E375B]/60">No bookings for this date</p>
           ) : (
             <div className="space-y-4">
               {rooms.map(room => {
@@ -440,45 +516,45 @@ export default function Bookings() {
                 
                 return (
                   <div key={room.id}>
-                    <h4 className="font-semibold text-sm text-slate-700 mb-2">{room.display_name}</h4>
+                    <h4 className="font-semibold text-sm text-[#2E375B]/70 mb-2">{room.display_name}</h4>
                     <div className="space-y-2">
                       {roomBookings.map(booking => {
                         const canCancel = canCancelBooking(booking);
                         return (
                           <div 
                             key={booking.id} 
-                            className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                            className="flex items-center justify-between p-3 bg-[#2E375B]/5 rounded-lg"
                           >
                             <div className="flex items-center gap-4">
                               <div className="text-center">
                                 <p className="font-mono font-semibold text-[#2E375B]">
                                   {booking.start_time} - {booking.end_time}
                                 </p>
-                                <p className="text-xs text-slate-500">{booking.duration_minutes} min</p>
+                                <p className="text-xs text-[#2E375B]/60">{booking.duration_minutes} min</p>
                               </div>
                               <div>
-                                <p className="font-medium text-slate-900">{booking.member_name}</p>
-                                <p className="text-xs text-slate-500">{booking.company_name}</p>
+                                <p className="font-medium text-[#2E375B]">{booking.member_name}</p>
+                                <p className="text-xs text-[#2E375B]/60">{booking.company_name}</p>
                                 {booking.purpose && (
-                                  <p className="text-xs text-slate-600 mt-1">{booking.purpose}</p>
+                                  <p className="text-xs text-[#2E375B]/70 mt-1">{booking.purpose}</p>
                                 )}
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               {booking.credits_used > 0 && (
-                                <Badge className="bg-blue-100 text-blue-700">
+                                <Badge className="bg-[#2E375B]/10 text-[#2E375B]">
                                   {booking.credits_used} min credits
                                 </Badge>
                               )}
                               {booking.billable_amount > 0 && (
-                                <Badge className="bg-amber-100 text-amber-700">
+                                <Badge className="bg-[#FFA14A]/10 text-[#FFA14A]">
                                   Rs. {booking.billable_amount}
                                 </Badge>
                               )}
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className={`h-8 w-8 ${canCancel ? 'text-red-500 hover:text-red-700' : 'text-slate-300 cursor-not-allowed'}`}
+                                className={`h-8 w-8 ${canCancel ? 'text-red-500 hover:text-red-700' : 'text-[#2E375B]/20 cursor-not-allowed'}`}
                                 onClick={() => handleCancelBooking(booking)}
                                 disabled={!canCancel}
                                 title={canCancel ? 'Cancel booking' : `Can only cancel ${MIN_CANCEL_DAYS}+ days before`}
@@ -502,23 +578,23 @@ export default function Bookings() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-[Manrope]">Book {selectedRoom?.display_name}</DialogTitle>
+            <DialogTitle className="font-[Manrope] text-[#2E375B]">Book {selectedRoom?.display_name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="bg-slate-50 p-3 rounded-lg">
-              <p className="text-sm font-medium">{formatDate(selectedDate)}</p>
+            <div className="bg-[#2E375B]/5 p-3 rounded-lg">
+              <p className="text-sm font-medium text-[#2E375B]">{formatDate(selectedDate)}</p>
               <p className="text-lg font-semibold text-[#2E375B]">
                 {formData.start_time} - {formData.end_time}
               </p>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-[#2E375B]/60 mt-1">
                 {selectedSlots.length} slot{selectedSlots.length > 1 ? 's' : ''} • {totalMinutes} minutes total
               </p>
             </div>
             
             <div className="space-y-2">
-              <Label>Member *</Label>
+              <Label className="text-[#2E375B]">Member *</Label>
               <Select value={formData.member_id} onValueChange={(value) => setFormData({ ...formData, member_id: value })}>
-                <SelectTrigger>
+                <SelectTrigger className="border-[#2E375B]/20">
                   <SelectValue placeholder="Select member" />
                 </SelectTrigger>
                 <SelectContent>
@@ -532,36 +608,40 @@ export default function Bookings() {
             </div>
 
             {selectedMember && (
-              <div className="bg-blue-50 p-3 rounded-lg text-sm">
-                <p className="font-medium">Credits Available</p>
-                <p className="text-blue-700">
+              <div className="bg-[#2E375B]/5 p-3 rounded-lg text-sm">
+                <p className="font-medium text-[#2E375B]">Credits Available</p>
+                <p className="text-[#2E375B]/70">
                   {selectedMember.meeting_room_credits - selectedMember.credits_used} min remaining
                 </p>
               </div>
             )}
 
             <div className="space-y-2">
-              <Label>Purpose</Label>
+              <Label className="text-[#2E375B]">Purpose</Label>
               <Input
                 value={formData.purpose}
                 onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
                 placeholder="Meeting purpose (optional)"
+                className="border-[#2E375B]/20"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Number of Attendees</Label>
+              <Label className="text-[#2E375B]">Number of Attendees</Label>
               <Input
                 type="number"
                 value={formData.attendees}
                 onChange={(e) => setFormData({ ...formData, attendees: e.target.value })}
                 placeholder={`Max: ${selectedRoom?.capacity}`}
                 max={selectedRoom?.capacity}
+                className="border-[#2E375B]/20"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)} className="border-[#2E375B]/20 text-[#2E375B]">
+              Cancel
+            </Button>
             <Button 
               className="bg-[#2E375B] hover:bg-[#232B47]"
               onClick={handleBooking}
