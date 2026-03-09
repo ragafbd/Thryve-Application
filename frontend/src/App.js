@@ -7,6 +7,7 @@ import CreateInvoice from "@/pages/CreateInvoice";
 import InvoiceList from "@/pages/InvoiceList";
 import InvoiceView from "@/pages/InvoiceView";
 import Clients from "@/pages/Clients";
+import BulkInvoice from "@/pages/BulkInvoice";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
             <Route path="create-invoice" element={<CreateInvoice />} />
+            <Route path="bulk-invoice" element={<BulkInvoice />} />
             <Route path="invoices" element={<InvoiceList />} />
             <Route path="invoices/:id" element={<InvoiceView />} />
             <Route path="clients" element={<Clients />} />
