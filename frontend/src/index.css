@@ -28,25 +28,30 @@ h1, h2, h3, h4, h5, h6 {
         --card-foreground: 215 25% 27%;
         --popover: 0 0% 100%;
         --popover-foreground: 215 25% 27%;
-        --primary: 163 89% 16%;
+        --primary: 213 35% 25%;
         --primary-foreground: 0 0% 100%;
-        --secondary: 152 81% 96%;
-        --secondary-foreground: 163 89% 16%;
+        --secondary: 43 70% 50%;
+        --secondary-foreground: 213 35% 25%;
         --muted: 210 40% 96%;
         --muted-foreground: 215 16% 47%;
-        --accent: 24 95% 36%;
-        --accent-foreground: 0 0% 100%;
+        --accent: 43 70% 50%;
+        --accent-foreground: 213 35% 25%;
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 98%;
         --border: 214 32% 91%;
         --input: 214 32% 91%;
-        --ring: 163 89% 16%;
-        --chart-1: 163 89% 16%;
-        --chart-2: 152 81% 96%;
+        --ring: 213 35% 25%;
+        --chart-1: 213 35% 25%;
+        --chart-2: 43 70% 50%;
         --chart-3: 24 95% 36%;
         --chart-4: 215 25% 27%;
         --chart-5: 214 32% 91%;
         --radius: 0.5rem;
+        
+        /* Thryve Brand Colors */
+        --thryve-navy: #2D3E50;
+        --thryve-gold: #C9A227;
+        --thryve-gold-light: #E8D59A;
     }
 }
 
