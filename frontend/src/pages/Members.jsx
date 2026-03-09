@@ -222,6 +222,7 @@ export default function Members() {
       setDeleteDialogOpen(false);
       setMemberToDelete(null);
       fetchMembers();
+      fetchCompanies();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Failed to delete member");
     }
@@ -232,8 +233,77 @@ export default function Members() {
       await axios.put(`${API}/management/members/${member.id}`, { status: newStatus });
       toast.success(`Member ${newStatus === 'active' ? 'activated' : newStatus}`);
       fetchMembers();
+      fetchCompanies();
     } catch (error) {
       toast.error("Failed to update status");
+    }
+  };
+
+  const handleTerminate = async () => {
+    if (!memberToTerminate) return;
+    if (!terminateData.termination_reason) {
+      toast.error("Please provide a termination reason");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await axios.post(`${API}/management/members/${memberToTerminate.id}/terminate`, terminateData);
+      toast.success(`${memberToTerminate.name} has been terminated`);
+      setTerminateDialogOpen(false);
+      setMemberToTerminate(null);
+      setTerminateData({
+        end_date: new Date().toISOString().split('T')[0],
+        termination_reason: "",
+        has_outstanding_dues: false
+      });
+      fetchMembers();
+      fetchCompanies();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to terminate member");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReactivate = async (member) => {
+    try {
+      await axios.post(`${API}/management/members/${member.id}/reactivate`);
+      toast.success(`${member.name} has been reactivated`);
+      fetchMembers();
+      fetchCompanies();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to reactivate member");
+    }
+  };
+
+  const handleBulkTerminate = async () => {
+    if (!companyToTerminate) return;
+    if (!terminateData.termination_reason) {
+      toast.error("Please provide a termination reason");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await axios.post(`${API}/management/members/bulk-terminate`, {
+        company_name: companyToTerminate,
+        ...terminateData
+      });
+      toast.success(response.data.message);
+      setBulkTerminateDialogOpen(false);
+      setCompanyToTerminate("");
+      setTerminateData({
+        end_date: new Date().toISOString().split('T')[0],
+        termination_reason: "",
+        has_outstanding_dues: false
+      });
+      fetchMembers();
+      fetchCompanies();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to terminate members");
+    } finally {
+      setSaving(false);
     }
   };
 
