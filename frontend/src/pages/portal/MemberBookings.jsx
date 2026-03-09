@@ -143,14 +143,21 @@ export default function MemberBookings() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 font-[Manrope]">Room Bookings</h1>
-          <p className="text-slate-600 mt-1">Book meeting and conference rooms</p>
+          <h1 className="text-2xl font-bold text-[#2E375B] font-[Manrope]">Meeting Room Booking</h1>
+          <p className="text-[#2E375B]/60 mt-1">Book meeting and conference rooms (10 AM - 7 PM)</p>
         </div>
         <div className="bg-[#FFA14A]/10 px-4 py-2 rounded-lg">
           <p className="text-sm text-[#FFA14A] font-medium">
             Credits Remaining: <span className="text-xl font-bold">{creditsRemaining}</span> min
           </p>
         </div>
+      </div>
+      
+      {/* Booking Rules */}
+      <div className="bg-[#2E375B]/5 border border-[#2E375B]/10 rounded-lg p-4 text-sm text-[#2E375B]/80">
+        <p>• Advance bookings can be done for the next 10 days only</p>
+        <p>• Cancellations within 48 hours of the event or No shows will result in credits being used</p>
+        <p>• Bookings will not be allowed for Sundays or Public Holidays</p>
       </div>
 
       {/* Date Navigation */}
