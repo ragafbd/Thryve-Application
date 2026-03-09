@@ -2,6 +2,7 @@
 Thryve Coworking Management System Routes
 """
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 import uuid
@@ -19,6 +20,9 @@ from models.management import (
 # Router
 router = APIRouter(prefix="/api/management", tags=["Management"])
 
+# Security
+security = HTTPBearer()
+
 # These will be set by the main server
 db = None
 _get_current_user_func = None
@@ -31,9 +35,11 @@ def init_router(database, auth_func, perm_func):
     _get_current_user_func = auth_func
     _check_permission_func = perm_func
 
-def get_auth_dependency():
-    """Returns the auth dependency function"""
-    return _get_current_user_func
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Wrapper that calls the actual auth function"""
+    if _get_current_user_func is None:
+        raise HTTPException(status_code=500, detail="Auth not initialized")
+    return await _get_current_user_func(credentials)
 
 def check_permission(user: dict, permission: str):
     """Wrapper for permission check"""
