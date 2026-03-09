@@ -59,6 +59,10 @@ function AppRoutes() {
         <Route path="invoices" element={<InvoiceList />} />
         <Route path="invoices/:id" element={<InvoiceView />} />
         <Route path="clients" element={<Clients />} />
+        <Route path="members" element={<Members />} />
+        <Route path="bookings" element={<Bookings />} />
+        <Route path="tickets" element={<Tickets />} />
+        <Route path="announcements" element={<Announcements />} />
         <Route path="users" element={<Users />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
