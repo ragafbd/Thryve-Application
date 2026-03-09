@@ -1251,6 +1251,11 @@ from routes.management import router as management_router, init_router as init_m
 init_management_router(db, get_current_user, check_permission)
 app.include_router(management_router)
 
+# Include member portal routes
+from routes.member_portal import router as member_portal_router, init_router as init_member_portal_router
+init_member_portal_router(db)
+app.include_router(member_portal_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
