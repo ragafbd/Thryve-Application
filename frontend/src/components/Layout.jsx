@@ -36,13 +36,11 @@ export default function Layout() {
         {/* Logo */}
         <div className="p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="font-bold text-lg tracking-tight font-[Manrope]">Thryve</h1>
-              <p className="text-xs text-white/60">Invoice Generator</p>
-            </div>
+            <img 
+              src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/5b15k8u9_image.png" 
+              alt="Thryve Coworking" 
+              className="h-10 w-auto"
+            />
           </div>
         </div>
 
@@ -58,7 +56,7 @@ export default function Layout() {
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
                   isActive 
-                    ? "bg-white/20 text-white font-medium" 
+                    ? "bg-[#C9A227] text-[#2D3E50] font-medium" 
                     : "text-white/70 hover:bg-white/10 hover:text-white"
                 )}
               >
