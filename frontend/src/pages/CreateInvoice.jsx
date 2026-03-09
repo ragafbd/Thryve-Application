@@ -37,11 +37,11 @@ import InvoicePreview from "@/components/InvoicePreview";
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const SERVICE_TYPES = [
-  { value: "monthly_rental", label: "Monthly Rental", taxable: true },
-  { value: "security_deposit", label: "Refundable Security Deposit", taxable: false },
-  { value: "setup_charges", label: "Setup Charges", taxable: false },
-  { value: "day_pass", label: "Day Pass", taxable: true },
-  { value: "meeting_room", label: "Meeting Room Charges", taxable: true },
+  { value: "monthly_rental", label: "Monthly Plan", taxable: true, hsn: "997212", unit: "Month" },
+  { value: "security_deposit", label: "Refundable Security Deposit", taxable: false, hsn: "", unit: "Units" },
+  { value: "setup_charges", label: "Setup Charges", taxable: false, hsn: "", unit: "Units" },
+  { value: "day_pass", label: "Day Pass", taxable: true, hsn: "997212", unit: "Day" },
+  { value: "meeting_room", label: "Meeting Room Charges", taxable: true, hsn: "997212", unit: "Hour" },
 ];
 
 const emptyLineItem = {
@@ -49,7 +49,12 @@ const emptyLineItem = {
   service_type: "monthly_rental",
   quantity: 1,
   rate: 0,
-  is_taxable: true
+  is_taxable: true,
+  hsn_sac: "997212",
+  unit: "Month",
+  is_prorated: false,
+  prorate_days: null,
+  prorate_total_days: 30
 };
 
 export default function CreateInvoice() {
@@ -98,7 +103,9 @@ export default function CreateInvoice() {
       ...newItems[index],
       service_type: value,
       description: service?.label || "",
-      is_taxable: service?.taxable ?? true
+      is_taxable: service?.taxable ?? true,
+      hsn_sac: service?.hsn || "",
+      unit: service?.unit || "Units"
     };
     setLineItems(newItems);
   };
@@ -125,7 +132,12 @@ export default function CreateInvoice() {
     let totalSgst = 0;
 
     lineItems.forEach(item => {
-      const amount = item.quantity * item.rate;
+      let amount;
+      if (item.is_prorated && item.prorate_days && item.prorate_total_days) {
+        amount = item.quantity * (item.rate / item.prorate_total_days) * item.prorate_days;
+      } else {
+        amount = item.quantity * item.rate;
+      }
       subtotal += amount;
       if (item.is_taxable) {
         totalCgst += amount * 0.09;
@@ -151,13 +163,21 @@ export default function CreateInvoice() {
     due_date: dueDate.toISOString(),
     client: selectedClient || null,
     company: company,
-    line_items: lineItems.map(item => ({
-      ...item,
-      amount: item.quantity * item.rate,
-      cgst: item.is_taxable ? item.quantity * item.rate * 0.09 : 0,
-      sgst: item.is_taxable ? item.quantity * item.rate * 0.09 : 0,
-      total: item.quantity * item.rate + (item.is_taxable ? item.quantity * item.rate * 0.18 : 0)
-    })),
+    line_items: lineItems.map(item => {
+      let amount;
+      if (item.is_prorated && item.prorate_days && item.prorate_total_days) {
+        amount = item.quantity * (item.rate / item.prorate_total_days) * item.prorate_days;
+      } else {
+        amount = item.quantity * item.rate;
+      }
+      return {
+        ...item,
+        amount: amount,
+        cgst: item.is_taxable ? amount * 0.09 : 0,
+        sgst: item.is_taxable ? amount * 0.09 : 0,
+        total: amount + (item.is_taxable ? amount * 0.18 : 0)
+      };
+    }),
     subtotal: totals.subtotal,
     total_cgst: totals.totalCgst,
     total_sgst: totals.totalSgst,
