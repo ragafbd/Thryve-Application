@@ -442,8 +442,22 @@ async def check_availability(room_id: str, date: str):
         "slots": slots
     }
 
+# Booking rules
+MAX_ADVANCE_DAYS = 10
+MIN_CANCEL_DAYS = 2
+
 @router.post("/bookings", response_model=Booking)
 async def create_booking(booking_data: BookingCreate, current_user: dict = Depends(get_current_user)):
+    # Validate booking date (max 10 days in advance)
+    booking_date = datetime.strptime(booking_data.date, "%Y-%m-%d").date()
+    today = datetime.now(timezone.utc).date()
+    max_date = today + timedelta(days=MAX_ADVANCE_DAYS)
+    
+    if booking_date < today:
+        raise HTTPException(status_code=400, detail="Cannot book in the past")
+    if booking_date > max_date:
+        raise HTTPException(status_code=400, detail=f"Bookings can only be made up to {MAX_ADVANCE_DAYS} days in advance")
+    
     # Get room details
     room = await db.meeting_rooms.find_one({"id": booking_data.room_id}, {"_id": 0})
     if not room:
@@ -515,6 +529,17 @@ async def cancel_booking(booking_id: str, current_user: dict = Depends(get_curre
     booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
+    
+    # Validate cancellation (must be at least 2 days before)
+    booking_date = datetime.strptime(booking["date"], "%Y-%m-%d").date()
+    today = datetime.now(timezone.utc).date()
+    days_until = (booking_date - today).days
+    
+    if days_until < MIN_CANCEL_DAYS:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Bookings can only be cancelled {MIN_CANCEL_DAYS} or more days before the event"
+        )
     
     # Restore credits if applicable
     if booking.get("credits_used", 0) > 0:
