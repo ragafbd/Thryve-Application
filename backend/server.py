@@ -1256,6 +1256,11 @@ from routes.member_portal import router as member_portal_router, init_router as 
 init_member_portal_router(db)
 app.include_router(member_portal_router)
 
+# Include public holidays routes
+from routes.public_holidays import router as holidays_router, init_router as init_holidays_router, seed_default_holidays
+init_holidays_router(db, get_current_user, check_permission)
+app.include_router(holidays_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
