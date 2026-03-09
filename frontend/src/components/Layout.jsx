@@ -68,7 +68,7 @@ export default function Layout() {
   const handleLogout = () => {
     logout();
     toast.success("Logged out successfully");
-    navigate("/login");
+    navigate("/admin/login");
   };
 
   const handleChangePassword = async () => {
