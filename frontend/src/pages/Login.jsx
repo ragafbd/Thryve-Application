@@ -39,8 +39,8 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 relative">
       {/* Admin Login Badge */}
-      <div className="absolute bottom-4 right-4">
-        <span className="text-xs text-slate-400 font-medium">Admin Login</span>
+      <div className="absolute bottom-6 right-6">
+        <span className="text-sm text-[#2E375B]/60 font-semibold bg-white px-3 py-1 rounded-full shadow-sm border border-slate-200">Admin Login</span>
       </div>
       
       <div className="w-full max-w-md">
