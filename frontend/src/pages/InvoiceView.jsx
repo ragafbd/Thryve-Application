@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Download, Printer, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, Printer, Trash2, CheckCircle, Clock, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +20,21 @@ import { useReactToPrint } from "react-to-print";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+const StatusBadge = ({ status }) => {
+  const config = {
+    paid: { label: "Paid", icon: CheckCircle, className: "bg-emerald-100 text-emerald-700" },
+    pending: { label: "Pending", icon: Clock, className: "bg-amber-100 text-amber-700" },
+    overdue: { label: "Overdue", icon: AlertTriangle, className: "bg-red-100 text-red-700" }
+  };
+  const { label, icon: Icon, className } = config[status] || config.pending;
+  return (
+    <Badge className={`${className} flex items-center gap-1.5 px-3 py-1`}>
+      <Icon className="w-3.5 h-3.5" />
+      {label}
+    </Badge>
+  );
+};
+
 export default function InvoiceView() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -28,18 +44,19 @@ export default function InvoiceView() {
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
+  const fetchInvoice = async () => {
+    try {
+      const response = await axios.get(`${API}/invoices/${id}`);
+      setInvoice(response.data);
+    } catch (error) {
+      toast.error("Invoice not found");
+      navigate("/invoices");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchInvoice = async () => {
-      try {
-        const response = await axios.get(`${API}/invoices/${id}`);
-        setInvoice(response.data);
-      } catch (error) {
-        toast.error("Invoice not found");
-        navigate("/invoices");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchInvoice();
   }, [id, navigate]);
 
@@ -56,6 +73,16 @@ export default function InvoiceView() {
       navigate("/invoices");
     } catch (error) {
       toast.error("Failed to delete invoice");
+    }
+  };
+
+  const handleMarkAsPaid = async () => {
+    try {
+      await axios.patch(`${API}/invoices/${id}/status`, { status: "paid" });
+      toast.success("Invoice marked as paid");
+      fetchInvoice();
+    } catch (error) {
+      toast.error("Failed to update invoice status");
     }
   };
 
@@ -93,20 +120,38 @@ export default function InvoiceView() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight font-[Manrope]">
-              Invoice {invoice.invoice_number}
-            </h1>
-            <p className="text-slate-500 font-mono text-sm">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight font-[Manrope]">
+                Invoice {invoice.invoice_number}
+              </h1>
+              <StatusBadge status={invoice.status} />
+            </div>
+            <p className="text-slate-500 font-mono text-sm mt-1">
               {new Date(invoice.invoice_date).toLocaleDateString('en-IN', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
               })}
+              {invoice.due_date && (
+                <span className={invoice.status === 'overdue' ? 'text-red-600 ml-3' : 'text-slate-400 ml-3'}>
+                  Due: {new Date(invoice.due_date).toLocaleDateString('en-IN')}
+                </span>
+              )}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {invoice.status !== 'paid' && (
+            <Button
+              onClick={handleMarkAsPaid}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              data-testid="mark-as-paid-btn"
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Mark as Paid
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={handlePrint}
@@ -136,6 +181,33 @@ export default function InvoiceView() {
           </Button>
         </div>
       </div>
+
+      {/* Payment Info Banner */}
+      {invoice.status === 'paid' && invoice.payment_date && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex items-center gap-3 no-print">
+          <CheckCircle className="w-5 h-5 text-emerald-600" />
+          <div>
+            <p className="font-medium text-emerald-800">Payment Received</p>
+            <p className="text-sm text-emerald-600">
+              Paid on {new Date(invoice.payment_date).toLocaleDateString('en-IN', {
+                year: 'numeric', month: 'long', day: 'numeric'
+              })}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {invoice.status === 'overdue' && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3 no-print">
+          <AlertTriangle className="w-5 h-5 text-red-600" />
+          <div>
+            <p className="font-medium text-red-800">Payment Overdue</p>
+            <p className="text-sm text-red-600">
+              This invoice was due on {invoice.due_date && new Date(invoice.due_date).toLocaleDateString('en-IN')}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Invoice Preview */}
       <div className="flex justify-center">
