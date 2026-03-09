@@ -41,9 +41,8 @@ import axios from "axios";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Invoice section
+// Invoice section (without Dashboard)
 const invoiceNavItems = [
-  { path: "/", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/create-invoice", icon: PlusCircle, label: "Create Invoice" },
   { path: "/bulk-invoice", icon: FileSpreadsheet, label: "Bulk Invoice" },
   { path: "/invoices", icon: FileText, label: "Invoices" },
@@ -55,15 +54,6 @@ const managementNavItems = [
   { path: "/bookings", icon: CalendarDays, label: "Room Bookings" },
   { path: "/tickets", icon: Ticket, label: "Support Tickets" },
   { path: "/announcements", icon: Megaphone, label: "Announcements" },
-];
-
-// Legacy (keeping for backward compatibility)
-const navItems = [
-  { path: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { path: "/create-invoice", icon: PlusCircle, label: "Create Invoice" },
-  { path: "/bulk-invoice", icon: FileSpreadsheet, label: "Bulk Invoice" },
-  { path: "/invoices", icon: FileText, label: "Invoices" },
-  { path: "/clients", icon: Users, label: "Clients" },
 ];
 
 export default function Layout() {
