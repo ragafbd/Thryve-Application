@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -133,6 +133,17 @@ export default function Login() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Member Portal Link */}
+        <div className="text-center mt-6">
+          <p className="text-slate-500 text-sm mb-2">Are you a coworking member?</p>
+          <Link 
+            to="/portal/login" 
+            className="text-[#FFA14A] hover:text-[#e8893a] font-medium text-sm inline-flex items-center gap-1"
+          >
+            Go to Member Portal →
+          </Link>
+        </div>
       </div>
     </div>
   );
