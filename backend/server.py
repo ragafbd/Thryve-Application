@@ -370,7 +370,25 @@ async def generate_invoice_pdf(invoice_id: str):
             return "-"
         try:
             date_obj = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
-            return date_obj.strftime("%d %B %Y")
+            day = date_obj.day
+            months = ["January", "February", "March", "April", "May", "June", 
+                "July", "August", "September", "October", "November", "December"]
+            
+            # Add ordinal suffix
+            def get_ordinal(n):
+                if n > 3 and n < 21:
+                    return 'th'
+                remainder = n % 10
+                if remainder == 1:
+                    return 'st'
+                elif remainder == 2:
+                    return 'nd'
+                elif remainder == 3:
+                    return 'rd'
+                else:
+                    return 'th'
+            
+            return f"{months[date_obj.month - 1]} {day}{get_ordinal(day)}, {date_obj.year}"
         except:
             return date_str
     
@@ -439,11 +457,11 @@ async def generate_invoice_pdf(invoice_id: str):
             item.get('description', ''),
             item.get('hsn_sac', '997212'),
             str(item.get('quantity', 1)),
-            f"₹{item.get('rate', 0):,.2f}",
-            f"₹{item.get('amount', 0):,.2f}",
-            f"₹{item.get('cgst', 0):,.2f}" if item.get('is_taxable') else '-',
-            f"₹{item.get('sgst', 0):,.2f}" if item.get('is_taxable') else '-',
-            f"₹{item.get('total', 0):,.2f}"
+            f"Rs. {item.get('rate', 0):,.2f}",
+            f"Rs. {item.get('amount', 0):,.2f}",
+            f"Rs. {item.get('cgst', 0):,.2f}" if item.get('is_taxable') else '-',
+            f"Rs. {item.get('sgst', 0):,.2f}" if item.get('is_taxable') else '-',
+            f"Rs. {item.get('total', 0):,.2f}"
         ])
     
     items_table = Table(table_data, colWidths=[30, 140, 50, 35, 60, 60, 50, 50, 60])
@@ -464,10 +482,10 @@ async def generate_invoice_pdf(invoice_id: str):
     
     # Totals
     totals_data = [
-        ['Sub Total', f"₹{invoice.get('subtotal', 0):,.2f}"],
-        ['CGST (9%)', f"₹{invoice.get('total_cgst', 0):,.2f}"],
-        ['SGST (9%)', f"₹{invoice.get('total_sgst', 0):,.2f}"],
-        ['Total Amount', f"₹{invoice.get('grand_total', 0):,.2f}"],
+        ['Sub Total', f"Rs. {invoice.get('subtotal', 0):,.2f}"],
+        ['CGST (9%)', f"Rs. {invoice.get('total_cgst', 0):,.2f}"],
+        ['SGST (9%)', f"Rs. {invoice.get('total_sgst', 0):,.2f}"],
+        ['Total Amount', f"Rs. {invoice.get('grand_total', 0):,.2f}"],
     ]
     
     totals_table = Table(totals_data, colWidths=[100, 80])
@@ -506,8 +524,8 @@ async def generate_invoice_pdf(invoice_id: str):
     
     bank_info = f"""
     <b>Company's Bank Details</b><br/>
-    Bank Name: {bank.get('name', '')}<br/>
     A/c Name: {bank.get('account_name', '')}<br/>
+    Bank Name: {bank.get('name', '')}<br/>
     A/c No: {bank.get('account_no', '')}<br/>
     Branch: {bank.get('branch', '')}<br/>
     IFSC: {bank.get('ifsc', '')}
