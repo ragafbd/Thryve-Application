@@ -255,7 +255,7 @@ export default function CreateInvoice() {
                     <p className="text-sm text-slate-500">No clients found</p>
                     <Button
                       variant="link"
-                      className="text-[#2D3E50]"
+                      className="text-[#2E375B]"
                       onClick={() => navigate("/clients")}
                     >
                       Add a client first
@@ -282,10 +282,10 @@ export default function CreateInvoice() {
 
               {/* Selected Client Details */}
               {selectedClient && (
-                <div className="p-4 bg-[#E8D59A] rounded-lg">
+                <div className="p-4 bg-[#FFD4B0] rounded-lg">
                   <p className="font-medium text-slate-900">{selectedClient.company_name}</p>
                   <p className="text-sm text-slate-600 mt-1">{selectedClient.address}</p>
-                  <p className="text-xs font-mono text-[#2D3E50] mt-2">
+                  <p className="text-xs font-mono text-[#2E375B] mt-2">
                     GSTIN: {selectedClient.gstin}
                   </p>
                 </div>
@@ -360,7 +360,7 @@ export default function CreateInvoice() {
                   variant="outline"
                   size="sm"
                   onClick={addLineItem}
-                  className="text-[#2D3E50] border-[#2D3E50] hover:bg-[#E8D59A]"
+                  className="text-[#2E375B] border-[#2E375B] hover:bg-[#FFD4B0]"
                   data-testid="add-line-item-btn"
                 >
                   <Plus className="w-4 h-4 mr-1" />
@@ -577,7 +577,7 @@ export default function CreateInvoice() {
               Cancel
             </Button>
             <Button
-              className="flex-1 bg-[#2D3E50] hover:bg-[#1E2A36]"
+              className="flex-1 bg-[#2E375B] hover:bg-[#232B47]"
               onClick={handleSaveInvoice}
               disabled={saving || !selectedClientId}
               data-testid="save-invoice-btn"

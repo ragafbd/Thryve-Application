@@ -128,7 +128,7 @@ export default function Clients() {
           </p>
         </div>
         <Button 
-          className="bg-[#2D3E50] hover:bg-[#1E2A36] text-white"
+          className="bg-[#2E375B] hover:bg-[#232B47] text-white"
           onClick={() => handleOpenDialog()}
           data-testid="add-client-btn"
         >
@@ -161,7 +161,7 @@ export default function Clients() {
             </p>
             {!searchQuery && (
               <Button 
-                className="mt-4 bg-[#2D3E50] hover:bg-[#1E2A36]"
+                className="mt-4 bg-[#2E375B] hover:bg-[#232B47]"
                 onClick={() => handleOpenDialog()}
               >
                 Add Your First Client
@@ -187,7 +187,7 @@ export default function Clients() {
                     <p className="text-sm text-slate-500 mt-1 line-clamp-2">
                       {client.address}
                     </p>
-                    <p className="text-xs font-mono text-[#2D3E50] mt-2 bg-[#E8D59A] inline-block px-2 py-1 rounded">
+                    <p className="text-xs font-mono text-[#2E375B] mt-2 bg-[#FFD4B0] inline-block px-2 py-1 rounded">
                       {client.gstin}
                     </p>
                   </div>
@@ -195,7 +195,7 @@ export default function Clients() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-slate-500 hover:text-[#2D3E50]"
+                      className="h-8 w-8 text-slate-500 hover:text-[#2E375B]"
                       onClick={() => handleOpenDialog(client)}
                       data-testid={`edit-client-${client.id}`}
                     >
@@ -267,7 +267,7 @@ export default function Clients() {
               Cancel
             </Button>
             <Button 
-              className="bg-[#2D3E50] hover:bg-[#1E2A36]"
+              className="bg-[#2E375B] hover:bg-[#232B47]"
               onClick={handleSave}
               disabled={saving}
               data-testid="save-client-btn"

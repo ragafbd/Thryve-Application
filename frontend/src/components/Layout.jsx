@@ -56,7 +56,7 @@ export default function Layout() {
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
                   isActive 
-                    ? "bg-[#C9A227] text-[#2D3E50] font-medium" 
+                    ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
                     : "text-white/70 hover:bg-white/10 hover:text-white"
                 )}
               >
