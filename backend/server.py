@@ -1246,6 +1246,11 @@ async def upload_excel_and_generate_invoices(file: UploadFile = File(...)):
 # Include the router in the main app
 app.include_router(api_router)
 
+# Include management routes
+from routes.management import router as management_router, init_router as init_management_router
+init_management_router(db, get_current_user, check_permission)
+app.include_router(management_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
