@@ -38,7 +38,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const RoleBadge = ({ role }) => {
   const config = {
     admin: { label: "Admin", className: "bg-purple-100 text-purple-700" },
-    staff: { label: "Staff", className: "bg-blue-100 text-blue-700" },
+    staff: { label: "Manager", className: "bg-blue-100 text-blue-700" },
     viewer: { label: "Viewer", className: "bg-slate-100 text-slate-700" }
   };
   const { label, className } = config[role] || config.viewer;
