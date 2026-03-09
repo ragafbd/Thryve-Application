@@ -62,6 +62,81 @@ COMPANY_DETAILS = {
     "phone": "+91 80 1234 5678"
 }
 
+# User Roles
+ROLES = {
+    "admin": ["all"],  # Full access
+    "staff": ["create_invoice", "view_invoice", "view_client", "create_client", "download_pdf", "bulk_invoice"],
+    "viewer": ["view_invoice", "view_client", "download_pdf"]
+}
+
+# Auth Models
+class UserCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+    role: str = "staff"  # admin, staff, viewer
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class User(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    email: str
+    password_hash: str
+    role: str = "staff"
+    is_active: bool = True
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_by: Optional[str] = None
+
+class UserResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    role: str
+    is_active: bool
+    created_at: str
+
+# Auth Helper Functions
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if user is None:
+        raise HTTPException(status_code=401, detail="User not found")
+    if not user.get("is_active", True):
+        raise HTTPException(status_code=401, detail="User is inactive")
+    return user
+
+def check_permission(user: dict, permission: str):
+    role = user.get("role", "viewer")
+    permissions = ROLES.get(role, [])
+    if "all" in permissions or permission in permissions:
+        return True
+    raise HTTPException(status_code=403, detail="Permission denied")
+
 # Define Models
 class ClientBase(BaseModel):
     company_name: str
