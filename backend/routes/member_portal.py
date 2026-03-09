@@ -472,6 +472,26 @@ async def check_room_availability_member(room_id: str, date: str):
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
     
+    # Check if date is a Sunday
+    date_obj = datetime.strptime(date, "%Y-%m-%d")
+    if date_obj.weekday() == 6:
+        return {
+            "room": room,
+            "date": date,
+            "slots": [],
+            "message": "Bookings not available on Sundays"
+        }
+    
+    # Check if date is a public holiday
+    holiday = await db.public_holidays.find_one({"date": date, "is_active": True}, {"_id": 0})
+    if holiday:
+        return {
+            "room": room,
+            "date": date,
+            "slots": [],
+            "message": f"Bookings not available on {holiday['name']}"
+        }
+    
     # Get existing bookings
     bookings = await db.bookings.find(
         {"room_id": room_id, "date": date, "status": {"$ne": "cancelled"}},
