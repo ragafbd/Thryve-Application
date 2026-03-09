@@ -74,12 +74,18 @@ Build an automatic invoice generator and comprehensive management system for Thr
 
 **Availability Hours: 10 AM to 6 PM**
 
+**Booking Rules:**
+- **Multi-slot selection**: Select multiple consecutive time slots in one go
+- **Advance booking**: Maximum 10 days in advance
+- **Cancellation**: Can only cancel 2+ days before the event
+- Credits allocated at member onboarding
+
 Features:
 - Real-time availability checking
 - Credits-based booking (deducted from member's monthly credits)
 - Billable amount calculated when credits exhausted
 - Booking conflict detection
-- Booking cancellation with credit restoration
+- Booking cancellation with credit restoration (if within rules)
 
 #### Support Tickets
 - Ticket numbering (THR-TKT-XXXX)
