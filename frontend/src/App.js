@@ -99,6 +99,7 @@ function AdminRoutes() {
         <Route path="clients" element={<Clients />} />
         <Route path="members" element={<Members />} />
         <Route path="bookings" element={<Bookings />} />
+        <Route path="holidays" element={<PublicHolidays />} />
         <Route path="tickets" element={<Tickets />} />
         <Route path="announcements" element={<Announcements />} />
         <Route path="users" element={<Users />} />
