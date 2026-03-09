@@ -104,6 +104,29 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
             {formatDate(invoice?.invoice_date)}
           </p>
         </div>
+        {invoice?.due_date && (
+          <div>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Due Date
+            </span>
+            <p className={`font-mono mt-1 ${invoice?.status === 'overdue' ? 'text-red-600 font-semibold' : 'text-slate-900'}`}>
+              {formatDate(invoice?.due_date)}
+            </p>
+          </div>
+        )}
+        {invoice?.status && (
+          <div>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Status
+            </span>
+            <p className={`font-semibold mt-1 ${
+              invoice?.status === 'paid' ? 'text-emerald-600' : 
+              invoice?.status === 'overdue' ? 'text-red-600' : 'text-amber-600'
+            }`}>
+              {invoice?.status?.charAt(0).toUpperCase() + invoice?.status?.slice(1)}
+            </p>
+          </div>
+        )}
       </div>
 
       <Separator className="mb-6" />
