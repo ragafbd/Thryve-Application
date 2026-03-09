@@ -438,7 +438,7 @@ export default function Bookings() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-semibold font-[Manrope] flex items-center gap-2 text-[#2E375B]">
                 <Clock className="w-5 h-5" />
-                Available Slots (10 AM - 6 PM)
+                Available Slots (10 AM - 7 PM)
               </CardTitle>
               {selectedSlots.length > 0 && (
                 <div className="flex items-center gap-2">
