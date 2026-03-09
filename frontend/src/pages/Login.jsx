@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { LogIn, Eye, EyeOff } from "lucide-react";
+import { LogIn, Eye, EyeOff, Shield } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ export default function Login() {
     try {
       await login(email, password);
       toast.success("Welcome back!");
-      navigate("/");
+      navigate("/admin");
     } catch (error) {
       toast.error(error.response?.data?.detail || "Login failed");
     } finally {
@@ -38,12 +38,10 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 relative">
-      {/* Admin Login Badge - Bottom Left, matching Emergent badge style */}
+      {/* Admin Login Badge - Bottom Left, same size as Emergent badge */}
       <div className="fixed bottom-4 left-4 z-50">
-        <span className="text-sm text-white font-medium bg-[#1a1a1a] px-4 py-2 rounded-full shadow-md flex items-center gap-2">
-          <span className="w-4 h-4 rounded-full bg-[#2E375B] flex items-center justify-center">
-            <span className="w-2 h-2 rounded-full bg-white"></span>
-          </span>
+        <span className="text-sm text-white font-medium bg-[#1a1a1a] h-10 px-4 rounded-full shadow-md flex items-center gap-2">
+          <Shield className="w-4 h-4" />
           Admin Login
         </span>
       </div>
@@ -57,15 +55,15 @@ export default function Login() {
             className="h-20 mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-[#2E375B] font-[Manrope]">
-            Manage your World
+            Admin Panel
           </h1>
-          <p className="text-slate-500 mt-1">Sign in to continue</p>
+          <p className="text-slate-500 mt-1">Sign in to manage Thryve Coworking</p>
         </div>
 
         <Card className="border border-slate-200 shadow-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-center font-[Manrope]">
-              Login
+              Admin Login
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -125,7 +123,7 @@ export default function Login() {
                 <button
                   type="button"
                   className="text-sm text-[#2E375B] hover:underline"
-                  onClick={() => toast.info("Please contact admin to reset your password")}
+                  onClick={() => toast.info("Please contact system administrator to reset your password")}
                 >
                   Forgot Password?
                 </button>
@@ -134,14 +132,13 @@ export default function Login() {
           </CardContent>
         </Card>
 
-        {/* Member Portal Link */}
+        {/* Back to Member Portal */}
         <div className="text-center mt-6">
-          <p className="text-slate-500 text-sm mb-2">Are you a coworking member?</p>
           <Link 
-            to="/portal/login" 
-            className="text-[#FFA14A] hover:text-[#e8893a] font-medium text-sm inline-flex items-center gap-1"
+            to="/" 
+            className="text-slate-500 hover:text-slate-700 text-sm inline-flex items-center gap-1"
           >
-            Go to Member Portal →
+            ← Back to Member Portal
           </Link>
         </div>
       </div>
