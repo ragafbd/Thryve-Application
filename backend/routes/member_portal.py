@@ -288,7 +288,7 @@ async def create_member_ticket(ticket_data: TicketCreate, current_member: dict =
     }
     
     await db.tickets.insert_one(ticket)
-    del ticket["_id"] if "_id" in ticket else None
+    ticket.pop("_id", None)
     
     return ticket
 
