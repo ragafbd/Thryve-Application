@@ -134,6 +134,13 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <Routes>
+          {/* Main landing page - Member Portal Login */}
+          <Route path="/" element={
+            <MemberAuthProvider>
+              <MemberLogin />
+            </MemberAuthProvider>
+          } />
+          
           {/* Member Portal Routes */}
           <Route path="/portal/*" element={
             <MemberAuthProvider>
@@ -141,12 +148,15 @@ function App() {
             </MemberAuthProvider>
           } />
           
-          {/* Admin Routes */}
-          <Route path="/*" element={
+          {/* Admin Routes - now under /admin */}
+          <Route path="/admin/*" element={
             <AuthProvider>
               <AdminRoutes />
             </AuthProvider>
           } />
+          
+          {/* Legacy /login redirect to /admin/login */}
+          <Route path="/login" element={<Navigate to="/admin/login" replace />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" richColors />
