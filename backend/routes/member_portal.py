@@ -13,7 +13,7 @@ import os
 # Import models
 from models.management import (
     MemberAuth, MemberRegister, MemberLogin, MemberChangePassword,
-    Ticket, TicketCreate, Booking, BookingCreate
+    Ticket, TicketCreate, Booking, BookingCreate, MemberBookingCreate
 )
 
 # Router
