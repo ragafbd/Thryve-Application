@@ -131,14 +131,17 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
         </div>
         
         {/* Invoice Details Row */}
-        <div className="mt-4 flex justify-between text-sm">
+        <div className="mt-4 flex justify-between items-start text-sm">
           <div className="space-y-1">
             <p><span className="font-semibold">Invoice No:</span> <span className="font-numbers">{invoice?.invoice_number || "THR/XXXX/XX/XXXX"}</span></p>
             <p><span className="font-semibold">Invoice Date:</span> <span className="font-numbers">{formatDate(invoice?.invoice_date)}</span></p>
-            {invoice?.due_date && (
-              <p><span className="font-semibold">Due Date:</span> <span className="font-numbers">{formatDate(invoice?.due_date)}</span></p>
-            )}
           </div>
+          {invoice?.due_date && (
+            <div className="bg-[#FFA14A] text-[#2E375B] px-4 py-2 rounded-lg text-right">
+              <p className="text-xs font-semibold uppercase tracking-wide">Payment Due By</p>
+              <p className="text-lg font-bold font-numbers">{formatDate(invoice?.due_date)}</p>
+            </div>
+          )}
         </div>
       </div>
 
