@@ -221,6 +221,28 @@ export default function Layout() {
               </NavLink>
             </>
           )}
+
+          {/* Settings Section - At Bottom */}
+          <p className="text-xs text-white/60 uppercase tracking-wider px-4 py-2 mt-4 font-bold">Settings</p>
+          {settingsNavItems.map((item) => {
+            const isActive = location.pathname === `/admin/${item.path}`;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                data-testid={`nav-${item.label.toLowerCase().replace(/\s/g, '-')}`}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200",
+                  isActive 
+                    ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
+                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <item.icon className="w-5 h-5" strokeWidth={1.5} />
+                <span className="text-sm">{item.label}</span>
+              </NavLink>
+            );
+          })}
         </nav>
 
         {/* Footer */}
