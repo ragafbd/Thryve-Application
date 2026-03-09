@@ -72,8 +72,10 @@ export default function InvoiceView() {
         responseType: 'blob'
       });
       
-      // Get filename from invoice number
-      const filename = invoice.invoice_number.replace(/\//g, '-') + '.pdf';
+      // Get filename from invoice number and client name
+      const invoiceNum = invoice.invoice_number.replace(/\//g, '-');
+      const clientName = invoice.client?.company_name?.replace(/\s+/g, '_').replace(/[\/\\]/g, '-') || 'Client';
+      const filename = `${invoiceNum}_${clientName}.pdf`;
       
       // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]));
