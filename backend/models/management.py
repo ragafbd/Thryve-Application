@@ -218,3 +218,32 @@ class Announcement(BaseModel):
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     created_by: Optional[str] = None
     author_name: str = ""
+
+
+# ==================== MEMBER PORTAL AUTH ====================
+
+class MemberAuth(BaseModel):
+    """Member portal authentication record"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    member_id: str  # Links to Member record
+    email: str
+    password_hash: str
+    is_active: bool = True
+    last_login: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class MemberRegister(BaseModel):
+    """Member registration request"""
+    email: str
+    password: str
+
+class MemberLogin(BaseModel):
+    """Member login request"""
+    email: str
+    password: str
+
+class MemberChangePassword(BaseModel):
+    """Member change password request"""
+    current_password: str
+    new_password: str
