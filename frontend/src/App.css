@@ -1,28 +1,28 @@
 /* Thryve Invoice Generator Styles */
 
 /* Thryve Brand Colors */
-.bg-thryve-navy {
-    background-color: #2D3E50;
+.bg-thryve-blue {
+    background-color: #2E375B;
 }
 
-.bg-thryve-gold {
-    background-color: #C9A227;
+.bg-thryve-orange {
+    background-color: #FFA14A;
 }
 
-.text-thryve-navy {
-    color: #2D3E50;
+.text-thryve-blue {
+    color: #2E375B;
 }
 
-.text-thryve-gold {
-    color: #C9A227;
+.text-thryve-orange {
+    color: #FFA14A;
 }
 
-.border-thryve-navy {
-    border-color: #2D3E50;
+.border-thryve-blue {
+    border-color: #2E375B;
 }
 
-.border-thryve-gold {
-    border-color: #C9A227;
+.border-thryve-orange {
+    border-color: #FFA14A;
 }
 
 /* Layout */
@@ -34,7 +34,7 @@
 /* Sidebar */
 .sidebar {
     width: 280px;
-    background: #2D3E50;
+    background: #2E375B;
     color: white;
     position: fixed;
     height: 100vh;
@@ -105,13 +105,13 @@
 
 /* Button interactions */
 .btn-primary {
-    background: #2D3E50;
+    background: #2E375B;
     color: white;
     transition: all 0.15s ease;
 }
 
 .btn-primary:hover {
-    background: #1E2A36;
+    background: #232B47;
 }
 
 .btn-primary:active {
@@ -124,7 +124,7 @@
 }
 
 .card-hover:hover {
-    border-color: rgba(201, 162, 39, 0.5);
+    border-color: rgba(255, 161, 74, 0.5);
 }
 
 /* Form inputs */
@@ -136,8 +136,8 @@
 
 .form-input:focus {
     background: white;
-    border-color: #2D3E50;
-    box-shadow: 0 0 0 3px rgba(45, 62, 80, 0.1);
+    border-color: #2E375B;
+    box-shadow: 0 0 0 3px rgba(46, 55, 91, 0.1);
 }
 
 /* Animation delays for stagger effect */
