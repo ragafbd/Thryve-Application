@@ -352,7 +352,7 @@ export default function Members() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="border border-slate-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -384,14 +384,29 @@ export default function Members() {
         <Card className="border border-slate-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#FFA14A]/10 flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-[#FFA14A]" />
+              <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+                <UserX className="w-5 h-5 text-red-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-slate-900">
-                  {new Set(members.map(m => m.company_name)).size}
+                  {members.filter(m => m.status === 'terminated').length}
                 </p>
-                <p className="text-xs text-slate-500">Companies</p>
+                <p className="text-xs text-slate-500">Terminated</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border border-slate-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">
+                  {members.filter(m => m.has_outstanding_dues).length}
+                </p>
+                <p className="text-xs text-slate-500">Outstanding Dues</p>
               </div>
             </div>
           </CardContent>
