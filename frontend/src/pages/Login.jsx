@@ -38,10 +38,12 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 relative">
-      {/* Admin Login Badge - Bottom Right, aligned with Emergent badge */}
-      <div className="fixed bottom-4 right-48 z-50">
-        <span className="text-sm text-slate-600 font-medium bg-white px-4 py-2 rounded-full shadow-md border border-slate-200 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#2E375B]"></span>
+      {/* Admin Login Badge - Bottom Left, matching Emergent badge style */}
+      <div className="fixed bottom-4 left-4 z-50">
+        <span className="text-sm text-white font-medium bg-[#1a1a1a] px-4 py-2 rounded-full shadow-md flex items-center gap-2">
+          <span className="w-4 h-4 rounded-full bg-[#2E375B] flex items-center justify-center">
+            <span className="w-2 h-2 rounded-full bg-white"></span>
+          </span>
           Admin Login
         </span>
       </div>
@@ -118,6 +120,16 @@ export default function Login() {
                   </>
                 )}
               </Button>
+              
+              <div className="text-center mt-4">
+                <button
+                  type="button"
+                  className="text-sm text-[#2E375B] hover:underline"
+                  onClick={() => toast.info("Please contact admin to reset your password")}
+                >
+                  Forgot Password?
+                </button>
+              </div>
             </form>
           </CardContent>
         </Card>
