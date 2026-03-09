@@ -291,7 +291,7 @@ export default function Users() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">Admin - Full access</SelectItem>
-                  <SelectItem value="staff">Staff - Create & manage</SelectItem>
+                  <SelectItem value="staff">Manager - Create & manage</SelectItem>
                   <SelectItem value="viewer">Viewer - View only</SelectItem>
                 </SelectContent>
               </Select>
