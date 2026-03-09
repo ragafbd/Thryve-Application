@@ -132,7 +132,7 @@ export default function Dashboard() {
             Thryve Coworking
           </h1>
           <p className="text-slate-600 mt-1">
-            Manage your workspace, members, and billing
+            Manage your World
           </p>
         </div>
         <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -155,25 +155,23 @@ export default function Dashboard() {
             className="group"
             style={{ animationDelay: `${index * 0.05}s` }}
           >
-            <Card className="h-full border-0 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group-hover:scale-[1.02]">
-              <CardContent className={`p-0 ${action.color}`}>
-                <div className="p-4 text-white">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                      <action.icon className="w-5 h-5" strokeWidth={1.5} />
-                    </div>
-                    {action.stat !== null && (
-                      <div className="text-right">
-                        <p className="text-2xl font-bold">{loading ? "..." : action.stat}</p>
-                        <p className="text-xs text-white/70">{action.statLabel}</p>
-                      </div>
-                    )}
+            <div className={`h-full rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group-hover:scale-[1.02] ${action.color}`}>
+              <div className="p-4 text-white h-full">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                    <action.icon className="w-5 h-5" strokeWidth={1.5} />
                   </div>
-                  <h3 className="font-semibold text-sm">{action.title}</h3>
-                  <p className="text-xs text-white/70 mt-0.5">{action.description}</p>
+                  {action.stat !== null && (
+                    <div className="text-right">
+                      <p className="text-2xl font-bold">{loading ? "..." : action.stat}</p>
+                      <p className="text-xs text-white/70">{action.statLabel}</p>
+                    </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
+                <h3 className="font-semibold text-sm">{action.title}</h3>
+                <p className="text-xs text-white/70 mt-0.5">{action.description}</p>
+              </div>
+            </div>
           </Link>
         ))}
       </div>
