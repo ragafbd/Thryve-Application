@@ -743,9 +743,14 @@ export default function Members() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Member</AlertDialogTitle>
+            <AlertDialogTitle>Delete Member Permanently</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{memberToDelete?.name}"? This action cannot be undone.
+              Are you sure you want to permanently delete "{memberToDelete?.name}"? This will remove all history and cannot be undone.
+              {memberToDelete?.status !== 'terminated' && (
+                <span className="block mt-2 text-amber-600">
+                  Consider using "Terminate" instead to preserve history.
+                </span>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -754,11 +759,165 @@ export default function Members() {
               className="bg-red-600 hover:bg-red-700"
               onClick={handleDelete}
             >
-              Delete
+              Delete Permanently
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Terminate Member Dialog */}
+      <Dialog open={terminateDialogOpen} onOpenChange={(open) => {
+        setTerminateDialogOpen(open);
+        if (!open) {
+          setMemberToTerminate(null);
+          setTerminateData({
+            end_date: new Date().toISOString().split('T')[0],
+            termination_reason: "",
+            has_outstanding_dues: false
+          });
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-[Manrope] flex items-center gap-2">
+              <UserX className="w-5 h-5 text-red-500" />
+              Terminate Member
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {memberToTerminate && (
+              <div className="bg-slate-50 p-3 rounded-lg">
+                <p className="font-semibold">{memberToTerminate.name}</p>
+                <p className="text-sm text-slate-500">{memberToTerminate.company_name}</p>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label>Last Working Day *</Label>
+              <Input
+                type="date"
+                value={terminateData.end_date}
+                onChange={(e) => setTerminateData({ ...terminateData, end_date: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Reason for Termination *</Label>
+              <Textarea
+                value={terminateData.termination_reason}
+                onChange={(e) => setTerminateData({ ...terminateData, termination_reason: e.target.value })}
+                placeholder="e.g., Lease ended, Non-payment, Relocated"
+                rows={3}
+              />
+            </div>
+            <div className="flex items-center space-x-2 p-3 bg-orange-50 rounded-lg">
+              <Checkbox
+                id="outstanding-dues"
+                checked={terminateData.has_outstanding_dues}
+                onCheckedChange={(checked) => setTerminateData({ ...terminateData, has_outstanding_dues: checked })}
+              />
+              <label htmlFor="outstanding-dues" className="text-sm font-medium cursor-pointer">
+                Member has outstanding dues
+              </label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTerminateDialogOpen(false)}>Cancel</Button>
+            <Button 
+              className="bg-red-600 hover:bg-red-700"
+              onClick={handleTerminate}
+              disabled={saving}
+            >
+              {saving ? "Processing..." : "Terminate Member"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Terminate Dialog */}
+      <Dialog open={bulkTerminateDialogOpen} onOpenChange={(open) => {
+        setBulkTerminateDialogOpen(open);
+        if (!open) {
+          setCompanyToTerminate("");
+          setTerminateData({
+            end_date: new Date().toISOString().split('T')[0],
+            termination_reason: "",
+            has_outstanding_dues: false
+          });
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-[Manrope] flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-500" />
+              Bulk Terminate - Company
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="bg-red-50 p-3 rounded-lg text-sm text-red-700">
+              <strong>Warning:</strong> This will terminate ALL active members from the selected company.
+            </div>
+            <div className="space-y-2">
+              <Label>Select Company *</Label>
+              <Select value={companyToTerminate} onValueChange={setCompanyToTerminate}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose company" />
+                </SelectTrigger>
+                <SelectContent>
+                  {companies.filter(c => c.active_members > 0).map(company => (
+                    <SelectItem key={company.company_name} value={company.company_name}>
+                      {company.company_name} ({company.active_members} active)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {companyToTerminate && (
+              <div className="bg-slate-50 p-3 rounded-lg text-sm">
+                <p className="font-semibold">{companyToTerminate}</p>
+                <p className="text-slate-500">
+                  {companies.find(c => c.company_name === companyToTerminate)?.active_members || 0} members will be terminated
+                </p>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label>Last Working Day *</Label>
+              <Input
+                type="date"
+                value={terminateData.end_date}
+                onChange={(e) => setTerminateData({ ...terminateData, end_date: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Reason for Termination *</Label>
+              <Textarea
+                value={terminateData.termination_reason}
+                onChange={(e) => setTerminateData({ ...terminateData, termination_reason: e.target.value })}
+                placeholder="e.g., Lease ended, Non-payment, Company relocated"
+                rows={3}
+              />
+            </div>
+            <div className="flex items-center space-x-2 p-3 bg-orange-50 rounded-lg">
+              <Checkbox
+                id="bulk-outstanding-dues"
+                checked={terminateData.has_outstanding_dues}
+                onCheckedChange={(checked) => setTerminateData({ ...terminateData, has_outstanding_dues: checked })}
+              />
+              <label htmlFor="bulk-outstanding-dues" className="text-sm font-medium cursor-pointer">
+                Company has outstanding dues
+              </label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkTerminateDialogOpen(false)}>Cancel</Button>
+            <Button 
+              className="bg-red-600 hover:bg-red-700"
+              onClick={handleBulkTerminate}
+              disabled={saving || !companyToTerminate}
+            >
+              {saving ? "Processing..." : "Terminate All Members"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
