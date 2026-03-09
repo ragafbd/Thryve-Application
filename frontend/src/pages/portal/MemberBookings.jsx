@@ -314,8 +314,7 @@ export default function MemberBookings() {
               <ChevronLeft className="w-5 h-5" />
             </Button>
             
-            <div className="flex items-center gap-3 relative">
-              <Calendar className="w-5 h-5 text-[#2E375B]" />
+            <div className="flex items-center gap-3">
               <span className="text-lg font-semibold text-[#2E375B]">
                 {formatDate(selectedDate)}
               </span>
@@ -325,7 +324,7 @@ export default function MemberBookings() {
                 onChange={handleDateChange}
                 min={minDateStr}
                 max={maxDateStr}
-                className="absolute inset-0 opacity-0 cursor-pointer w-full"
+                className="w-auto border-[#2E375B]/20"
               />
             </div>
             
