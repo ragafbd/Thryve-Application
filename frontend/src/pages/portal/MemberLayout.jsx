@@ -99,6 +99,14 @@ export default function MemberLayout() {
           </div>
         </div>
 
+        {/* Member Info - Above Navigation */}
+        <div className="p-4 border-b border-white/20">
+          <div className="bg-white/10 rounded-lg p-3">
+            <p className="font-semibold text-sm truncate">{member?.name}</p>
+            <p className="text-xs text-white/70 truncate">{member?.company_name}</p>
+          </div>
+        </div>
+
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => {
@@ -123,14 +131,6 @@ export default function MemberLayout() {
             );
           })}
         </nav>
-
-        {/* Member Info */}
-        <div className="p-4 border-t border-white/20">
-          <div className="bg-white/10 rounded-lg p-3">
-            <p className="font-semibold text-sm truncate">{member?.name}</p>
-            <p className="text-xs text-white/70 truncate">{member?.company_name}</p>
-          </div>
-        </div>
       </aside>
 
       {/* Main Content */}
