@@ -87,17 +87,30 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
     if (!dateStr) return "-";
     try {
       const date = new Date(dateStr);
+      const day = date.getDate();
       const months = ["January", "February", "March", "April", "May", "June", 
         "July", "August", "September", "October", "November", "December"];
-      return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+      
+      // Add ordinal suffix
+      const getOrdinal = (n) => {
+        if (n > 3 && n < 21) return 'th';
+        switch (n % 10) {
+          case 1: return 'st';
+          case 2: return 'nd';
+          case 3: return 'rd';
+          default: return 'th';
+        }
+      };
+      
+      return `${months[date.getMonth()]} ${day}${getOrdinal(day)}, ${date.getFullYear()}`;
     } catch {
       return dateStr;
     }
   };
 
   const formatCurrency = (amount) => {
-    if (amount === undefined || amount === null) return "0.00";
-    return Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (amount === undefined || amount === null) return "Rs. 0.00";
+    return `Rs. ${Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   // Calculate taxable amount for GST calculation display
@@ -137,7 +150,7 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
             <p><span className="font-semibold">Invoice Date:</span> <span className="font-numbers">{formatDate(invoice?.invoice_date)}</span></p>
           </div>
           {invoice?.due_date && (
-            <div className="bg-[#FFA14A] text-[#2E375B] px-4 py-2 rounded-lg text-right">
+            <div className="bg-[#FFA14A] text-[#2E375B] px-4 py-2 rounded-lg text-center">
               <p className="text-xs font-semibold uppercase tracking-wide">Payment Due By</p>
               <p className="text-lg font-bold font-numbers">{formatDate(invoice?.due_date)}</p>
             </div>
@@ -279,7 +292,7 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
         <div className="mt-4 p-3 bg-slate-50 border border-slate-200">
           <p className="text-sm">
             <span className="font-semibold">Amount Chargeable (in words):</span><br />
-            <span className="italic">{numberToWords(invoice?.grand_total || 0)}</span>
+            <span className="font-bold text-[#2E375B]">{numberToWords(invoice?.grand_total || 0)}</span>
           </p>
         </div>
       </div>
@@ -290,8 +303,8 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
         <div className="p-4 border-r border-slate-300">
           <h3 className="font-bold text-sm mb-2">Company's Bank Details</h3>
           <div className="text-sm space-y-1">
-            <p><span className="text-slate-500">Bank Name:</span> {company.bank?.name || "HDFC Bank"}</p>
             <p><span className="text-slate-500">A/c Name:</span> {company.bank?.account_name || company.name}</p>
+            <p><span className="text-slate-500">Bank Name:</span> {company.bank?.name || "HDFC Bank"}</p>
             <p><span className="text-slate-500">Current A/c No.:</span> <span className="font-numbers">{company.bank?.account_no || "50200115952448"}</span></p>
             <p><span className="text-slate-500">Branch:</span> {company.bank?.branch || "Sector 16, Faridabad"}</p>
             <p><span className="text-slate-500">IFSC:</span> <span className="font-numbers">{company.bank?.ifsc || "HDFC0000279"}</span></p>
