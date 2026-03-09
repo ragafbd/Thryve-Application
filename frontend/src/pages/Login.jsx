@@ -38,9 +38,12 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 relative">
-      {/* Admin Login Badge - Bottom Left */}
-      <div className="absolute bottom-6 left-6">
-        <span className="text-sm text-[#2E375B]/60 font-semibold bg-white px-3 py-1 rounded-full shadow-sm border border-slate-200">Admin Login</span>
+      {/* Admin Login Badge - Bottom Right, aligned with Emergent badge */}
+      <div className="fixed bottom-4 right-48 z-50">
+        <span className="text-sm text-slate-600 font-medium bg-white px-4 py-2 rounded-full shadow-md border border-slate-200 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#2E375B]"></span>
+          Admin Login
+        </span>
       </div>
       
       <div className="w-full max-w-md">
@@ -72,7 +75,7 @@ export default function Login() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@thryve.in"
+                  placeholder="Enter email"
                   autoComplete="email"
                   data-testid="login-email"
                 />
@@ -116,14 +119,6 @@ export default function Login() {
                 )}
               </Button>
             </form>
-
-            <div className="mt-6 p-3 bg-slate-50 rounded-lg">
-              <p className="text-xs text-slate-500 text-center">
-                <strong>Default Admin:</strong><br />
-                Email: admin@thryve.in<br />
-                Password: admin123
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>
