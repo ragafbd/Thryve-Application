@@ -115,14 +115,11 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
         <div className="flex justify-between items-start">
           {/* Logo & Company */}
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-[#064E3B] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-2xl">T</span>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-[#064E3B] tracking-wide">
-                THRYVE COWORKING
-              </h1>
-            </div>
+            <img 
+              src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/5b15k8u9_image.png" 
+              alt="Thryve Coworking" 
+              className="h-16 w-auto object-contain"
+            />
           </div>
           
           {/* Invoice Title */}
