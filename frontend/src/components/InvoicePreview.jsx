@@ -310,6 +310,7 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
 
       {/* Footer */}
       <div className="text-center py-3 border-t border-slate-200 bg-slate-50">
+        <p className="text-sm font-medium text-[#2E375B] mb-1">Thank you for choosing Thryve Coworking!</p>
         <p className="text-xs text-slate-400">This is a Computer Generated Invoice</p>
       </div>
     </div>
