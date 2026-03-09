@@ -63,6 +63,11 @@ export default function CreateInvoice() {
   
   const [selectedClientId, setSelectedClientId] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(new Date());
+  const [dueDate, setDueDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 15); // Default: 15 days from now
+    return date;
+  });
   const [lineItems, setLineItems] = useState([{ ...emptyLineItem }]);
   const [notes, setNotes] = useState("");
 
@@ -143,6 +148,7 @@ export default function CreateInvoice() {
   const previewData = {
     invoice_number: "THR/XXXX/XX/XXXX",
     invoice_date: invoiceDate.toISOString(),
+    due_date: dueDate.toISOString(),
     client: selectedClient || null,
     company: company,
     line_items: lineItems.map(item => ({
@@ -175,6 +181,7 @@ export default function CreateInvoice() {
       const response = await axios.post(`${API}/invoices`, {
         client_id: selectedClientId,
         invoice_date: invoiceDate.toISOString().split('T')[0],
+        due_date: dueDate.toISOString().split('T')[0],
         line_items: lineItems,
         notes: notes
       });
@@ -286,6 +293,34 @@ export default function CreateInvoice() {
                       mode="single"
                       selected={invoiceDate}
                       onSelect={(date) => date && setInvoiceDate(date)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Due Date */}
+              <div className="space-y-2">
+                <Label>Due Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-mono",
+                        !dueDate && "text-muted-foreground"
+                      )}
+                      data-testid="due-date-picker"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dueDate ? format(dueDate, "PPP") : "Pick due date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dueDate}
+                      onSelect={(date) => date && setDueDate(date)}
                       initialFocus
                     />
                   </PopoverContent>
