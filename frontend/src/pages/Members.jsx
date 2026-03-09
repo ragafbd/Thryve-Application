@@ -123,9 +123,19 @@ export default function Members() {
     }
   };
 
+  const fetchCompanies = async () => {
+    try {
+      const response = await axios.get(`${API}/management/members/companies`);
+      setCompanies(response.data);
+    } catch (error) {
+      console.error("Failed to fetch companies");
+    }
+  };
+
   useEffect(() => {
     fetchMembers();
     fetchPlans();
+    fetchCompanies();
   }, []);
 
   const resetForm = () => {
