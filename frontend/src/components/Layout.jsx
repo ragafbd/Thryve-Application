@@ -178,7 +178,7 @@ export default function Layout() {
               {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-slate-500 font-mono">
+              <span className="text-sm text-slate-500 font-mono hidden sm:block">
                 {new Date().toLocaleDateString('en-IN', { 
                   weekday: 'short', 
                   year: 'numeric', 
@@ -186,6 +186,49 @@ export default function Layout() {
                   day: 'numeric' 
                 })}
               </span>
+              
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="flex items-center gap-2 hover:bg-slate-100"
+                    data-testid="user-menu-btn"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-[#2E375B] flex items-center justify-center">
+                      <UserCircle className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="hidden md:block text-left">
+                      <p className="text-sm font-medium text-slate-900">{user?.name}</p>
+                      <p className="text-xs text-slate-500 capitalize">{user?.role}</p>
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <div className="px-2 py-1.5 md:hidden">
+                    <p className="text-sm font-medium">{user?.name}</p>
+                    <p className="text-xs text-slate-500">{user?.email}</p>
+                  </div>
+                  <DropdownMenuSeparator className="md:hidden" />
+                  <DropdownMenuItem 
+                    onClick={() => setPasswordDialogOpen(true)}
+                    className="cursor-pointer"
+                    data-testid="change-password-btn"
+                  >
+                    <Key className="w-4 h-4 mr-2" />
+                    Change Password
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={handleLogout}
+                    className="cursor-pointer text-red-600 focus:text-red-600"
+                    data-testid="logout-btn"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>
