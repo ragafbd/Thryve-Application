@@ -1,20 +1,43 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FileText, Users, IndianRupee, PlusCircle, ArrowRight } from "lucide-react";
+import { FileText, Users, IndianRupee, PlusCircle, ArrowRight, Clock, CheckCircle, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import axios from "axios";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+const StatusBadge = ({ status }) => {
+  const config = {
+    paid: { label: "Paid", className: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100" },
+    pending: { label: "Pending", className: "bg-amber-100 text-amber-700 hover:bg-amber-100" },
+    overdue: { label: "Overdue", className: "bg-red-100 text-red-700 hover:bg-red-100" }
+  };
+  const { label, className } = config[status] || config.pending;
+  return <Badge className={className}>{label}</Badge>;
+};
+
 export default function Dashboard() {
-  const [stats, setStats] = useState({ total_invoices: 0, total_clients: 0, total_revenue: 0 });
+  const [stats, setStats] = useState({ 
+    total_invoices: 0, 
+    total_clients: 0, 
+    total_revenue: 0,
+    paid_count: 0,
+    pending_count: 0,
+    overdue_count: 0,
+    pending_amount: 0,
+    paid_amount: 0
+  });
   const [recentInvoices, setRecentInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Check for overdue invoices first
+        await axios.post(`${API}/invoices/check-overdue`);
+        
         const [statsRes, invoicesRes] = await Promise.all([
           axios.get(`${API}/stats`),
           axios.get(`${API}/invoices`)
@@ -32,22 +55,24 @@ export default function Dashboard() {
 
   const statCards = [
     {
-      title: "Total Invoices",
-      value: stats.total_invoices,
-      icon: FileText,
-      color: "bg-[#064E3B]"
-    },
-    {
-      title: "Total Clients",
-      value: stats.total_clients,
-      icon: Users,
-      color: "bg-[#064E3B]"
-    },
-    {
       title: "Total Revenue",
       value: `₹${stats.total_revenue.toLocaleString('en-IN')}`,
       icon: IndianRupee,
       color: "bg-[#064E3B]"
+    },
+    {
+      title: "Paid",
+      value: `₹${stats.paid_amount.toLocaleString('en-IN')}`,
+      subtitle: `${stats.paid_count} invoices`,
+      icon: CheckCircle,
+      color: "bg-emerald-600"
+    },
+    {
+      title: "Pending",
+      value: `₹${stats.pending_amount.toLocaleString('en-IN')}`,
+      subtitle: `${stats.pending_count + stats.overdue_count} invoices`,
+      icon: Clock,
+      color: "bg-amber-500"
     }
   ];
 
@@ -91,6 +116,9 @@ export default function Dashboard() {
                   <p className="text-2xl font-bold text-slate-900 mt-2 font-mono">
                     {loading ? "..." : stat.value}
                   </p>
+                  {stat.subtitle && (
+                    <p className="text-xs text-slate-400 mt-1">{stat.subtitle}</p>
+                  )}
                 </div>
                 <div className={`w-12 h-12 rounded-xl ${stat.color} flex items-center justify-center`}>
                   <stat.icon className="w-6 h-6 text-white" strokeWidth={1.5} />
@@ -99,6 +127,46 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Quick Stats Row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="border border-slate-200">
+          <CardContent className="p-4 flex items-center gap-3">
+            <FileText className="w-5 h-5 text-slate-400" />
+            <div>
+              <p className="text-2xl font-bold text-slate-900 font-mono">{stats.total_invoices}</p>
+              <p className="text-xs text-slate-500">Total Invoices</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border border-slate-200">
+          <CardContent className="p-4 flex items-center gap-3">
+            <Users className="w-5 h-5 text-slate-400" />
+            <div>
+              <p className="text-2xl font-bold text-slate-900 font-mono">{stats.total_clients}</p>
+              <p className="text-xs text-slate-500">Total Clients</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border border-slate-200">
+          <CardContent className="p-4 flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-emerald-500" />
+            <div>
+              <p className="text-2xl font-bold text-emerald-600 font-mono">{stats.paid_count}</p>
+              <p className="text-xs text-slate-500">Paid Invoices</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border border-slate-200">
+          <CardContent className="p-4 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+            <div>
+              <p className="text-2xl font-bold text-red-600 font-mono">{stats.overdue_count}</p>
+              <p className="text-xs text-slate-500">Overdue</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Recent Invoices */}
@@ -136,6 +204,8 @@ export default function Dashboard() {
                   <th>Invoice #</th>
                   <th>Client</th>
                   <th>Date</th>
+                  <th>Due Date</th>
+                  <th>Status</th>
                   <th className="text-right">Amount</th>
                 </tr>
               </thead>
@@ -154,6 +224,12 @@ export default function Dashboard() {
                     <td className="text-slate-700">{invoice.client?.company_name}</td>
                     <td className="text-slate-500 font-mono text-sm">
                       {new Date(invoice.invoice_date).toLocaleDateString('en-IN')}
+                    </td>
+                    <td className="text-slate-500 font-mono text-sm">
+                      {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString('en-IN') : '-'}
+                    </td>
+                    <td>
+                      <StatusBadge status={invoice.status} />
                     </td>
                     <td className="text-right font-mono font-medium text-slate-900">
                       ₹{invoice.grand_total?.toLocaleString('en-IN')}
