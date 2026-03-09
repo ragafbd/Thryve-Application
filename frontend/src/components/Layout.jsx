@@ -51,7 +51,7 @@ const invoiceNavItems = [
 // Management section
 const managementNavItems = [
   { path: "members", icon: UserPlus, label: "Members" },
-  { path: "bookings", icon: CalendarDays, label: "Room Bookings" },
+  { path: "bookings", icon: CalendarDays, label: "Meeting Room Bookings" },
   { path: "tickets", icon: Ticket, label: "Support Tickets" },
   { path: "announcements", icon: Megaphone, label: "Announcements" },
 ];
