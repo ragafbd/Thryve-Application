@@ -184,7 +184,7 @@ export default function InvoiceList() {
                     >
                       <td className="font-mono text-sm">
                         <Link 
-                          to={`invoices/${invoice.id}`}
+                          to={invoice.id}
                           className="text-[#2E375B] hover:underline font-medium"
                           data-testid={`invoice-link-${invoice.id}`}
                         >
