@@ -7,7 +7,7 @@ import {
   PlusCircle, 
   Menu, 
   X,
-  Building2
+  FileSpreadsheet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { path: "/", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/create-invoice", icon: PlusCircle, label: "Create Invoice" },
+  { path: "/bulk-invoice", icon: FileSpreadsheet, label: "Bulk Invoice" },
   { path: "/invoices", icon: FileText, label: "Invoices" },
   { path: "/clients", icon: Users, label: "Clients" },
 ];
