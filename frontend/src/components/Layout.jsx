@@ -134,9 +134,9 @@ export default function Layout() {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {/* Invoice Section */}
-          <p className="text-xs text-white/40 uppercase tracking-wider px-4 py-2">Invoicing</p>
-          {invoiceNavItems.map((item) => {
+          {/* Management Section */}
+          <p className="text-xs text-white/40 uppercase tracking-wider px-4 py-2">Management</p>
+          {managementNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <NavLink
@@ -155,10 +155,10 @@ export default function Layout() {
               </NavLink>
             );
           })}
-          
-          {/* Management Section */}
-          <p className="text-xs text-white/40 uppercase tracking-wider px-4 py-2 mt-4">Management</p>
-          {managementNavItems.map((item) => {
+
+          {/* Invoice Section */}
+          <p className="text-xs text-white/40 uppercase tracking-wider px-4 py-2 mt-4">Invoicing</p>
+          {invoiceNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <NavLink
