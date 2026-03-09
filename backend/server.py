@@ -1264,6 +1264,11 @@ from routes.public_holidays import router as holidays_router, init_router as ini
 init_holidays_router(db, get_current_user, check_permission)
 app.include_router(holidays_router)
 
+# Include auto invoice routes
+from routes.auto_invoice import router as auto_invoice_router, init_router as init_auto_invoice_router
+init_auto_invoice_router(db, get_current_user, check_permission, COMPANY_DETAILS)
+app.include_router(auto_invoice_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
