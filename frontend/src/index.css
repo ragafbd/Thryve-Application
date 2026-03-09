@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&family=Public+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Public+Sans:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -15,8 +15,9 @@ h1, h2, h3, h4, h5, h6 {
     font-family: 'Manrope', sans-serif;
 }
 
-code, .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+/* Calibri-like font for numbers - using Source Sans 3 which is similar */
+.font-numbers, .font-mono {
+    font-family: 'Source Sans 3', 'Calibri', 'Segoe UI', sans-serif;
 }
 
 @layer base {
