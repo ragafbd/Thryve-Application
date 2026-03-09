@@ -84,11 +84,11 @@ export default function MemberLogin() {
             alt="Thryve Coworking" 
             className="h-20 mx-auto mb-4"
           />
-          <h1 className="text-2xl font-bold text-[#2E375B] font-[Manrope]">Manage your World</h1>
-          <p className="text-slate-500 mt-1">Member Portal - Access your invoices, bookings & support</p>
+          <h1 className="text-3xl font-bold text-[#2E375B] font-[Manrope]">Manage your World</h1>
+          <p className="text-[#2E375B]/60 mt-2">Member Portal - Access your invoices, bookings & support</p>
         </div>
 
-        <Card className="border border-slate-200 shadow-lg">
+        <Card className="border border-[#2E375B]/10 shadow-lg">
           <CardContent className="p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2 mb-6">
