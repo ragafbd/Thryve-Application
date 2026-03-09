@@ -325,6 +325,29 @@ async def get_member_bookings(
 @router.post("/bookings")
 async def create_member_booking(booking_data: MemberBookingCreate, current_member: dict = Depends(get_current_member)):
     """Create a room booking for the member"""
+    # Validate booking date
+    try:
+        booking_date = datetime.strptime(booking_data.date, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format")
+    
+    today = datetime.now(timezone.utc).date()
+    max_date = today + timedelta(days=10)
+    
+    if booking_date < today:
+        raise HTTPException(status_code=400, detail="Cannot book in the past")
+    if booking_date > max_date:
+        raise HTTPException(status_code=400, detail="Bookings can only be made up to 10 days in advance")
+    
+    # Check if date is a Sunday
+    if booking_date.weekday() == 6:
+        raise HTTPException(status_code=400, detail="Bookings are not available on Sundays")
+    
+    # Check if date is a public holiday
+    holiday = await db.public_holidays.find_one({"date": booking_data.date, "is_active": True}, {"_id": 0})
+    if holiday:
+        raise HTTPException(status_code=400, detail=f"Bookings are not available on {holiday['name']}")
+    
     # Get room details
     room = await db.meeting_rooms.find_one({"id": booking_data.room_id}, {"_id": 0})
     if not room:
