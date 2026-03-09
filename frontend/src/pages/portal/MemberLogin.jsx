@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Building2, Mail, Lock, Eye, EyeOff, UserPlus, LogIn } from "lucide-react";
+import { Building2, Mail, Lock, Eye, EyeOff, UserPlus, LogIn, Shield } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,15 +67,25 @@ export default function MemberLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#2E375B] to-[#1a2038] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#2E375B] to-[#1a2038] flex items-center justify-center p-4 relative">
+      {/* Admin Login Badge - Bottom Left, same style as Emergent badge */}
+      <Link to="/admin/login" className="fixed bottom-4 left-4 z-50">
+        <span className="text-sm text-white font-medium bg-[#1a1a1a] h-10 px-4 rounded-full shadow-md flex items-center gap-2 hover:bg-[#333] transition-colors">
+          <Shield className="w-4 h-4" />
+          Admin Login
+        </span>
+      </Link>
+      
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm mb-4">
-            <Building2 className="w-8 h-8 text-[#FFA14A]" />
-          </div>
-          <h1 className="text-2xl font-bold text-white font-[Manrope]">Thryve Member Portal</h1>
-          <p className="text-white/60 mt-1">Access your invoices, bookings & support</p>
+          <img 
+            src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/jqltfue2_Gemini_Generated_Image_xy33ixy33ixy33ix.png" 
+            alt="Thryve Coworking" 
+            className="h-20 mx-auto mb-4"
+          />
+          <h1 className="text-2xl font-bold text-white font-[Manrope]">Thryve Coworking</h1>
+          <p className="text-white/60 mt-1">Member Portal - Access your invoices, bookings & support</p>
         </div>
 
         <Card className="border-0 shadow-2xl">
@@ -216,13 +226,6 @@ export default function MemberLogin() {
             </Tabs>
           </CardContent>
         </Card>
-
-        {/* Admin Link */}
-        <div className="text-center mt-6">
-          <Link to="/login" className="text-white/60 hover:text-white text-sm">
-            Admin Login →
-          </Link>
-        </div>
       </div>
     </div>
   );
