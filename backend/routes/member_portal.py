@@ -386,7 +386,7 @@ async def create_member_booking(booking_data: BookingCreate, current_member: dic
             {"$inc": {"credits_used": credits_to_use}}
         )
     
-    del booking["_id"] if "_id" in booking else None
+    booking.pop("_id", None)
     return booking
 
 @router.delete("/bookings/{booking_id}")
