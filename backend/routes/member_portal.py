@@ -24,7 +24,7 @@ security = HTTPBearer()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # JWT Settings - same secret as main app for consistency
-SECRET_KEY = os.environ.get("JWT_SECRET", "thryve-coworking-secret-key-change-in-production")
+SECRET_KEY = os.environ.get("JWT_SECRET", "thryve-coworking-secret-key-change-in-production")  # Set JWT_SECRET in .env for production
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 7  # Longer expiry for member convenience
 
