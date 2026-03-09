@@ -23,8 +23,10 @@ from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 import urllib.request
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+import sys
 
 ROOT_DIR = Path(__file__).parent
+sys.path.insert(0, str(ROOT_DIR))
 load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
