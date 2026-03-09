@@ -41,7 +41,7 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 # JWT Settings
-SECRET_KEY = os.environ.get('JWT_SECRET', 'thryve-coworking-secret-key-2026')
+SECRET_KEY = os.environ.get('JWT_SECRET', 'thryve-coworking-secret-key-2026')  # Set JWT_SECRET in .env for production
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
 
