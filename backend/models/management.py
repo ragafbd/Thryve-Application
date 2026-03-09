@@ -86,9 +86,14 @@ class Member(BaseModel):
     credits_used: int = 0  # Credits used this month
     credits_reset_date: str = ""  # When credits were last reset
     start_date: str
-    status: str = "active"  # active, inactive, suspended
+    end_date: Optional[str] = None  # Termination date
+    status: str = "active"  # active, inactive, suspended, terminated
+    termination_reason: Optional[str] = None  # Reason for leaving
+    has_outstanding_dues: bool = False  # Flag for unpaid invoices
     notes: str = ""
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    terminated_at: Optional[str] = None  # When termination was processed
+    terminated_by: Optional[str] = None  # Who processed termination
     created_by: Optional[str] = None
 
 class MemberUpdate(BaseModel):
