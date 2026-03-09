@@ -281,29 +281,33 @@ export default function BulkInvoice() {
       {/* Excel Format Info */}
       <Card className="border border-slate-200 bg-slate-50">
         <CardContent className="p-6">
-          <h3 className="font-semibold text-slate-900 mb-4">Excel Format Guide</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <h3 className="font-semibold text-slate-900 mb-4">Excel Format - One Row Per Invoice</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
             <div>
-              <h4 className="font-medium text-slate-700 mb-2">Required Columns:</h4>
+              <h4 className="font-medium text-[#2E375B] mb-2">Client Details (Required):</h4>
               <ul className="space-y-1 text-slate-600">
                 <li>• Client Company Name</li>
                 <li>• Client Address</li>
                 <li>• Client GSTIN</li>
-                <li>• Service Type (Monthly Plan, Day Pass, etc.)</li>
-                <li>• Quantity & Rate</li>
                 <li>• Invoice Date & Due Date</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-medium text-slate-700 mb-2">Service Types:</h4>
+              <h4 className="font-medium text-[#FFA14A] mb-2">Service Columns (Fill only what applies):</h4>
               <ul className="space-y-1 text-slate-600">
-                <li>• <span className="font-medium">Monthly Plan</span> - GST applicable</li>
-                <li>• <span className="font-medium">Day Pass</span> - GST applicable</li>
-                <li>• <span className="font-medium">Meeting Room</span> - GST applicable</li>
-                <li>• <span className="font-medium">Security Deposit</span> - No GST</li>
-                <li>• <span className="font-medium">Setup Charges</span> - No GST</li>
+                <li>• <span className="font-medium">Monthly Plan Fee</span> + Prorate Days (GST ✓)</li>
+                <li>• <span className="font-medium">Day Pass Rate</span> + Qty (GST ✓)</li>
+                <li>• <span className="font-medium">Security Deposit</span> (No GST)</li>
+                <li>• <span className="font-medium">Setup Charges</span> (GST ✓)</li>
+                <li>• <span className="font-medium">Meeting Room Rate</span> + Hours (GST ✓)</li>
+                <li>• <span className="font-medium">Additional Charges</span> + Description (GST ✓)</li>
               </ul>
             </div>
+          </div>
+          <div className="mt-4 p-3 bg-white rounded border border-slate-200">
+            <p className="text-sm text-slate-600">
+              <span className="font-medium text-[#2E375B]">Tip:</span> Leave service columns empty if not applicable - only filled values appear on the invoice.
+            </p>
           </div>
         </CardContent>
       </Card>
