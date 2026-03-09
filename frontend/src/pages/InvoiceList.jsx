@@ -220,7 +220,7 @@ export default function InvoiceList() {
                               <CheckCircle className="w-4 h-4" />
                             </Button>
                           )}
-                          <Link to={`invoices/${invoice.id}`}>
+                          <Link to={invoice.id}>
                             <Button
                               variant="ghost"
                               size="icon"
