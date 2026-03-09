@@ -10,10 +10,16 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Member self-service portal for viewing invoices, bookings, and tickets**
 
 ## User Personas
-- **Admin**: Full access to all features, user management, settings
-- **Staff**: Invoice creation, member management, bookings, tickets
-- **Viewer**: View-only access to invoices and reports
-- **Member**: Self-service access to their own invoices, bookings, tickets via Member Portal
+- **Admin**: Full access to all features, user management, settings (at `/admin`)
+- **Staff**: Invoice creation, member management, bookings, tickets (at `/admin`)
+- **Viewer**: View-only access to invoices and reports (at `/admin`)
+- **Member**: Self-service access to their own invoices, bookings, tickets via Member Portal (at `/` and `/portal`)
+
+## URL Structure (Updated March 9, 2026)
+- **Landing Page `/`**: Member Portal Login (Login/Register tabs)
+- **Member Portal `/portal/*`**: Member dashboard, invoices, bookings, tickets
+- **Admin Panel `/admin/*`**: Full management system for staff/admins
+- **Legacy `/login`**: Redirects to `/admin/login`
 
 ## What's Been Implemented (March 2026)
 
