@@ -11,7 +11,11 @@ import {
   LogOut,
   Key,
   UserCircle,
-  Shield
+  Shield,
+  UserPlus,
+  CalendarDays,
+  Ticket,
+  Megaphone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +41,23 @@ import axios from "axios";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Invoice section
+const invoiceNavItems = [
+  { path: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/create-invoice", icon: PlusCircle, label: "Create Invoice" },
+  { path: "/bulk-invoice", icon: FileSpreadsheet, label: "Bulk Invoice" },
+  { path: "/invoices", icon: FileText, label: "Invoices" },
+];
+
+// Management section
+const managementNavItems = [
+  { path: "/members", icon: UserPlus, label: "Members" },
+  { path: "/bookings", icon: CalendarDays, label: "Room Bookings" },
+  { path: "/tickets", icon: Ticket, label: "Support Tickets" },
+  { path: "/announcements", icon: Megaphone, label: "Announcements" },
+];
+
+// Legacy (keeping for backward compatibility)
 const navItems = [
   { path: "/", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/create-invoice", icon: PlusCircle, label: "Create Invoice" },
