@@ -255,6 +255,124 @@ async def delete_member(member_id: str, current_user: dict = Depends(get_current
     
     return {"message": "Member deleted successfully"}
 
+@router.post("/members/{member_id}/terminate", response_model=Member)
+async def terminate_member(member_id: str, data: MemberTerminate, current_user: dict = Depends(get_current_user)):
+    """Terminate a member (preserves history)"""
+    check_permission(current_user, "all")
+    
+    existing = await db.members.find_one({"id": member_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Member not found")
+    
+    if existing.get("status") == "terminated":
+        raise HTTPException(status_code=400, detail="Member is already terminated")
+    
+    update_data = {
+        "status": "terminated",
+        "end_date": data.end_date,
+        "termination_reason": data.termination_reason,
+        "has_outstanding_dues": data.has_outstanding_dues,
+        "terminated_at": datetime.now(timezone.utc).isoformat(),
+        "terminated_by": current_user.get("id")
+    }
+    
+    await db.members.update_one({"id": member_id}, {"$set": update_data})
+    
+    updated = await db.members.find_one({"id": member_id}, {"_id": 0})
+    return updated
+
+@router.post("/members/{member_id}/reactivate", response_model=Member)
+async def reactivate_member(member_id: str, current_user: dict = Depends(get_current_user)):
+    """Reactivate a terminated member"""
+    check_permission(current_user, "all")
+    
+    existing = await db.members.find_one({"id": member_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Member not found")
+    
+    if existing.get("status") != "terminated":
+        raise HTTPException(status_code=400, detail="Member is not terminated")
+    
+    update_data = {
+        "status": "active",
+        "end_date": None,
+        "termination_reason": None,
+        "has_outstanding_dues": False,
+        "terminated_at": None,
+        "terminated_by": None
+    }
+    
+    await db.members.update_one({"id": member_id}, {"$set": update_data})
+    
+    updated = await db.members.find_one({"id": member_id}, {"_id": 0})
+    return updated
+
+@router.post("/members/bulk-terminate")
+async def bulk_terminate_members(data: BulkTerminate, current_user: dict = Depends(get_current_user)):
+    """Terminate all members from a company"""
+    check_permission(current_user, "all")
+    
+    # Find all active members from the company
+    members = await db.members.find({
+        "company_name": data.company_name,
+        "status": {"$ne": "terminated"}
+    }, {"_id": 0}).to_list(1000)
+    
+    if not members:
+        raise HTTPException(status_code=404, detail="No active members found for this company")
+    
+    update_data = {
+        "status": "terminated",
+        "end_date": data.end_date,
+        "termination_reason": data.termination_reason,
+        "has_outstanding_dues": data.has_outstanding_dues,
+        "terminated_at": datetime.now(timezone.utc).isoformat(),
+        "terminated_by": current_user.get("id")
+    }
+    
+    result = await db.members.update_many(
+        {"company_name": data.company_name, "status": {"$ne": "terminated"}},
+        {"$set": update_data}
+    )
+    
+    return {
+        "message": f"Successfully terminated {result.modified_count} members from {data.company_name}",
+        "terminated_count": result.modified_count,
+        "members": [m["name"] for m in members]
+    }
+
+@router.get("/members/companies")
+async def get_companies():
+    """Get list of unique companies with member counts"""
+    pipeline = [
+        {"$group": {
+            "_id": "$company_name",
+            "total_members": {"$sum": 1},
+            "active_members": {"$sum": {"$cond": [{"$eq": ["$status", "active"]}, 1, 0]}},
+            "terminated_members": {"$sum": {"$cond": [{"$eq": ["$status", "terminated"]}, 1, 0]}},
+            "has_outstanding_dues": {"$sum": {"$cond": ["$has_outstanding_dues", 1, 0]}}
+        }},
+        {"$sort": {"_id": 1}}
+    ]
+    
+    companies = await db.members.aggregate(pipeline).to_list(500)
+    
+    return [{
+        "company_name": c["_id"],
+        "total_members": c["total_members"],
+        "active_members": c["active_members"],
+        "terminated_members": c["terminated_members"],
+        "has_outstanding_dues": c["has_outstanding_dues"]
+    } for c in companies]
+
+@router.get("/members/with-outstanding-dues")
+async def get_members_with_outstanding_dues():
+    """Get all terminated members with outstanding dues"""
+    members = await db.members.find({
+        "has_outstanding_dues": True
+    }, {"_id": 0}).to_list(500)
+    return members
+
 # ==================== BOOKINGS ====================
 
 @router.get("/bookings")
