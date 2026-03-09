@@ -463,17 +463,84 @@ export default function CreateInvoice() {
                         GST Applicable (18%)
                       </Label>
                     </div>
+
+                    {/* Prorate Billing */}
+                    {item.service_type === 'monthly_rental' && (
+                      <>
+                        <div className="col-span-2 flex items-center space-x-2 pt-2 border-t border-slate-200">
+                          <Checkbox
+                            id={`prorated-${index}`}
+                            checked={item.is_prorated}
+                            onCheckedChange={(checked) => handleLineItemChange(index, "is_prorated", checked)}
+                            data-testid={`prorated-${index}`}
+                          />
+                          <Label htmlFor={`prorated-${index}`} className="text-sm text-amber-700">
+                            Enable Prorate Billing
+                          </Label>
+                        </div>
+                        
+                        {item.is_prorated && (
+                          <div className="col-span-2 grid grid-cols-2 gap-3 p-3 bg-amber-50 rounded-lg">
+                            <div className="space-y-1">
+                              <Label className="text-xs text-amber-700">Days to Charge</Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                max={item.prorate_total_days || 30}
+                                value={item.prorate_days || ""}
+                                onChange={(e) => handleLineItemChange(index, "prorate_days", parseInt(e.target.value) || null)}
+                                placeholder="e.g., 15"
+                                className="font-numbers h-9"
+                                data-testid={`prorate-days-${index}`}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs text-amber-700">Total Days in Period</Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={item.prorate_total_days || 30}
+                                onChange={(e) => handleLineItemChange(index, "prorate_total_days", parseInt(e.target.value) || 30)}
+                                className="font-numbers h-9"
+                                data-testid={`prorate-total-days-${index}`}
+                              />
+                            </div>
+                            {item.prorate_days && item.prorate_total_days && (
+                              <div className="col-span-2 text-xs text-amber-700">
+                                Charging for {item.prorate_days} of {item.prorate_total_days} days = {((item.prorate_days / item.prorate_total_days) * 100).toFixed(1)}% of monthly rate
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
 
                   {/* Item Total */}
                   <div className="text-right pt-2 border-t border-slate-200">
                     <span className="text-sm text-slate-500">Amount: </span>
-                    <span className="font-mono font-medium text-slate-900">
-                      ₹{(item.quantity * item.rate).toLocaleString('en-IN')}
+                    <span className="font-numbers font-medium text-slate-900">
+                      ₹{(() => {
+                        let amt;
+                        if (item.is_prorated && item.prorate_days && item.prorate_total_days) {
+                          amt = item.quantity * (item.rate / item.prorate_total_days) * item.prorate_days;
+                        } else {
+                          amt = item.quantity * item.rate;
+                        }
+                        return amt.toLocaleString('en-IN');
+                      })()}
                     </span>
                     {item.is_taxable && (
                       <span className="text-xs text-slate-400 ml-2">
-                        + GST ₹{(item.quantity * item.rate * 0.18).toLocaleString('en-IN')}
+                        + GST ₹{(() => {
+                          let amt;
+                          if (item.is_prorated && item.prorate_days && item.prorate_total_days) {
+                            amt = item.quantity * (item.rate / item.prorate_total_days) * item.prorate_days;
+                          } else {
+                            amt = item.quantity * item.rate;
+                          }
+                          return (amt * 0.18).toLocaleString('en-IN');
+                        })()}
                       </span>
                     )}
                   </div>
