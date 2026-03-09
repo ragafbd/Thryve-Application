@@ -105,7 +105,7 @@ export default function InvoiceList() {
             View and manage all your invoices
           </p>
         </div>
-        <Link to="/create-invoice">
+        <Link to="create-invoice">
           <Button 
             className="bg-[#2E375B] hover:bg-[#232B47] text-white"
             data-testid="create-invoice-btn"
@@ -153,7 +153,7 @@ export default function InvoiceList() {
                 {searchQuery || statusFilter !== "all" ? "No invoices found matching your filters" : "No invoices yet"}
               </p>
               {!searchQuery && statusFilter === "all" && (
-                <Link to="/create-invoice">
+                <Link to="create-invoice">
                   <Button className="mt-4 bg-[#2E375B] hover:bg-[#232B47]">
                     Create Your First Invoice
                   </Button>
