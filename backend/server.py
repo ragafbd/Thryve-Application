@@ -41,8 +41,9 @@ GST_RATE = 18  # 18% GST (9% CGST + 9% SGST or 18% IGST)
 # Thryve Coworking Company Details
 COMPANY_DETAILS = {
     "name": "Thryve Coworking",
-    "address": "123 Business Park, Tech Hub, Bangalore - 560001",
-    "gstin": "29AABCT1234F1Z5",
+    "address": "18/1, Plot no. 3, Azad Colony, Mathura Road, Sector 15 A, Faridabad, Haryana 121007",
+    "gstin": "06AAYFT8213A1Z2",
+    "state": "Haryana",
     "email": "billing@thryvecoworking.com",
     "phone": "+91 80 1234 5678"
 }
