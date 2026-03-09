@@ -1,34 +1,140 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
-}
+/* Thryve Invoice Generator Styles */
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
-}
-
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
+/* Layout */
+.app-container {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    background: #064E3B;
     color: white;
+    position: fixed;
+    height: 100vh;
+    transition: transform 0.3s ease;
 }
 
-.App-link {
-    color: #61dafb;
+.sidebar-collapsed {
+    transform: translateX(-280px);
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
+.main-content {
+    flex: 1;
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+}
+
+.main-content-expanded {
+    margin-left: 0;
+}
+
+/* Invoice Preview */
+.invoice-preview {
+    background: white;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    border-radius: 0.75rem;
+}
+
+/* Table styles */
+.invoice-table th {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.invoice-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.invoice-table tr:hover {
+    background: #f8fafc;
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-badge-paid {
+    background: #ECFDF5;
+    color: #064E3B;
+}
+
+.status-badge-pending {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+/* Button interactions */
+.btn-primary {
+    background: #064E3B;
+    color: white;
+    transition: all 0.15s ease;
+}
+
+.btn-primary:hover {
+    background: #022C22;
+}
+
+.btn-primary:active {
+    transform: scale(0.95);
+}
+
+/* Card hover */
+.card-hover {
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+    border-color: rgba(6, 78, 59, 0.5);
+}
+
+/* Form inputs */
+.form-input {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus {
+    background: white;
+    border-color: #064E3B;
+    box-shadow: 0 0 0 3px rgba(6, 78, 59, 0.1);
+}
+
+/* Animation delays for stagger effect */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+
+/* Print specific styles */
+@media print {
+    .sidebar,
+    .no-print {
+        display: none !important;
     }
-    to {
-        transform: rotate(360deg);
+    
+    .main-content {
+        margin-left: 0 !important;
+    }
+    
+    .invoice-preview {
+        box-shadow: none !important;
+        border: none !important;
     }
 }

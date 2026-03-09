@@ -1,0 +1,485 @@
+import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import { 
+  Plus, 
+  Trash2, 
+  CalendarIcon, 
+  FileDown,
+  Building2,
+  Eye
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import axios from "axios";
+import InvoicePreview from "@/components/InvoicePreview";
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const SERVICE_TYPES = [
+  { value: "monthly_rental", label: "Monthly Rental", taxable: true },
+  { value: "security_deposit", label: "Refundable Security Deposit", taxable: false },
+  { value: "setup_charges", label: "Setup Charges", taxable: false },
+  { value: "day_pass", label: "Day Pass", taxable: true },
+  { value: "meeting_room", label: "Meeting Room Charges", taxable: true },
+];
+
+const emptyLineItem = {
+  description: "",
+  service_type: "monthly_rental",
+  quantity: 1,
+  rate: 0,
+  is_taxable: true
+};
+
+export default function CreateInvoice() {
+  const navigate = useNavigate();
+  const previewRef = useRef(null);
+  
+  const [clients, setClients] = useState([]);
+  const [company, setCompany] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  
+  const [selectedClientId, setSelectedClientId] = useState("");
+  const [invoiceDate, setInvoiceDate] = useState(new Date());
+  const [lineItems, setLineItems] = useState([{ ...emptyLineItem }]);
+  const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [clientsRes, companyRes] = await Promise.all([
+          axios.get(`${API}/clients`),
+          axios.get(`${API}/company`)
+        ]);
+        setClients(clientsRes.data);
+        setCompany(companyRes.data);
+      } catch (error) {
+        toast.error("Failed to load data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const selectedClient = clients.find(c => c.id === selectedClientId);
+
+  const handleServiceTypeChange = (index, value) => {
+    const service = SERVICE_TYPES.find(s => s.value === value);
+    const newItems = [...lineItems];
+    newItems[index] = {
+      ...newItems[index],
+      service_type: value,
+      description: service?.label || "",
+      is_taxable: service?.taxable ?? true
+    };
+    setLineItems(newItems);
+  };
+
+  const handleLineItemChange = (index, field, value) => {
+    const newItems = [...lineItems];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setLineItems(newItems);
+  };
+
+  const addLineItem = () => {
+    setLineItems([...lineItems, { ...emptyLineItem }]);
+  };
+
+  const removeLineItem = (index) => {
+    if (lineItems.length === 1) return;
+    setLineItems(lineItems.filter((_, i) => i !== index));
+  };
+
+  // Calculate totals
+  const calculateTotals = () => {
+    let subtotal = 0;
+    let totalCgst = 0;
+    let totalSgst = 0;
+
+    lineItems.forEach(item => {
+      const amount = item.quantity * item.rate;
+      subtotal += amount;
+      if (item.is_taxable) {
+        totalCgst += amount * 0.09;
+        totalSgst += amount * 0.09;
+      }
+    });
+
+    return {
+      subtotal: Math.round(subtotal * 100) / 100,
+      totalCgst: Math.round(totalCgst * 100) / 100,
+      totalSgst: Math.round(totalSgst * 100) / 100,
+      totalTax: Math.round((totalCgst + totalSgst) * 100) / 100,
+      grandTotal: Math.round((subtotal + totalCgst + totalSgst) * 100) / 100
+    };
+  };
+
+  const totals = calculateTotals();
+
+  // Build preview data
+  const previewData = {
+    invoice_number: "THR/XXXX/XX/XXXX",
+    invoice_date: invoiceDate.toISOString(),
+    client: selectedClient || null,
+    company: company,
+    line_items: lineItems.map(item => ({
+      ...item,
+      amount: item.quantity * item.rate,
+      cgst: item.is_taxable ? item.quantity * item.rate * 0.09 : 0,
+      sgst: item.is_taxable ? item.quantity * item.rate * 0.09 : 0,
+      total: item.quantity * item.rate + (item.is_taxable ? item.quantity * item.rate * 0.18 : 0)
+    })),
+    subtotal: totals.subtotal,
+    total_cgst: totals.totalCgst,
+    total_sgst: totals.totalSgst,
+    total_tax: totals.totalTax,
+    grand_total: totals.grandTotal,
+    notes: notes
+  };
+
+  const handleSaveInvoice = async () => {
+    if (!selectedClientId) {
+      toast.error("Please select a client");
+      return;
+    }
+    if (lineItems.some(item => !item.description || item.rate <= 0)) {
+      toast.error("Please fill in all line items with valid rates");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await axios.post(`${API}/invoices`, {
+        client_id: selectedClientId,
+        invoice_date: invoiceDate.toISOString().split('T')[0],
+        line_items: lineItems,
+        notes: notes
+      });
+      toast.success("Invoice created successfully!");
+      navigate(`/invoices/${response.data.id}`);
+    } catch (error) {
+      toast.error("Failed to create invoice");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-slate-500">Loading...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fade-in" data-testid="create-invoice-page">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight font-[Manrope]">
+          Create Invoice
+        </h1>
+        <p className="text-slate-600 mt-1">
+          Generate a new invoice for your client
+        </p>
+      </div>
+
+      {/* Split View Layout */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        {/* Left: Form */}
+        <div className="space-y-6">
+          {/* Client & Date Selection */}
+          <Card className="border border-slate-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold font-[Manrope]">
+                Invoice Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Client Selection */}
+              <div className="space-y-2">
+                <Label>Select Client</Label>
+                {clients.length === 0 ? (
+                  <div className="p-4 bg-slate-50 rounded-lg text-center">
+                    <Building2 className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="text-sm text-slate-500">No clients found</p>
+                    <Button
+                      variant="link"
+                      className="text-[#064E3B]"
+                      onClick={() => navigate("/clients")}
+                    >
+                      Add a client first
+                    </Button>
+                  </div>
+                ) : (
+                  <Select
+                    value={selectedClientId}
+                    onValueChange={setSelectedClientId}
+                  >
+                    <SelectTrigger data-testid="client-select">
+                      <SelectValue placeholder="Choose a client" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.company_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+
+              {/* Selected Client Details */}
+              {selectedClient && (
+                <div className="p-4 bg-[#ECFDF5] rounded-lg">
+                  <p className="font-medium text-slate-900">{selectedClient.company_name}</p>
+                  <p className="text-sm text-slate-600 mt-1">{selectedClient.address}</p>
+                  <p className="text-xs font-mono text-[#064E3B] mt-2">
+                    GSTIN: {selectedClient.gstin}
+                  </p>
+                </div>
+              )}
+
+              {/* Invoice Date */}
+              <div className="space-y-2">
+                <Label>Invoice Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-mono",
+                        !invoiceDate && "text-muted-foreground"
+                      )}
+                      data-testid="invoice-date-picker"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {invoiceDate ? format(invoiceDate, "PPP") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={invoiceDate}
+                      onSelect={(date) => date && setInvoiceDate(date)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Line Items */}
+          <Card className="border border-slate-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold font-[Manrope]">
+                  Services / Line Items
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={addLineItem}
+                  className="text-[#064E3B] border-[#064E3B] hover:bg-[#ECFDF5]"
+                  data-testid="add-line-item-btn"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Item
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {lineItems.map((item, index) => (
+                <div 
+                  key={index} 
+                  className="p-4 bg-slate-50 rounded-lg space-y-4"
+                  data-testid={`line-item-${index}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-slate-500">
+                      Item #{index + 1}
+                    </span>
+                    {lineItems.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => removeLineItem(index)}
+                        data-testid={`remove-line-item-${index}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Service Type */}
+                    <div className="col-span-2 space-y-2">
+                      <Label>Service Type</Label>
+                      <Select
+                        value={item.service_type}
+                        onValueChange={(value) => handleServiceTypeChange(index, value)}
+                      >
+                        <SelectTrigger data-testid={`service-type-${index}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SERVICE_TYPES.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label} {type.taxable ? "(GST)" : "(No GST)"}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Description */}
+                    <div className="col-span-2 space-y-2">
+                      <Label>Description</Label>
+                      <Input
+                        value={item.description}
+                        onChange={(e) => handleLineItemChange(index, "description", e.target.value)}
+                        placeholder="Enter description"
+                        data-testid={`description-${index}`}
+                      />
+                    </div>
+
+                    {/* Quantity */}
+                    <div className="space-y-2">
+                      <Label>Quantity</Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) => handleLineItemChange(index, "quantity", parseFloat(e.target.value) || 1)}
+                        className="font-mono"
+                        data-testid={`quantity-${index}`}
+                      />
+                    </div>
+
+                    {/* Rate */}
+                    <div className="space-y-2">
+                      <Label>Rate (₹)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.rate}
+                        onChange={(e) => handleLineItemChange(index, "rate", parseFloat(e.target.value) || 0)}
+                        className="font-mono"
+                        data-testid={`rate-${index}`}
+                      />
+                    </div>
+
+                    {/* GST Applicable */}
+                    <div className="col-span-2 flex items-center space-x-2">
+                      <Checkbox
+                        id={`taxable-${index}`}
+                        checked={item.is_taxable}
+                        onCheckedChange={(checked) => handleLineItemChange(index, "is_taxable", checked)}
+                        data-testid={`taxable-${index}`}
+                      />
+                      <Label htmlFor={`taxable-${index}`} className="text-sm">
+                        GST Applicable (18%)
+                      </Label>
+                    </div>
+                  </div>
+
+                  {/* Item Total */}
+                  <div className="text-right pt-2 border-t border-slate-200">
+                    <span className="text-sm text-slate-500">Amount: </span>
+                    <span className="font-mono font-medium text-slate-900">
+                      ₹{(item.quantity * item.rate).toLocaleString('en-IN')}
+                    </span>
+                    {item.is_taxable && (
+                      <span className="text-xs text-slate-400 ml-2">
+                        + GST ₹{(item.quantity * item.rate * 0.18).toLocaleString('en-IN')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Notes */}
+          <Card className="border border-slate-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold font-[Manrope]">
+                Notes (Optional)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add any additional notes for this invoice..."
+                rows={3}
+                data-testid="invoice-notes"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Actions */}
+          <div className="flex gap-4">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => navigate("/invoices")}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="flex-1 bg-[#064E3B] hover:bg-[#022C22]"
+              onClick={handleSaveInvoice}
+              disabled={saving || !selectedClientId}
+              data-testid="save-invoice-btn"
+            >
+              {saving ? "Creating..." : "Create Invoice"}
+            </Button>
+          </div>
+        </div>
+
+        {/* Right: Preview */}
+        <div className="hidden xl:block">
+          <div className="sticky top-24">
+            <div className="flex items-center gap-2 mb-4">
+              <Eye className="w-5 h-5 text-slate-400" />
+              <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">
+                Live Preview
+              </span>
+            </div>
+            <div ref={previewRef} className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <InvoicePreview invoice={previewData} isPreview={true} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
