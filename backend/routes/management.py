@@ -469,6 +469,10 @@ async def create_booking(booking_data: BookingCreate, current_user: dict = Depen
     if booking_date > max_date:
         raise HTTPException(status_code=400, detail=f"Bookings can only be made up to {MAX_ADVANCE_DAYS} days in advance")
     
+    # Check if date is a Sunday
+    if booking_date.weekday() == 6:
+        raise HTTPException(status_code=400, detail="Bookings are not available on Sundays")
+    
     # Get room details
     room = await db.meeting_rooms.find_one({"id": booking_data.room_id}, {"_id": 0})
     if not room:
