@@ -58,6 +58,12 @@ class LineItem(BaseModel):
     quantity: float = 1
     rate: float
     is_taxable: bool = True  # GST applicable or not
+    hsn_sac: Optional[str] = None  # HSN/SAC code
+    unit: str = "Units"  # Units, Month, Day, Hour
+    # Prorate fields
+    is_prorated: bool = False
+    prorate_days: Optional[int] = None  # Number of days to charge
+    prorate_total_days: Optional[int] = None  # Total days in billing period (usually 30)
 
 class InvoiceLineItem(LineItem):
     amount: float = 0
@@ -105,7 +111,13 @@ async def generate_invoice_number():
 
 # Calculate line item with GST
 def calculate_line_item(item: LineItem) -> dict:
-    amount = item.quantity * item.rate
+    # Handle prorate calculation
+    if item.is_prorated and item.prorate_days and item.prorate_total_days:
+        prorate_rate = (item.rate / item.prorate_total_days) * item.prorate_days
+        amount = item.quantity * prorate_rate
+    else:
+        amount = item.quantity * item.rate
+    
     if item.is_taxable:
         cgst = round(amount * (GST_RATE / 2) / 100, 2)
         sgst = round(amount * (GST_RATE / 2) / 100, 2)
@@ -119,6 +131,11 @@ def calculate_line_item(item: LineItem) -> dict:
         "quantity": item.quantity,
         "rate": item.rate,
         "is_taxable": item.is_taxable,
+        "hsn_sac": item.hsn_sac or "",
+        "unit": item.unit,
+        "is_prorated": item.is_prorated,
+        "prorate_days": item.prorate_days,
+        "prorate_total_days": item.prorate_total_days,
         "amount": round(amount, 2),
         "cgst": cgst,
         "sgst": sgst,
