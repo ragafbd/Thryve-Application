@@ -11,6 +11,10 @@ import InvoiceView from "@/pages/InvoiceView";
 import Clients from "@/pages/Clients";
 import BulkInvoice from "@/pages/BulkInvoice";
 import Users from "@/pages/Users";
+import Members from "@/pages/Members";
+import Bookings from "@/pages/Bookings";
+import Tickets from "@/pages/Tickets";
+import Announcements from "@/pages/Announcements";
 
 // Protected Route Component
 function ProtectedRoute({ children }) {
