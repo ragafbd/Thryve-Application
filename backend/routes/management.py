@@ -592,8 +592,9 @@ async def get_management_stats():
 
 # ==================== SEED DEFAULT DATA ====================
 
-async def seed_default_data():
+async def seed_default_data(database=None):
     """Seed default plans and meeting rooms if not exist"""
+    _db = database if database else db
     
     # Default plan types
     default_plans = [
@@ -605,10 +606,10 @@ async def seed_default_data():
     ]
     
     for plan in default_plans:
-        existing = await db.plan_types.find_one({"name": plan["name"]})
+        existing = await _db.plan_types.find_one({"name": plan["name"]})
         if not existing:
             plan_obj = PlanType(**plan)
-            await db.plan_types.insert_one(plan_obj.model_dump())
+            await _db.plan_types.insert_one(plan_obj.model_dump())
     
     # Default meeting rooms
     default_rooms = [
@@ -618,7 +619,7 @@ async def seed_default_data():
     ]
     
     for room in default_rooms:
-        existing = await db.meeting_rooms.find_one({"name": room["name"]})
+        existing = await _db.meeting_rooms.find_one({"name": room["name"]})
         if not existing:
             room_obj = MeetingRoom(**room)
-            await db.meeting_rooms.insert_one(room_obj.model_dump())
+            await _db.meeting_rooms.insert_one(room_obj.model_dump())
