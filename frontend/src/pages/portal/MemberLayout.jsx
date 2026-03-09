@@ -85,9 +85,9 @@ export default function MemberLayout() {
         )}
         data-testid="member-sidebar"
       >
-        {/* Logo - Same as Admin */}
+        {/* Logo - Centered */}
         <div className="p-6 border-b border-white/10">
-          <div className="flex items-center gap-3">
+          <div className="flex justify-center">
             <img 
               src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/jqltfue2_Gemini_Generated_Image_xy33ixy33ixy33ix.png" 
               alt="Thryve Coworking" 
