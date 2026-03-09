@@ -140,7 +140,7 @@ export default function Layout() {
           </NavLink>
 
           {/* Management Section */}
-          <p className="text-xs text-white/40 uppercase tracking-wider px-4 py-2 mt-2">Management</p>
+          <p className="text-xs text-white/60 uppercase tracking-wider px-4 py-2 mt-2 font-bold">Management</p>
           {managementNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -162,7 +162,7 @@ export default function Layout() {
           })}
 
           {/* Invoice Section */}
-          <p className="text-xs text-white/40 uppercase tracking-wider px-4 py-2 mt-4">Invoicing</p>
+          <p className="text-xs text-white/60 uppercase tracking-wider px-4 py-2 mt-4 font-bold">Invoicing</p>
           {invoiceNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -186,7 +186,7 @@ export default function Layout() {
           {/* Admin Section */}
           {isAdmin() && (
             <>
-              <p className="text-xs text-white/40 uppercase tracking-wider px-4 py-2 mt-4">Admin</p>
+              <p className="text-xs text-white/60 uppercase tracking-wider px-4 py-2 mt-4 font-bold">Admin</p>
               <NavLink
                 to="/clients"
                 data-testid="nav-clients"

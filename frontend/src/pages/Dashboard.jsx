@@ -156,7 +156,7 @@ export default function Dashboard() {
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             <div className={`h-full rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group-hover:scale-[1.02] ${action.color}`}>
-              <div className="p-4 text-white h-full">
+              <div className="p-4 text-white h-full flex flex-col">
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
                     <action.icon className="w-5 h-5" strokeWidth={1.5} />
@@ -168,8 +168,10 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
-                <h3 className="font-semibold text-sm">{action.title}</h3>
-                <p className="text-xs text-white/70 mt-0.5">{action.description}</p>
+                <div className="mt-auto">
+                  <h3 className="font-semibold text-sm whitespace-nowrap">{action.title}</h3>
+                  <p className="text-xs text-white/70 mt-0.5">{action.description}</p>
+                </div>
               </div>
             </div>
           </Link>

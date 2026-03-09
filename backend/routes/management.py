@@ -406,12 +406,12 @@ async def check_availability(room_id: str, date: str):
         {"_id": 0}
     ).to_list(100)
     
-    # Generate all possible slots (9 AM to 8 PM)
+    # Generate all possible slots (10 AM to 6 PM)
     slot_duration = room["slot_duration"]
     slots = []
     
-    start_hour = 9
-    end_hour = 20  # 8 PM
+    start_hour = 10
+    end_hour = 18  # 6 PM
     
     current_time = datetime.strptime(f"{date} {start_hour:02d}:00", "%Y-%m-%d %H:%M")
     end_time = datetime.strptime(f"{date} {end_hour:02d}:00", "%Y-%m-%d %H:%M")
