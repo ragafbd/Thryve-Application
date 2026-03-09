@@ -312,12 +312,20 @@ export default function Bookings() {
             Meeting Room Booking
           </h1>
           <p className="text-[#2E375B]/60 mt-1">
-            Book meeting rooms (10 AM - 6 PM, Mon-Sat)
+            Book meeting rooms (10 AM - 7 PM, Mon-Sat)
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-[#2E375B]/70 bg-[#FFA14A]/10 px-3 py-2 rounded-lg">
-          <AlertCircle className="w-4 h-4 text-[#FFA14A]" />
-          <span>Max {MAX_ADVANCE_DAYS} days advance • Cancel {MIN_CANCEL_DAYS}+ days prior • Closed Sundays</span>
+      </div>
+      
+      {/* Booking Rules */}
+      <div className="bg-[#2E375B]/5 border border-[#2E375B]/10 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-[#FFA14A] mt-0.5 flex-shrink-0" />
+          <div className="text-sm text-[#2E375B]/80 space-y-1">
+            <p>• Advance bookings can be done for the next 10 days only</p>
+            <p>• Cancellations within 48 hours of the event or No shows will result in credits being used</p>
+            <p>• Bookings will not be allowed for Sundays or Public Holidays</p>
+          </div>
         </div>
       </div>
 
