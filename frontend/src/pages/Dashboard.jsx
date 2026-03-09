@@ -79,7 +79,7 @@ export default function Dashboard() {
       statLabel: "Active"
     },
     {
-      title: "Room Bookings",
+      title: "Meeting Room Bookings",
       description: "Book meeting rooms",
       icon: CalendarDays,
       link: "bookings",
