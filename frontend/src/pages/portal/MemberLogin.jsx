@@ -140,6 +140,15 @@ export default function MemberLogin() {
                   >
                     {loading ? "Signing in..." : "Sign In"}
                   </Button>
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      className="text-sm text-[#2E375B] hover:underline"
+                      onClick={() => toast.info("Please contact Thryve admin to reset your password")}
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
                 </form>
               </TabsContent>
 
