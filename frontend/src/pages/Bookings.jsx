@@ -28,21 +28,6 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const MAX_ADVANCE_DAYS = 10;
 const MIN_CANCEL_DAYS = 2;
 
-// Public holidays in India 2026 (example list - can be expanded)
-const PUBLIC_HOLIDAYS = [
-  "2026-01-26", // Republic Day
-  "2026-03-10", // Holi
-  "2026-04-03", // Good Friday
-  "2026-04-14", // Ambedkar Jayanti
-  "2026-05-01", // May Day
-  "2026-08-15", // Independence Day
-  "2026-10-02", // Gandhi Jayanti
-  "2026-10-20", // Dussehra
-  "2026-11-09", // Diwali
-  "2026-11-10", // Diwali Holiday
-  "2026-12-25", // Christmas
-];
-
 export default function Bookings() {
   const [rooms, setRooms] = useState([]);
   const [members, setMembers] = useState([]);
