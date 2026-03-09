@@ -159,7 +159,7 @@ export default function Users() {
         </Card>
         <Card className="border border-blue-200 bg-blue-50">
           <CardContent className="p-4">
-            <h3 className="font-semibold text-blue-700">Staff</h3>
+            <h3 className="font-semibold text-blue-700">Manager</h3>
             <p className="text-xs text-blue-600 mt-1">Create invoices, manage clients, download PDFs</p>
           </CardContent>
         </Card>
