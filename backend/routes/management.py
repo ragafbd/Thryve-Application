@@ -48,7 +48,7 @@ async def get_plans():
     return plans
 
 @router.post("/plans", response_model=PlanType)
-async def create_plan(plan_data: PlanTypeCreate, current_user: dict = Depends(lambda: get_current_user)):
+async def create_plan(plan_data: PlanTypeCreate, current_user: dict = Depends(get_auth_dependency())):
     check_permission(current_user, "all")
     
     plan = PlanType(**plan_data.model_dump())
@@ -57,7 +57,7 @@ async def create_plan(plan_data: PlanTypeCreate, current_user: dict = Depends(la
     return plan
 
 @router.put("/plans/{plan_id}", response_model=PlanType)
-async def update_plan(plan_id: str, plan_data: PlanTypeCreate, current_user: dict = Depends(lambda: get_current_user)):
+async def update_plan(plan_id: str, plan_data: PlanTypeCreate, current_user: dict = Depends(get_auth_dependency())):
     check_permission(current_user, "all")
     
     existing = await db.plan_types.find_one({"id": plan_id}, {"_id": 0})
@@ -71,7 +71,7 @@ async def update_plan(plan_id: str, plan_data: PlanTypeCreate, current_user: dic
     return updated
 
 @router.delete("/plans/{plan_id}")
-async def delete_plan(plan_id: str, current_user: dict = Depends(lambda: get_current_user)):
+async def delete_plan(plan_id: str, current_user: dict = Depends(get_auth_dependency())):
     check_permission(current_user, "all")
     
     # Check if any members use this plan
@@ -94,7 +94,7 @@ async def get_rooms():
     return rooms
 
 @router.post("/rooms", response_model=MeetingRoom)
-async def create_room(room_data: MeetingRoomCreate, current_user: dict = Depends(lambda: get_current_user)):
+async def create_room(room_data: MeetingRoomCreate, current_user: dict = Depends(get_auth_dependency())):
     check_permission(current_user, "all")
     
     room = MeetingRoom(**room_data.model_dump())
@@ -103,7 +103,7 @@ async def create_room(room_data: MeetingRoomCreate, current_user: dict = Depends
     return room
 
 @router.put("/rooms/{room_id}", response_model=MeetingRoom)
-async def update_room(room_id: str, room_data: MeetingRoomCreate, current_user: dict = Depends(lambda: get_current_user)):
+async def update_room(room_id: str, room_data: MeetingRoomCreate, current_user: dict = Depends(get_auth_dependency())):
     check_permission(current_user, "all")
     
     existing = await db.meeting_rooms.find_one({"id": room_id}, {"_id": 0})
@@ -137,7 +137,7 @@ async def get_member(member_id: str):
     return member
 
 @router.post("/members", response_model=Member)
-async def create_member(member_data: MemberCreate, current_user: dict = Depends(lambda: get_current_user)):
+async def create_member(member_data: MemberCreate, current_user: dict = Depends(get_auth_dependency())):
     check_permission(current_user, "all")
     
     # Get plan details
@@ -194,7 +194,7 @@ async def create_member(member_data: MemberCreate, current_user: dict = Depends(
     return member
 
 @router.put("/members/{member_id}", response_model=Member)
-async def update_member(member_id: str, member_data: MemberUpdate, current_user: dict = Depends(lambda: get_current_user)):
+async def update_member(member_id: str, member_data: MemberUpdate, current_user: dict = Depends(get_auth_dependency())):
     check_permission(current_user, "all")
     
     existing = await db.members.find_one({"id": member_id}, {"_id": 0})
@@ -240,7 +240,7 @@ async def update_member(member_id: str, member_data: MemberUpdate, current_user:
     return updated
 
 @router.delete("/members/{member_id}")
-async def delete_member(member_id: str, current_user: dict = Depends(lambda: get_current_user)):
+async def delete_member(member_id: str, current_user: dict = Depends(get_auth_dependency())):
     check_permission(current_user, "all")
     
     result = await db.members.delete_one({"id": member_id})
@@ -319,7 +319,7 @@ async def check_availability(room_id: str, date: str):
     }
 
 @router.post("/bookings", response_model=Booking)
-async def create_booking(booking_data: BookingCreate, current_user: dict = Depends(lambda: get_current_user)):
+async def create_booking(booking_data: BookingCreate, current_user: dict = Depends(get_auth_dependency())):
     # Get room details
     room = await db.meeting_rooms.find_one({"id": booking_data.room_id}, {"_id": 0})
     if not room:
@@ -387,7 +387,7 @@ async def create_booking(booking_data: BookingCreate, current_user: dict = Depen
     return booking
 
 @router.delete("/bookings/{booking_id}")
-async def cancel_booking(booking_id: str, current_user: dict = Depends(lambda: get_current_user)):
+async def cancel_booking(booking_id: str, current_user: dict = Depends(get_auth_dependency())):
     booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
@@ -444,7 +444,7 @@ async def get_tickets(
     return tickets
 
 @router.post("/tickets", response_model=Ticket)
-async def create_ticket(ticket_data: TicketCreate, current_user: dict = Depends(lambda: get_current_user)):
+async def create_ticket(ticket_data: TicketCreate, current_user: dict = Depends(get_auth_dependency())):
     ticket_number = await generate_ticket_number()
     
     member_name = ""
@@ -469,7 +469,7 @@ async def create_ticket(ticket_data: TicketCreate, current_user: dict = Depends(
     return ticket
 
 @router.put("/tickets/{ticket_id}", response_model=Ticket)
-async def update_ticket(ticket_id: str, ticket_data: TicketUpdate, current_user: dict = Depends(lambda: get_current_user)):
+async def update_ticket(ticket_id: str, ticket_data: TicketUpdate, current_user: dict = Depends(get_auth_dependency())):
     existing = await db.tickets.find_one({"id": ticket_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Ticket not found")
@@ -512,7 +512,7 @@ async def get_announcements(active_only: bool = True):
     return announcements
 
 @router.post("/announcements", response_model=Announcement)
-async def create_announcement(ann_data: AnnouncementCreate, current_user: dict = Depends(lambda: get_current_user)):
+async def create_announcement(ann_data: AnnouncementCreate, current_user: dict = Depends(get_auth_dependency())):
     check_permission(current_user, "all")
     
     announcement = Announcement(
@@ -530,7 +530,7 @@ async def create_announcement(ann_data: AnnouncementCreate, current_user: dict =
     return announcement
 
 @router.put("/announcements/{ann_id}", response_model=Announcement)
-async def update_announcement(ann_id: str, ann_data: AnnouncementCreate, current_user: dict = Depends(lambda: get_current_user)):
+async def update_announcement(ann_id: str, ann_data: AnnouncementCreate, current_user: dict = Depends(get_auth_dependency())):
     check_permission(current_user, "all")
     
     existing = await db.announcements.find_one({"id": ann_id}, {"_id": 0})
@@ -544,7 +544,7 @@ async def update_announcement(ann_id: str, ann_data: AnnouncementCreate, current
     return updated
 
 @router.delete("/announcements/{ann_id}")
-async def delete_announcement(ann_id: str, current_user: dict = Depends(lambda: get_current_user)):
+async def delete_announcement(ann_id: str, current_user: dict = Depends(get_auth_dependency())):
     check_permission(current_user, "all")
     
     result = await db.announcements.delete_one({"id": ann_id})
