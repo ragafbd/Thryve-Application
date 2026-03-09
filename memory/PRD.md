@@ -25,14 +25,18 @@ Build an automatic invoice generator for Thryve Coworking with:
 - GST calculation (18% = 9% CGST + 9% SGST)
 - Dashboard stats endpoint (/api/stats)
 - Company details endpoint (/api/company)
+- **Payment status tracking (Paid/Pending/Overdue)**
+- **Auto-overdue detection based on due date**
+- **Mark as paid endpoint (/api/invoices/{id}/status)**
 
 ### Frontend (React + Tailwind + Shadcn)
-- Dashboard with stats cards
+- Dashboard with stats cards and **payment status breakdown**
 - Client management page with search
-- Invoice creation with live preview (split-view)
-- Invoice list with search & filters
-- Invoice view with PDF export (react-to-print)
+- Invoice creation with live preview (split-view) and **due date picker**
+- Invoice list with search, **status filter**, and **mark as paid action**
+- Invoice view with PDF export and **payment status banner**
 - Responsive sidebar navigation
+- **Color-coded status badges (Paid=Green, Pending=Amber, Overdue=Red)**
 
 ### Service Types
 1. Monthly Rental (GST applicable)
@@ -53,12 +57,14 @@ Build an automatic invoice generator for Thryve Coworking with:
 - [x] Client management
 - [x] GST calculations
 - [x] PDF export
+- [x] Payment status tracking (Paid/Pending/Overdue)
+- [x] Due date with auto-overdue detection
+- [x] Mark as paid functionality
 
 ### P1 (Important) - Future
 - [ ] Invoice email delivery
 - [ ] Recurring invoice scheduling
-- [ ] Payment tracking/status
-- [ ] Custom invoice templates
+- [ ] Payment reminders for overdue invoices
 
 ### P2 (Nice to Have)
 - [ ] Multi-user authentication
