@@ -39,8 +39,14 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - Flexible pricing (custom rates per member)
 - Discount support (percentage-based)
 - Meeting room credits allocation
-- Status tracking (active/inactive/suspended)
+- Status tracking (active/inactive/suspended/terminated)
 - Company/GSTIN info for invoicing
+- **Termination with History Preservation**:
+  - Terminate individual members with end date, reason, and outstanding dues flag
+  - Bulk terminate all members from a company at once
+  - Outstanding dues tracking for terminated members
+  - Reactivate terminated members when needed
+  - Full history preserved for audit purposes
 
 #### Plans Available
 | Plan | Default Rate | Meeting Room Credits |
