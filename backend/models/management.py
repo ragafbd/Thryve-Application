@@ -128,9 +128,18 @@ class BulkTerminate(BaseModel):
 # ==================== MEETING ROOM BOOKINGS ====================
 
 class BookingCreate(BaseModel):
-    """Create a meeting room booking"""
+    """Create a meeting room booking (admin)"""
     room_id: str
     member_id: str
+    date: str  # YYYY-MM-DD
+    start_time: str  # HH:MM (24h format)
+    end_time: str  # HH:MM (24h format)
+    purpose: Optional[str] = ""
+    attendees: Optional[int] = None
+
+class MemberBookingCreate(BaseModel):
+    """Create a meeting room booking (member portal - no member_id needed)"""
+    room_id: str
     date: str  # YYYY-MM-DD
     start_time: str  # HH:MM (24h format)
     end_time: str  # HH:MM (24h format)
