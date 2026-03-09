@@ -21,15 +21,27 @@ router = APIRouter(prefix="/api/management", tags=["Management"])
 
 # These will be set by the main server
 db = None
-get_current_user = None
-check_permission = None
+_get_current_user_func = None
+_check_permission_func = None
 
 def init_router(database, auth_func, perm_func):
     """Initialize router with database and auth functions"""
-    global db, get_current_user, check_permission
+    global db, _get_current_user_func, _check_permission_func
     db = database
-    get_current_user = auth_func
-    check_permission = perm_func
+    _get_current_user_func = auth_func
+    _check_permission_func = perm_func
+
+async def get_current_user_wrapper():
+    """Wrapper to properly call the auth function"""
+    from fastapi import Request
+    from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+    # This will be called by FastAPI's dependency injection
+    # We need to return a callable that FastAPI can use
+    return _get_current_user_func
+
+def check_permission(user: dict, permission: str):
+    """Wrapper for permission check"""
+    return _check_permission_func(user, permission)
 
 # ==================== PLAN TYPES ====================
 
