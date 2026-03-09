@@ -180,7 +180,20 @@ export default function Bookings() {
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const day = date.getDate();
+    const ordinal = (d) => {
+      if (d > 3 && d < 21) return 'th';
+      switch (d % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
+    };
+    const weekday = date.toLocaleDateString('en-IN', { weekday: 'long' });
+    const month = date.toLocaleDateString('en-IN', { month: 'long' });
+    const year = date.getFullYear();
+    return `${weekday}, ${day}${ordinal(day)} ${month}, ${year}`;
   };
 
   // Check if slots are consecutive
