@@ -101,6 +101,7 @@ export default function MemberBookings() {
   };
 
   useEffect(() => {
+    fetchPublicHolidays();
     fetchRooms();
     fetchBookings();
   }, []);
