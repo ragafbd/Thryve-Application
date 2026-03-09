@@ -105,11 +105,29 @@ class Invoice(BaseModel):
 
 # Helper function to generate invoice number
 async def generate_invoice_number():
-    # Get the count of invoices to generate sequential number
-    count = await db.invoices.count_documents({})
+    # Get the highest invoice number to generate sequential number
     year = datetime.now().year
     month = datetime.now().month
-    return f"THR/{year}/{month:02d}/{count + 1:04d}"
+    prefix = f"THR/{year}/{month:02d}/"
+    
+    # Find the highest number for this month
+    latest = await db.invoices.find_one(
+        {"invoice_number": {"$regex": f"^{prefix}"}},
+        {"invoice_number": 1},
+        sort=[("invoice_number", -1)]
+    )
+    
+    if latest:
+        # Extract the number part and increment
+        try:
+            last_num = int(latest["invoice_number"].split("/")[-1])
+            next_num = last_num + 1
+        except:
+            next_num = 1
+    else:
+        next_num = 1
+    
+    return f"{prefix}{next_num:04d}"
 
 # Calculate line item with GST
 def calculate_line_item(item: LineItem) -> dict:
