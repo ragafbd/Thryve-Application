@@ -43,17 +43,17 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Invoice section (without Dashboard)
 const invoiceNavItems = [
-  { path: "/create-invoice", icon: PlusCircle, label: "Create Invoice" },
-  { path: "/bulk-invoice", icon: FileSpreadsheet, label: "Bulk Invoice" },
-  { path: "/invoices", icon: FileText, label: "Invoices" },
+  { path: "create-invoice", icon: PlusCircle, label: "Create Invoice" },
+  { path: "bulk-invoice", icon: FileSpreadsheet, label: "Bulk Invoice" },
+  { path: "invoices", icon: FileText, label: "Invoices" },
 ];
 
 // Management section
 const managementNavItems = [
-  { path: "/members", icon: UserPlus, label: "Members" },
-  { path: "/bookings", icon: CalendarDays, label: "Room Bookings" },
-  { path: "/tickets", icon: Ticket, label: "Support Tickets" },
-  { path: "/announcements", icon: Megaphone, label: "Announcements" },
+  { path: "members", icon: UserPlus, label: "Members" },
+  { path: "bookings", icon: CalendarDays, label: "Room Bookings" },
+  { path: "tickets", icon: Ticket, label: "Support Tickets" },
+  { path: "announcements", icon: Megaphone, label: "Announcements" },
 ];
 
 export default function Layout() {
