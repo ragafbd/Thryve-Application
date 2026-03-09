@@ -278,9 +278,9 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
                   {formatCurrency(invoice?.total_sgst)}
                 </td>
               </tr>
-              <tr className="bg-slate-100">
-                <td className="border border-slate-300 px-3 py-2 font-bold">Total Amount</td>
-                <td className="border border-slate-300 px-3 py-2 text-right font-numbers font-bold text-lg">
+              <tr className="bg-[#2E375B]">
+                <td className="border border-slate-300 px-3 py-2 font-bold text-white whitespace-nowrap">Total Amount</td>
+                <td className="border border-slate-300 px-3 py-2 text-right font-numbers font-bold text-lg text-white whitespace-nowrap">
                   {formatCurrency(invoice?.grand_total)}
                 </td>
               </tr>
