@@ -14,6 +14,7 @@ import {
   Shield,
   UserPlus,
   CalendarDays,
+  CalendarOff,
   Ticket,
   Megaphone
 } from "lucide-react";
