@@ -8,6 +8,7 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - Support ticket system
 - Community announcements
 - **Member self-service portal for viewing invoices, bookings, and tickets**
+- **Public holiday management for booking restrictions**
 
 ## User Personas
 - **Admin**: Full access to all features, user management, settings (at `/admin`)
@@ -38,7 +39,7 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - Role-based access control (admin, staff, viewer)
 - User management (create, edit, deactivate users)
 - Password change functionality
-- Default admin: admin@thryve.in / admin123
+- Default admin: admin@thryve.in / password
 
 ### Phase 3: Management System (Complete ✓)
 
@@ -72,12 +73,13 @@ Build an automatic invoice generator and comprehensive management system for Thr
 | MR-1 (Meeting Room 1) | 5 seats | Rs. 500/hr | 30 min |
 | MR-2 (Meeting Room 2) | 5 seats | Rs. 500/hr | 30 min |
 
-**Availability Hours: 10 AM to 6 PM**
+**Availability Hours: 10 AM to 7 PM (Mon-Sat)**
 
 **Booking Rules:**
 - **Multi-slot selection**: Select multiple consecutive time slots in one go
 - **Advance booking**: Maximum 10 days in advance
-- **Cancellation**: Can only cancel 2+ days before the event
+- **Cancellation**: Can only cancel 2+ days before the event (within 48 hours will use credits)
+- **Blocked dates**: Sundays and Public Holidays
 - Credits allocated at member onboarding
 
 Features:
@@ -86,6 +88,23 @@ Features:
 - Billable amount calculated when credits exhausted
 - Booking conflict detection
 - Booking cancellation with credit restoration (if within rules)
+
+#### Public Holidays Management (NEW - March 9, 2026 ✓)
+- **Admin Management Page** at `/admin/holidays`
+- **Default Indian Holidays**: 13 holidays pre-loaded for 2025 and 2026
+- **Year Filter**: View holidays by year (2025, 2026, 2027)
+- **CRUD Operations**: Add, edit, activate/deactivate, delete holidays
+- **Booking Integration**: 
+  - Bookings automatically blocked on public holidays
+  - Both admin and member portals respect holiday restrictions
+  - Frontend fetches holidays from API (not hardcoded)
+
+**Holidays API Endpoints:**
+- `GET /api/holidays` - List all holidays (with year filter)
+- `GET /api/holidays/dates` - Get just dates array (for calendar blocking)
+- `POST /api/holidays` - Create holiday (admin only)
+- `PUT /api/holidays/{id}` - Update holiday (admin only)
+- `DELETE /api/holidays/{id}` - Delete holiday (admin only)
 
 #### Support Tickets
 - Ticket numbering (THR-TKT-XXXX)
@@ -101,17 +120,17 @@ Features:
 - Pin important announcements to top
 - Expiry dates for time-limited announcements
 
-### Phase 4: Member Portal (Complete ✓) - NEW
+### Phase 4: Member Portal (Complete ✓)
 
 A secure, separate portal for coworking members to self-serve their needs.
 
 #### Features
-- **Separate Authentication System**: Members register/login at `/portal/login`
+- **Separate Authentication System**: Members register/login at `/` (landing page)
   - Members can only register if their email exists in admin-managed member list
   - Uses different JWT token from admin authentication (type: "member")
-- **Member Dashboard** (`/portal/dashboard`): Overview of member's account, credits, plan
+- **Member Dashboard** (`/portal`): Overview of member's account, credits, plan
 - **My Invoices** (`/portal/invoices`): View and track personal invoices
-- **Room Bookings** (`/portal/bookings`): View available rooms and booking schedule
+- **Room Bookings** (`/portal/bookings`): View available rooms and make bookings
 - **Support Tickets** (`/portal/tickets`): Create and track personal support requests
 - **Announcements** (`/portal/announcements`): View community announcements
 
@@ -121,10 +140,11 @@ A secure, separate portal for coworking members to self-serve their needs.
 - Members only see their own data (invoices, bookings, tickets)
 
 ## UI/UX Updates (March 9, 2026)
-- **Admin Login Page**: Shows "Manage your World" title with "Admin Login" badge in bottom left
-- **Dashboard**: Icon-based quick action cards with improved text alignment
-- **Sidebar**: Section headers (MANAGEMENT, INVOICING, ADMIN) now bold and more readable
-- **Brand Colors**: Primary #2E375B (navy), Accent #FFA14A (orange)
+- **Landing Page**: Clean light theme with member login/register
+- **Admin & Member Portals**: Consistent navy blue (#2E375B) and orange (#FFA14A) color scheme
+- **Sidebar**: Centered logo, consistent navigation styling
+- **Date Format**: Ordinal dates throughout (e.g., "Monday, 9th March, 2026")
+- **Browser Title**: "Thryve Coworking App"
 
 ## Technical Architecture
 
@@ -134,7 +154,8 @@ A secure, separate portal for coworking members to self-serve their needs.
 ├── server.py              # Main FastAPI app, auth, invoice routes
 ├── routes/
 │   ├── management.py      # Member, booking, ticket, announcement routes (admin)
-│   └── member_portal.py   # Member portal APIs (member-facing)
+│   ├── member_portal.py   # Member portal APIs (member-facing)
+│   └── public_holidays.py # Public holidays management
 ├── models/
 │   └── management.py      # Pydantic models for management system
 └── requirements.txt       # Dependencies
@@ -154,6 +175,7 @@ A secure, separate portal for coworking members to self-serve their needs.
     ├── Dashboard.jsx      # Admin dashboard
     ├── Members.jsx        # Member management
     ├── Bookings.jsx       # Room bookings (admin)
+    ├── PublicHolidays.jsx # Public holidays management
     ├── Tickets.jsx        # Support tickets (admin)
     ├── Announcements.jsx  # Community announcements
     └── portal/            # Member Portal Pages
@@ -173,10 +195,11 @@ A secure, separate portal for coworking members to self-serve their needs.
 - `plan_types`: Workspace plans
 - `meeting_rooms`: Room configurations
 - `members`: Coworking members
-- `member_credentials`: Member portal login credentials
+- `member_auth`: Member portal login credentials
 - `bookings`: Room bookings
 - `tickets`: Support tickets
 - `announcements`: Community posts
+- `public_holidays`: Public holiday dates (NEW)
 
 ## API Endpoints
 
@@ -187,17 +210,21 @@ A secure, separate portal for coworking members to self-serve their needs.
 - `GET /api/auth/users` - List users (admin only)
 
 ### Member Portal Authentication
-- `POST /api/portal/auth/register` - Member registration (email must exist in members)
-- `POST /api/portal/auth/login` - Member login
-- `POST /api/portal/auth/change-password` - Member change password
+- `POST /api/member/register` - Member registration (email must exist in members)
+- `POST /api/member/login` - Member login
+- `POST /api/member/change-password` - Member change password
 
 ### Member Portal Data
-- `GET /api/portal/dashboard` - Member dashboard stats
-- `GET /api/portal/invoices` - Member's invoices
-- `GET /api/portal/bookings` - Available rooms and slots
-- `GET /api/portal/tickets` - Member's support tickets
-- `POST /api/portal/tickets` - Create support ticket
-- `GET /api/portal/announcements` - Community announcements
+- `GET /api/member/me` - Member profile
+- `GET /api/member/invoices` - Member's invoices
+- `GET /api/member/bookings` - Member's bookings
+- `POST /api/member/bookings` - Create booking
+- `DELETE /api/member/bookings/{id}` - Cancel booking
+- `GET /api/member/rooms` - Available rooms
+- `GET /api/member/rooms/{id}/availability` - Room availability
+- `GET /api/member/tickets` - Member's support tickets
+- `POST /api/member/tickets` - Create support ticket
+- `GET /api/member/announcements` - Community announcements
 
 ### Invoices (Admin)
 - `GET/POST /api/invoices` - List/Create invoices
@@ -210,10 +237,17 @@ A secure, separate portal for coworking members to self-serve their needs.
 - `GET/POST /api/management/rooms` - Meeting rooms
 - `GET/POST /api/management/members` - Members
 - `GET/POST /api/management/bookings` - Room bookings
-- `GET /api/management/bookings/availability` - Check slots (10 AM - 6 PM)
+- `GET /api/management/bookings/availability` - Check slots (10 AM - 7 PM)
 - `GET/POST /api/management/tickets` - Support tickets
 - `GET/POST /api/management/announcements` - Announcements
 - `GET /api/management/stats` - Dashboard stats
+
+### Public Holidays
+- `GET /api/holidays` - List holidays (with year filter)
+- `GET /api/holidays/dates` - Get dates array only
+- `POST /api/holidays` - Create holiday (admin only)
+- `PUT /api/holidays/{id}` - Update holiday (admin only)
+- `DELETE /api/holidays/{id}` - Delete holiday (admin only)
 
 ## Prioritized Backlog
 
@@ -226,6 +260,7 @@ A secure, separate portal for coworking members to self-serve their needs.
 - [x] Support tickets
 - [x] Announcements
 - [x] Member self-service portal
+- [x] Public holiday booking restrictions
 
 ### P1 (Important) - Future
 - [ ] Email notifications for invoices (due date + 4 days)
@@ -234,6 +269,7 @@ A secure, separate portal for coworking members to self-serve their needs.
 - [ ] Payment reminders for overdue invoices
 - [ ] Meeting room booking credits logic (monthly reset, billing after exhaustion)
 - [ ] Support ticket lifecycle (status transitions, notifications)
+- [ ] Email-based password reset flow
 
 ### P2 (Nice to Have)
 - [ ] WhatsApp integration for reminders
@@ -248,10 +284,11 @@ A secure, separate portal for coworking members to self-serve their needs.
 - `/app/test_reports/iteration_3.json` - Management tests (31 passed)
 - `/app/test_reports/iteration_4.json` - Member Portal tests (16 passed)
 - `/app/test_reports/iteration_5.json` - UI Restructure & Booking Rules (100% passed)
+- `/app/test_reports/iteration_6.json` - Public Holidays feature (21 passed, 100%)
 
 ## Credentials
-- **Admin**: admin@thryve.in / admin123 (URL: `/admin/login`)
-- **Test Member**: testmember@thryve.in / member123 (URL: `/` - Landing page)
+- **Admin**: admin@thryve.in / password (URL: `/admin/login`)
+- **Test Member**: Create in admin panel first, then register at landing page (`/`)
 
 ---
 Last Updated: March 9, 2026
