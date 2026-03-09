@@ -302,7 +302,8 @@ class TestMemberPortalSecurity:
     
     def test_member_cannot_access_admin_users(self):
         """Test that member token cannot access admin users endpoint"""
-        response = self.session.get(f"{BASE_URL}/api/users")
+        response = self.session.get(f"{BASE_URL}/api/auth/users")
+        # Should fail with 401 (Invalid token) because member token type is different
         assert response.status_code == 401
     
     def test_member_cannot_delete_members(self):
