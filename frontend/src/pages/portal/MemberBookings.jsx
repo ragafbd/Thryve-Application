@@ -17,17 +17,11 @@ import axios from "axios";
 import { useMemberAuth } from "@/contexts/MemberAuthContext";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api/member`;
+const HOLIDAYS_API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Booking rules
 const MAX_ADVANCE_DAYS = 10;
 const MIN_CANCEL_DAYS = 2;
-
-// Public holidays (example)
-const PUBLIC_HOLIDAYS = [
-  "2026-01-26", "2026-03-10", "2026-04-03", "2026-04-14",
-  "2026-05-01", "2026-08-15", "2026-10-02", "2026-10-20",
-  "2026-11-09", "2026-11-10", "2026-12-25",
-];
 
 export default function MemberBookings() {
   const { member, refreshProfile } = useMemberAuth();
