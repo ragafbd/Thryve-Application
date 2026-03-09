@@ -323,7 +323,7 @@ async def get_member_bookings(
     return bookings
 
 @router.post("/bookings")
-async def create_member_booking(booking_data: BookingCreate, current_member: dict = Depends(get_current_member)):
+async def create_member_booking(booking_data: MemberBookingCreate, current_member: dict = Depends(get_current_member)):
     """Create a room booking for the member"""
     # Get room details
     room = await db.meeting_rooms.find_one({"id": booking_data.room_id}, {"_id": 0})
