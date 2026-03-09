@@ -400,6 +400,16 @@ async def check_availability(room_id: str, date: str):
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
     
+    # Check if date is a Sunday
+    date_obj = datetime.strptime(date, "%Y-%m-%d")
+    if date_obj.weekday() == 6:  # Sunday
+        return {
+            "room": room,
+            "date": date,
+            "slots": [],
+            "message": "Bookings not available on Sundays"
+        }
+    
     # Get existing bookings for this room and date
     bookings = await db.bookings.find(
         {"room_id": room_id, "date": date, "status": {"$ne": "cancelled"}},
@@ -407,16 +417,17 @@ async def check_availability(room_id: str, date: str):
     ).to_list(100)
     
     # Generate all possible slots (10 AM to 6 PM)
+    # The last slot should END at 6 PM, so we need slots that start early enough
     slot_duration = room["slot_duration"]
     slots = []
     
     start_hour = 10
-    end_hour = 18  # 6 PM
+    end_hour = 18  # 6 PM - last slot ends here
     
     current_time = datetime.strptime(f"{date} {start_hour:02d}:00", "%Y-%m-%d %H:%M")
     end_time = datetime.strptime(f"{date} {end_hour:02d}:00", "%Y-%m-%d %H:%M")
     
-    while current_time < end_time:
+    while current_time + timedelta(minutes=slot_duration) <= end_time:
         slot_start = current_time.strftime("%H:%M")
         slot_end = (current_time + timedelta(minutes=slot_duration)).strftime("%H:%M")
         
