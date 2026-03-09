@@ -280,6 +280,280 @@ async def delete_invoice(invoice_id: str):
         raise HTTPException(status_code=404, detail="Invoice not found")
     return {"message": "Invoice deleted successfully"}
 
+# Number to words conversion for invoice
+def number_to_words(num):
+    if num == 0:
+        return "Zero"
+    
+    ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+        "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"]
+    tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"]
+    
+    def convert_less_than_thousand(n):
+        if n == 0:
+            return ""
+        if n < 20:
+            return ones[n]
+        if n < 100:
+            return tens[n // 10] + (" " + ones[n % 10] if n % 10 != 0 else "")
+        return ones[n // 100] + " Hundred" + (" " + convert_less_than_thousand(n % 100) if n % 100 != 0 else "")
+    
+    def convert(n):
+        if n == 0:
+            return ""
+        result = ""
+        if n >= 10000000:
+            result += convert_less_than_thousand(n // 10000000) + " Crore "
+            n %= 10000000
+        if n >= 100000:
+            result += convert_less_than_thousand(n // 100000) + " Lakh "
+            n %= 100000
+        if n >= 1000:
+            result += convert_less_than_thousand(n // 1000) + " Thousand "
+            n %= 1000
+        if n > 0:
+            result += convert_less_than_thousand(n)
+        return result.strip()
+    
+    int_part = int(num)
+    return "Rupees " + convert(int_part) + " Only"
+
+# Generate PDF for invoice
+@api_router.get("/invoices/{invoice_id}/pdf")
+async def generate_invoice_pdf(invoice_id: str):
+    invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    # Create PDF buffer
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
+    
+    # Styles
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='InvoiceTitle', fontSize=18, fontName='Helvetica-Bold', alignment=TA_RIGHT))
+    styles.add(ParagraphStyle(name='CompanyName', fontSize=14, fontName='Helvetica-Bold', textColor=colors.HexColor('#2E375B')))
+    styles.add(ParagraphStyle(name='Normal_Right', fontSize=10, alignment=TA_RIGHT))
+    styles.add(ParagraphStyle(name='Normal_Center', fontSize=10, alignment=TA_CENTER))
+    styles.add(ParagraphStyle(name='Small', fontSize=8, textColor=colors.grey))
+    styles.add(ParagraphStyle(name='SmallBold', fontSize=9, fontName='Helvetica-Bold'))
+    styles.add(ParagraphStyle(name='TableHeader', fontSize=9, fontName='Helvetica-Bold', textColor=colors.white))
+    styles.add(ParagraphStyle(name='Footer', fontSize=8, alignment=TA_CENTER, textColor=colors.grey))
+    styles.add(ParagraphStyle(name='ThankYou', fontSize=10, fontName='Helvetica-Bold', alignment=TA_CENTER, textColor=colors.HexColor('#2E375B')))
+    
+    elements = []
+    
+    # Colors
+    thryve_blue = colors.HexColor('#2E375B')
+    thryve_orange = colors.HexColor('#FFA14A')
+    
+    # Company info
+    company = invoice.get('company', COMPANY_DETAILS)
+    client = invoice.get('client', {})
+    
+    # Header with logo placeholder and TAX INVOICE
+    header_data = [
+        [Paragraph(f"<b>{company.get('name', 'Thryve Coworking')}</b>", styles['CompanyName']), 
+         Paragraph("<b>TAX INVOICE</b>", styles['InvoiceTitle'])]
+    ]
+    header_table = Table(header_data, colWidths=[350, 180])
+    header_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+    ]))
+    elements.append(header_table)
+    elements.append(Spacer(1, 10))
+    
+    # Invoice details row
+    def format_date(date_str):
+        if not date_str:
+            return "-"
+        try:
+            date_obj = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+            return date_obj.strftime("%d %B %Y")
+        except:
+            return date_str
+    
+    invoice_info = f"""
+    <b>Invoice No:</b> {invoice.get('invoice_number', '')}<br/>
+    <b>Invoice Date:</b> {format_date(invoice.get('invoice_date', ''))}<br/>
+    """
+    
+    due_date_text = ""
+    if invoice.get('due_date'):
+        due_date_text = f"<b>PAYMENT DUE BY</b><br/><font size='12'><b>{format_date(invoice.get('due_date'))}</b></font>"
+    
+    info_data = [[Paragraph(invoice_info, styles['Normal']), Paragraph(due_date_text, styles['Normal_Right'])]]
+    info_table = Table(info_data, colWidths=[350, 180])
+    info_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('BACKGROUND', (1, 0), (1, 0), thryve_orange),
+        ('TEXTCOLOR', (1, 0), (1, 0), thryve_blue),
+        ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+        ('TOPPADDING', (1, 0), (1, 0), 8),
+        ('BOTTOMPADDING', (1, 0), (1, 0), 8),
+        ('LEFTPADDING', (1, 0), (1, 0), 10),
+        ('RIGHTPADDING', (1, 0), (1, 0), 10),
+    ]))
+    elements.append(info_table)
+    elements.append(Spacer(1, 15))
+    
+    # Issued By / Bill To
+    issued_by = f"""
+    <b>Issued By</b><br/>
+    <b>{company.get('name', '')}</b><br/>
+    {company.get('address', '')}<br/>
+    <font size='8'>GSTIN: {company.get('gstin', '')}</font>
+    """
+    
+    bill_to = f"""
+    <b>Bill To</b><br/>
+    <b>{client.get('company_name', '')}</b><br/>
+    {client.get('address', '')}<br/>
+    <font size='8'>GSTIN: {client.get('gstin', '')}</font>
+    """
+    
+    party_data = [[Paragraph(issued_by, styles['Normal']), Paragraph(bill_to, styles['Normal'])]]
+    party_table = Table(party_data, colWidths=[265, 265])
+    party_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('BOX', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('LINEAFTER', (0, 0), (0, 0), 0.5, colors.grey),
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+    ]))
+    elements.append(party_table)
+    elements.append(Spacer(1, 15))
+    
+    # Line items table
+    line_items = invoice.get('line_items', [])
+    
+    # Table header
+    table_data = [['S.No.', 'Particulars', 'HSN/SAC', 'Qty', 'Rate', 'Amount', 'CGST', 'SGST', 'Total']]
+    
+    for idx, item in enumerate(line_items, 1):
+        table_data.append([
+            str(idx),
+            item.get('description', ''),
+            item.get('hsn_sac', '997212'),
+            str(item.get('quantity', 1)),
+            f"₹{item.get('rate', 0):,.2f}",
+            f"₹{item.get('amount', 0):,.2f}",
+            f"₹{item.get('cgst', 0):,.2f}" if item.get('is_taxable') else '-',
+            f"₹{item.get('sgst', 0):,.2f}" if item.get('is_taxable') else '-',
+            f"₹{item.get('total', 0):,.2f}"
+        ])
+    
+    items_table = Table(table_data, colWidths=[30, 140, 50, 35, 60, 60, 50, 50, 60])
+    items_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), thryve_blue),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('ALIGN', (1, 1), (1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(items_table)
+    elements.append(Spacer(1, 10))
+    
+    # Totals
+    totals_data = [
+        ['Sub Total', f"₹{invoice.get('subtotal', 0):,.2f}"],
+        ['CGST (9%)', f"₹{invoice.get('total_cgst', 0):,.2f}"],
+        ['SGST (9%)', f"₹{invoice.get('total_sgst', 0):,.2f}"],
+        ['Total Amount', f"₹{invoice.get('grand_total', 0):,.2f}"],
+    ]
+    
+    totals_table = Table(totals_data, colWidths=[100, 80])
+    totals_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+        ('BACKGROUND', (0, -1), (-1, -1), thryve_blue),
+        ('TEXTCOLOR', (0, -1), (-1, -1), colors.white),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    
+    # Right align totals table
+    totals_wrapper = Table([[None, totals_table]], colWidths=[350, 185])
+    elements.append(totals_wrapper)
+    elements.append(Spacer(1, 10))
+    
+    # Amount in words
+    amount_words = number_to_words(invoice.get('grand_total', 0))
+    elements.append(Paragraph(f"<b>Amount in words:</b> {amount_words}", styles['Normal']))
+    elements.append(Spacer(1, 20))
+    
+    # Bank details and signature
+    bank = company.get('bank', {
+        'name': 'HDFC Bank',
+        'account_name': company.get('name', 'Thryve Coworking'),
+        'account_no': '50200115952448',
+        'branch': 'Sector 16, Faridabad',
+        'ifsc': 'HDFC0000279'
+    })
+    
+    bank_info = f"""
+    <b>Company's Bank Details</b><br/>
+    Bank Name: {bank.get('name', '')}<br/>
+    A/c Name: {bank.get('account_name', '')}<br/>
+    A/c No: {bank.get('account_no', '')}<br/>
+    Branch: {bank.get('branch', '')}<br/>
+    IFSC: {bank.get('ifsc', '')}
+    """
+    
+    signature_info = f"""
+    <br/><br/><br/>
+    <b>for {company.get('name', 'Thryve Coworking')}</b><br/>
+    <br/><br/><br/>
+    Authorised Signatory
+    """
+    
+    footer_data = [[Paragraph(bank_info, styles['Small']), Paragraph(signature_info, styles['Normal_Right'])]]
+    footer_table = Table(footer_data, colWidths=[300, 230])
+    footer_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LINEABOVE', (0, 0), (-1, 0), 0.5, colors.grey),
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+    ]))
+    elements.append(footer_table)
+    elements.append(Spacer(1, 20))
+    
+    # Thank you message
+    elements.append(Paragraph("Thank you for choosing Thryve Coworking!", styles['ThankYou']))
+    elements.append(Spacer(1, 5))
+    elements.append(Paragraph("This is a Computer Generated Invoice", styles['Footer']))
+    
+    # Build PDF
+    doc.build(elements)
+    
+    # Get PDF content
+    buffer.seek(0)
+    pdf_content = buffer.getvalue()
+    
+    # Create filename from invoice number (replace / with -)
+    filename = invoice.get('invoice_number', 'invoice').replace('/', '-') + '.pdf'
+    
+    return Response(
+        content=pdf_content,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}",
+            "Content-Length": str(len(pdf_content))
+        }
+    )
+
 @api_router.patch("/invoices/{invoice_id}/status", response_model=Invoice)
 async def update_invoice_status(invoice_id: str, status_update: InvoiceStatusUpdate):
     invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
