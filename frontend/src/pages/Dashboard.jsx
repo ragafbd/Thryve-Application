@@ -73,7 +73,7 @@ export default function Dashboard() {
       title: "Members",
       description: "Manage coworking members",
       icon: UserPlus,
-      link: "/members",
+      link: "members",
       color: "bg-gradient-to-br from-[#2E375B] to-[#1a2038]",
       stat: managementStats.active_members,
       statLabel: "Active"
@@ -82,7 +82,7 @@ export default function Dashboard() {
       title: "Room Bookings",
       description: "Book meeting rooms",
       icon: CalendarDays,
-      link: "/bookings",
+      link: "bookings",
       color: "bg-gradient-to-br from-[#FFA14A] to-[#e8893a]",
       stat: managementStats.todays_bookings,
       statLabel: "Today"
@@ -91,7 +91,7 @@ export default function Dashboard() {
       title: "Support Tickets",
       description: "Handle requests",
       icon: Ticket,
-      link: "/tickets",
+      link: "tickets",
       color: "bg-gradient-to-br from-[#2E375B] to-[#1a2038]",
       stat: managementStats.open_tickets,
       statLabel: "Open"
@@ -100,7 +100,7 @@ export default function Dashboard() {
       title: "Announcements",
       description: "Community updates",
       icon: Megaphone,
-      link: "/announcements",
+      link: "announcements",
       color: "bg-gradient-to-br from-[#FFA14A] to-[#e8893a]",
       stat: managementStats.active_announcements,
       statLabel: "Active"
@@ -109,7 +109,7 @@ export default function Dashboard() {
       title: "Create Invoice",
       description: "Generate new invoice",
       icon: PlusCircle,
-      link: "/create-invoice",
+      link: "create-invoice",
       color: "bg-gradient-to-br from-[#2E375B] to-[#1a2038]",
       stat: null
     },
@@ -117,7 +117,7 @@ export default function Dashboard() {
       title: "Bulk Invoice",
       description: "Upload Excel file",
       icon: FileSpreadsheet,
-      link: "/bulk-invoice",
+      link: "bulk-invoice",
       color: "bg-gradient-to-br from-[#FFA14A] to-[#e8893a]",
       stat: null
     }
