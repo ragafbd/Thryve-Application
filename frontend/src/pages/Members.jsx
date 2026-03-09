@@ -478,10 +478,10 @@ export default function Members() {
                 </thead>
                 <tbody>
                   {filteredMembers.map((member) => (
-                    <tr key={member.id} className="border-b border-slate-100 hover:bg-slate-50">
+                    <tr key={member.id} className={`border-b border-slate-100 hover:bg-slate-50 ${member.status === 'terminated' ? 'bg-slate-50/50' : ''}`}>
                       <td className="px-4 py-3">
                         <div>
-                          <p className="font-medium text-slate-900">{member.name}</p>
+                          <p className={`font-medium ${member.status === 'terminated' ? 'text-slate-500' : 'text-slate-900'}`}>{member.name}</p>
                           <p className="text-xs text-slate-500">{member.email}</p>
                         </div>
                       </td>
@@ -490,18 +490,28 @@ export default function Members() {
                         {member.seat_number && (
                           <p className="text-xs text-slate-500">Seat: {member.seat_number}</p>
                         )}
+                        {member.end_date && (
+                          <p className="text-xs text-red-500">End: {member.end_date}</p>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <Badge className="bg-[#2E375B]/10 text-[#2E375B]">{member.plan_name}</Badge>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-mono text-slate-900">Rs. {member.final_rate?.toLocaleString()}</p>
+                        <p className={`font-mono ${member.status === 'terminated' ? 'text-slate-500 line-through' : 'text-slate-900'}`}>
+                          Rs. {member.final_rate?.toLocaleString()}
+                        </p>
                         {member.discount_percent > 0 && (
                           <p className="text-xs text-green-600">-{member.discount_percent}% discount</p>
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <StatusBadge status={member.status} />
+                        <StatusBadge status={member.status} hasOutstandingDues={member.has_outstanding_dues} />
+                        {member.termination_reason && (
+                          <p className="text-xs text-slate-500 mt-1 max-w-[150px] truncate" title={member.termination_reason}>
+                            {member.termination_reason}
+                          </p>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <DropdownMenu>
@@ -511,20 +521,42 @@ export default function Members() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleOpenDialog(member)}>
-                              <Edit className="w-4 h-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                            {member.status !== 'active' && (
-                              <DropdownMenuItem onClick={() => handleStatusChange(member, 'active')}>
-                                Activate
+                            {member.status !== 'terminated' && (
+                              <>
+                                <DropdownMenuItem onClick={() => handleOpenDialog(member)}>
+                                  <Edit className="w-4 h-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                {member.status !== 'active' && (
+                                  <DropdownMenuItem onClick={() => handleStatusChange(member, 'active')}>
+                                    Activate
+                                  </DropdownMenuItem>
+                                )}
+                                {member.status === 'active' && (
+                                  <DropdownMenuItem onClick={() => handleStatusChange(member, 'inactive')}>
+                                    Deactivate
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  className="text-red-600"
+                                  onClick={() => {
+                                    setMemberToTerminate(member);
+                                    setTerminateDialogOpen(true);
+                                  }}
+                                >
+                                  <UserX className="w-4 h-4 mr-2" />
+                                  Terminate
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            {member.status === 'terminated' && (
+                              <DropdownMenuItem onClick={() => handleReactivate(member)}>
+                                <RefreshCw className="w-4 h-4 mr-2" />
+                                Reactivate
                               </DropdownMenuItem>
                             )}
-                            {member.status === 'active' && (
-                              <DropdownMenuItem onClick={() => handleStatusChange(member, 'inactive')}>
-                                Deactivate
-                              </DropdownMenuItem>
-                            )}
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem 
                               className="text-red-600"
                               onClick={() => {
@@ -533,7 +565,7 @@ export default function Members() {
                               }}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
-                              Delete
+                              Delete Permanently
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
