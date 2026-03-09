@@ -358,6 +358,10 @@ async def create_default_admin():
         )
         await db.users.insert_one(default_admin.model_dump())
         logger.info("Default admin user created: admin@thryve.in / admin123")
+    
+    # Seed default management data
+    from routes.management import seed_default_data
+    await seed_default_data()
 
 # Calculate line item with GST
 def calculate_line_item(item: LineItem) -> dict:
