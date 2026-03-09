@@ -226,6 +226,120 @@ async def generate_invoice_number():
     
     return f"{prefix}{next_num:04d}"
 
+# ==================== AUTH ROUTES ====================
+
+@api_router.post("/auth/register")
+async def register_user(user_data: UserCreate, current_user: dict = Depends(get_current_user)):
+    # Only admin can create users
+    check_permission(current_user, "all")
+    
+    # Check if email already exists
+    existing = await db.users.find_one({"email": user_data.email.lower()})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Validate role
+    if user_data.role not in ROLES:
+        raise HTTPException(status_code=400, detail="Invalid role. Must be: admin, staff, or viewer")
+    
+    # Create user
+    user = User(
+        name=user_data.name,
+        email=user_data.email.lower(),
+        password_hash=get_password_hash(user_data.password),
+        role=user_data.role,
+        created_by=current_user.get("id")
+    )
+    
+    doc = user.model_dump()
+    await db.users.insert_one(doc)
+    
+    return {"message": "User created successfully", "user_id": user.id}
+
+@api_router.post("/auth/login")
+async def login(user_data: UserLogin):
+    user = await db.users.find_one({"email": user_data.email.lower()}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    if not verify_password(user_data.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    if not user.get("is_active", True):
+        raise HTTPException(status_code=401, detail="Account is inactive")
+    
+    # Create access token
+    access_token = create_access_token(data={"sub": user["id"], "role": user["role"]})
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user["id"],
+            "name": user["name"],
+            "email": user["email"],
+            "role": user["role"]
+        }
+    }
+
+@api_router.get("/auth/me")
+async def get_me(current_user: dict = Depends(get_current_user)):
+    return {
+        "id": current_user["id"],
+        "name": current_user["name"],
+        "email": current_user["email"],
+        "role": current_user["role"]
+    }
+
+@api_router.get("/auth/users", response_model=List[UserResponse])
+async def get_users(current_user: dict = Depends(get_current_user)):
+    check_permission(current_user, "all")
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(100)
+    return users
+
+@api_router.delete("/auth/users/{user_id}")
+async def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    check_permission(current_user, "all")
+    
+    if user_id == current_user["id"]:
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+    
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "User deleted successfully"}
+
+@api_router.patch("/auth/users/{user_id}/toggle")
+async def toggle_user_status(user_id: str, current_user: dict = Depends(get_current_user)):
+    check_permission(current_user, "all")
+    
+    if user_id == current_user["id"]:
+        raise HTTPException(status_code=400, detail="Cannot deactivate yourself")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    new_status = not user.get("is_active", True)
+    await db.users.update_one({"id": user_id}, {"$set": {"is_active": new_status}})
+    
+    return {"message": f"User {'activated' if new_status else 'deactivated'}", "is_active": new_status}
+
+# Create default admin user on startup
+@app.on_event("startup")
+async def create_default_admin():
+    admin = await db.users.find_one({"role": "admin"})
+    if not admin:
+        default_admin = User(
+            name="Admin",
+            email="admin@thryve.in",
+            password_hash=get_password_hash("admin123"),
+            role="admin"
+        )
+        await db.users.insert_one(default_admin.model_dump())
+        logger.info("Default admin user created: admin@thryve.in / admin123")
+
 # Calculate line item with GST
 def calculate_line_item(item: LineItem) -> dict:
     # Handle prorate calculation
