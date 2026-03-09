@@ -294,7 +294,14 @@ export default function Bookings() {
       fetchBookings();
       fetchAvailability();
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Failed to cancel booking");
+      const errorDetail = error.response?.data?.detail;
+      if (typeof errorDetail === 'string') {
+        toast.error(errorDetail);
+      } else if (Array.isArray(errorDetail)) {
+        toast.error(errorDetail[0]?.msg || "Validation error");
+      } else {
+        toast.error("Failed to cancel booking");
+      }
     }
   };
 
