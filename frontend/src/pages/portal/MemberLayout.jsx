@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, FileText, CalendarDays, Ticket, Megaphone, 
-  Menu, X, LogOut, Key, UserCircle, Building2
+  Menu, X, LogOut, Key, UserCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,7 +45,7 @@ export default function MemberLayout() {
   const handleLogout = () => {
     logout();
     toast.success("Logged out successfully");
-    navigate("/portal/login");
+    navigate("/");
   };
 
   const handleChangePassword = async () => {
@@ -76,43 +76,40 @@ export default function MemberLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-[#F8FAFC] flex">
+      {/* Sidebar - Matching Admin Layout */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-[#FFA14A] to-[#e8893a] text-white transition-transform duration-300 ease-in-out md:relative md:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full",
-          !sidebarOpen && "md:w-0 md:overflow-hidden"
+          "fixed inset-y-0 left-0 z-50 w-64 bg-[#2E375B] text-white transition-transform duration-300 ease-in-out flex flex-col",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full md:w-0 md:overflow-hidden"
         )}
         data-testid="member-sidebar"
       >
-        {/* Logo */}
-        <div className="p-6 border-b border-white/20">
+        {/* Logo - Same as Admin */}
+        <div className="p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="font-bold text-lg">Member Portal</h1>
-              <p className="text-xs text-white/70">Thryve Coworking</p>
-            </div>
+            <img 
+              src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/jqltfue2_Gemini_Generated_Image_xy33ixy33ixy33ix.png" 
+              alt="Thryve Coworking" 
+              className="h-12 w-auto"
+            />
           </div>
         </div>
 
         {/* Member Info - Above Navigation */}
-        <div className="p-4 border-b border-white/20">
+        <div className="px-4 py-3 border-b border-white/10">
           <div className="bg-white/10 rounded-lg p-3">
-            <p className="font-semibold text-sm truncate">{member?.name}</p>
-            <p className="text-xs text-white/70 truncate">{member?.company_name}</p>
+            <p className="font-semibold text-sm truncate text-white">{member?.name}</p>
+            <p className="text-xs text-white/60 truncate">{member?.company_name}</p>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = item.exact 
               ? location.pathname === item.path
-              : location.pathname.startsWith(item.path);
+              : location.pathname.startsWith(item.path) && location.pathname !== "/portal";
             return (
               <NavLink
                 key={item.path}
@@ -121,8 +118,8 @@ export default function MemberLayout() {
                 className={cn(
                   "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200",
                   isActive 
-                    ? "bg-white text-[#FFA14A] font-medium" 
-                    : "text-white/80 hover:bg-white/20 hover:text-white"
+                    ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
+                    : "text-white/70 hover:bg-white/10 hover:text-white"
                 )}
               >
                 <item.icon className="w-5 h-5" strokeWidth={1.5} />
@@ -131,36 +128,54 @@ export default function MemberLayout() {
             );
           })}
         </nav>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-white/10">
+          <p className="text-xs text-white/40 text-center">
+            © 2026 Thryve Coworking
+          </p>
+        </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-screen">
-        {/* Top Bar */}
-        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200">
+      <main 
+        className={cn(
+          "flex-1 flex flex-col min-h-screen transition-all duration-300",
+          sidebarOpen ? "md:ml-64" : "md:ml-0"
+        )}
+      >
+        {/* Top Bar - Matching Admin */}
+        <header className="sticky top-0 z-30 bg-white border-b border-[#2E375B]/10 shadow-sm">
           <div className="flex items-center justify-between px-6 py-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="hover:bg-slate-100"
-            >
-              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="text-[#2E375B] hover:bg-[#2E375B]/10"
+              >
+                {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </Button>
+              <div>
+                <h2 className="text-lg font-semibold text-[#2E375B] font-[Manrope]">Member Portal</h2>
+              </div>
+            </div>
+            
             <div className="flex items-center gap-4">
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 hover:bg-slate-100">
-                    <div className="w-8 h-8 rounded-full bg-[#FFA14A] flex items-center justify-center">
+                  <Button variant="ghost" className="flex items-center gap-2 hover:bg-[#2E375B]/10">
+                    <div className="w-8 h-8 rounded-full bg-[#2E375B] flex items-center justify-center">
                       <UserCircle className="w-5 h-5 text-white" />
                     </div>
-                    <span className="hidden md:inline text-sm font-medium">{member?.name}</span>
+                    <span className="hidden md:inline text-sm font-medium text-[#2E375B]">{member?.name}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium">{member?.name}</p>
-                    <p className="text-xs text-slate-500">{member?.email}</p>
+                    <p className="text-sm font-medium text-[#2E375B]">{member?.name}</p>
+                    <p className="text-xs text-[#2E375B]/60">{member?.email}</p>
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setPasswordDialogOpen(true)} className="cursor-pointer">
@@ -188,38 +203,43 @@ export default function MemberLayout() {
       <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Change Password</DialogTitle>
+            <DialogTitle className="text-[#2E375B]">Change Password</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Current Password</Label>
+              <Label className="text-[#2E375B]">Current Password</Label>
               <Input
                 type="password"
                 value={passwords.current}
                 onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+                className="border-[#2E375B]/20"
               />
             </div>
             <div className="space-y-2">
-              <Label>New Password</Label>
+              <Label className="text-[#2E375B]">New Password</Label>
               <Input
                 type="password"
                 value={passwords.new}
                 onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
+                className="border-[#2E375B]/20"
               />
             </div>
             <div className="space-y-2">
-              <Label>Confirm New Password</Label>
+              <Label className="text-[#2E375B]">Confirm New Password</Label>
               <Input
                 type="password"
                 value={passwords.confirm}
                 onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+                className="border-[#2E375B]/20"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPasswordDialogOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setPasswordDialogOpen(false)} className="border-[#2E375B]/20 text-[#2E375B]">
+              Cancel
+            </Button>
             <Button 
-              className="bg-[#FFA14A] hover:bg-[#e8893a]"
+              className="bg-[#2E375B] hover:bg-[#232B47]"
               onClick={handleChangePassword}
               disabled={changingPassword}
             >
