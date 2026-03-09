@@ -28,7 +28,7 @@ import { toast } from "sonner";
 const navItems = [
   { path: "/portal", icon: LayoutDashboard, label: "Dashboard", exact: true },
   { path: "/portal/invoices", icon: FileText, label: "My Invoices" },
-  { path: "/portal/bookings", icon: CalendarDays, label: "Room Bookings" },
+  { path: "/portal/bookings", icon: CalendarDays, label: "Meeting Room Bookings" },
   { path: "/portal/tickets", icon: Ticket, label: "Support Tickets" },
   { path: "/portal/announcements", icon: Megaphone, label: "Announcements" },
 ];
