@@ -134,6 +134,38 @@ async def get_members(status: Optional[str] = None):
     members = await db.members.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
     return members
 
+@router.get("/members/companies")
+async def get_companies():
+    """Get list of unique companies with member counts"""
+    pipeline = [
+        {"$group": {
+            "_id": "$company_name",
+            "total_members": {"$sum": 1},
+            "active_members": {"$sum": {"$cond": [{"$eq": ["$status", "active"]}, 1, 0]}},
+            "terminated_members": {"$sum": {"$cond": [{"$eq": ["$status", "terminated"]}, 1, 0]}},
+            "has_outstanding_dues": {"$sum": {"$cond": ["$has_outstanding_dues", 1, 0]}}
+        }},
+        {"$sort": {"_id": 1}}
+    ]
+    
+    companies = await db.members.aggregate(pipeline).to_list(500)
+    
+    return [{
+        "company_name": c["_id"],
+        "total_members": c["total_members"],
+        "active_members": c["active_members"],
+        "terminated_members": c["terminated_members"],
+        "has_outstanding_dues": c["has_outstanding_dues"]
+    } for c in companies]
+
+@router.get("/members/with-outstanding-dues")
+async def get_members_with_outstanding_dues():
+    """Get all terminated members with outstanding dues"""
+    members = await db.members.find({
+        "has_outstanding_dues": True
+    }, {"_id": 0}).to_list(500)
+    return members
+
 @router.get("/members/{member_id}", response_model=Member)
 async def get_member(member_id: str):
     """Get a specific member"""
