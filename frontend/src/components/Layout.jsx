@@ -126,11 +126,11 @@ export default function Layout() {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {/* Dashboard - Top Level */}
           <NavLink
-            to="/"
+            to="/admin"
             data-testid="nav-dashboard"
             className={cn(
               "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 mb-2",
-              location.pathname === "/"
+              location.pathname === "/admin" || location.pathname === "/admin/"
                 ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
                 : "text-white/70 hover:bg-white/10 hover:text-white"
             )}
