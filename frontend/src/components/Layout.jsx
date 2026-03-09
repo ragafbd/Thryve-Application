@@ -53,6 +53,7 @@ const invoiceNavItems = [
 const managementNavItems = [
   { path: "members", icon: UserPlus, label: "Members" },
   { path: "bookings", icon: CalendarDays, label: "Meeting Room Bookings" },
+  { path: "holidays", icon: CalendarOff, label: "Public Holidays" },
   { path: "tickets", icon: Ticket, label: "Support Tickets" },
   { path: "announcements", icon: Megaphone, label: "Announcements" },
 ];
