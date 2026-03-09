@@ -67,7 +67,7 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  // Quick action cards
+  // Quick action cards - using only brand colors
   const quickActions = [
     {
       title: "Members",
@@ -92,7 +92,7 @@ export default function Dashboard() {
       description: "Handle requests",
       icon: Ticket,
       link: "/tickets",
-      color: "bg-gradient-to-br from-blue-500 to-blue-700",
+      color: "bg-gradient-to-br from-[#2E375B] to-[#1a2038]",
       stat: managementStats.open_tickets,
       statLabel: "Open"
     },
@@ -101,7 +101,7 @@ export default function Dashboard() {
       description: "Community updates",
       icon: Megaphone,
       link: "/announcements",
-      color: "bg-gradient-to-br from-purple-500 to-purple-700",
+      color: "bg-gradient-to-br from-[#FFA14A] to-[#e8893a]",
       stat: managementStats.active_announcements,
       statLabel: "Active"
     },
@@ -110,7 +110,7 @@ export default function Dashboard() {
       description: "Generate new invoice",
       icon: PlusCircle,
       link: "/create-invoice",
-      color: "bg-gradient-to-br from-emerald-500 to-emerald-700",
+      color: "bg-gradient-to-br from-[#2E375B] to-[#1a2038]",
       stat: null
     },
     {
@@ -118,7 +118,7 @@ export default function Dashboard() {
       description: "Upload Excel file",
       icon: FileSpreadsheet,
       link: "/bulk-invoice",
-      color: "bg-gradient-to-br from-amber-500 to-amber-700",
+      color: "bg-gradient-to-br from-[#FFA14A] to-[#e8893a]",
       stat: null
     }
   ];
