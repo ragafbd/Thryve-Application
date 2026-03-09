@@ -423,14 +423,23 @@ class TestBookingBlockingOnHolidays:
         room_id = rooms[0]["id"]
         member_id = members[0]["id"]
         
-        # Try to book on Sunday 2026-03-08
+        # Find next Sunday within booking window (10 days)
+        today = datetime.now()
+        days_until_sunday = (6 - today.weekday()) % 7
+        if days_until_sunday == 0:
+            days_until_sunday = 7  # Next Sunday
+        
+        next_sunday = today + timedelta(days=days_until_sunday)
+        sunday_date = next_sunday.strftime("%Y-%m-%d")
+        
+        # Try to book on Sunday
         response = requests.post(
             f"{BASE_URL}/api/management/bookings",
             headers=auth_headers,
             json={
                 "room_id": room_id,
                 "member_id": member_id,
-                "date": "2026-03-08",  # Sunday
+                "date": sunday_date,
                 "start_time": "10:00",
                 "end_time": "11:00",
                 "purpose": "Test booking on Sunday"
@@ -441,7 +450,7 @@ class TestBookingBlockingOnHolidays:
         error = response.json()
         assert "detail" in error
         assert "Sunday" in error["detail"]
-        print(f"✓ Booking rejected on Sunday: {error['detail']}")
+        print(f"✓ Booking rejected on Sunday ({sunday_date}): {error['detail']}")
 
 
 class TestMemberPortalHolidayBlocking:
