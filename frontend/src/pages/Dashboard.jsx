@@ -58,14 +58,14 @@ export default function Dashboard() {
       title: "Total Revenue",
       value: `₹${stats.total_revenue.toLocaleString('en-IN')}`,
       icon: IndianRupee,
-      color: "bg-[#064E3B]"
+      color: "bg-[#2D3E50]"
     },
     {
       title: "Paid",
       value: `₹${stats.paid_amount.toLocaleString('en-IN')}`,
       subtitle: `${stats.paid_count} invoices`,
       icon: CheckCircle,
-      color: "bg-emerald-600"
+      color: "bg-[#C9A227]"
     },
     {
       title: "Pending",
@@ -90,7 +90,7 @@ export default function Dashboard() {
         </div>
         <Link to="/create-invoice">
           <Button 
-            className="bg-[#064E3B] hover:bg-[#022C22] text-white"
+            className="bg-[#2D3E50] hover:bg-[#1E2A36] text-white"
             data-testid="create-invoice-btn"
           >
             <PlusCircle className="w-4 h-4 mr-2" />
@@ -151,9 +151,9 @@ export default function Dashboard() {
         </Card>
         <Card className="border border-slate-200">
           <CardContent className="p-4 flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-emerald-500" />
+            <CheckCircle className="w-5 h-5 text-[#C9A227]" />
             <div>
-              <p className="text-2xl font-bold text-emerald-600 font-mono">{stats.paid_count}</p>
+              <p className="text-2xl font-bold text-[#C9A227] font-mono">{stats.paid_count}</p>
               <p className="text-xs text-slate-500">Paid Invoices</p>
             </div>
           </CardContent>
@@ -177,7 +177,7 @@ export default function Dashboard() {
               Recent Invoices
             </CardTitle>
             <Link to="/invoices">
-              <Button variant="ghost" className="text-[#064E3B] hover:text-[#022C22]">
+              <Button variant="ghost" className="text-[#2D3E50] hover:text-[#1E2A36]">
                 View All
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -192,7 +192,7 @@ export default function Dashboard() {
               <FileText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
               <p className="text-slate-500">No invoices yet</p>
               <Link to="/create-invoice">
-                <Button className="mt-4 bg-[#064E3B] hover:bg-[#022C22]">
+                <Button className="mt-4 bg-[#2D3E50] hover:bg-[#1E2A36]">
                   Create Your First Invoice
                 </Button>
               </Link>
@@ -212,7 +212,7 @@ export default function Dashboard() {
               <tbody>
                 {recentInvoices.map((invoice) => (
                   <tr key={invoice.id}>
-                    <td className="font-mono text-sm text-[#064E3B]">
+                    <td className="font-mono text-sm text-[#2D3E50]">
                       <Link 
                         to={`/invoices/${invoice.id}`}
                         className="hover:underline"
