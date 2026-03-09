@@ -361,7 +361,7 @@ async def create_default_admin():
     
     # Seed default management data
     from routes.management import seed_default_data
-    await seed_default_data()
+    await seed_default_data(db)
 
 # Calculate line item with GST
 def calculate_line_item(item: LineItem) -> dict:
