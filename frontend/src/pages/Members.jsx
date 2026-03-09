@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { Plus, Building2, Users, CalendarDays, CreditCard, Search, MoreVertical, Edit, Trash2, UserPlus } from "lucide-react";
+import { Plus, Building2, Users, CalendarDays, CreditCard, Search, MoreVertical, Edit, Trash2, UserPlus, UserX, AlertTriangle, RefreshCw, DollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -23,6 +25,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -40,14 +43,24 @@ import axios from "axios";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const StatusBadge = ({ status }) => {
+const StatusBadge = ({ status, hasOutstandingDues }) => {
   const config = {
     active: { label: "Active", className: "bg-green-100 text-green-700" },
     inactive: { label: "Inactive", className: "bg-slate-100 text-slate-700" },
-    suspended: { label: "Suspended", className: "bg-red-100 text-red-700" }
+    suspended: { label: "Suspended", className: "bg-amber-100 text-amber-700" },
+    terminated: { label: "Terminated", className: "bg-red-100 text-red-700" }
   };
   const { label, className } = config[status] || config.inactive;
-  return <Badge className={className}>{label}</Badge>;
+  return (
+    <div className="flex items-center gap-1">
+      <Badge className={className}>{label}</Badge>
+      {hasOutstandingDues && (
+        <Badge className="bg-orange-100 text-orange-700" title="Outstanding Dues">
+          <DollarSign className="w-3 h-3" />
+        </Badge>
+      )}
+    </div>
+  );
 };
 
 export default function Members() {
