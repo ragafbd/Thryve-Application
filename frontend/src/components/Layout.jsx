@@ -37,9 +37,9 @@ export default function Layout() {
         <div className="p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
             <img 
-              src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/5b15k8u9_image.png" 
+              src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/jqltfue2_Gemini_Generated_Image_xy33ixy33ixy33ix.png" 
               alt="Thryve Coworking" 
-              className="h-10 w-auto"
+              className="h-12 w-auto"
             />
           </div>
         </div>

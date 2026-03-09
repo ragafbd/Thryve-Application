@@ -116,9 +116,9 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
           {/* Logo & Company */}
           <div className="flex items-center gap-4">
             <img 
-              src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/5b15k8u9_image.png" 
+              src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/jqltfue2_Gemini_Generated_Image_xy33ixy33ixy33ix.png" 
               alt="Thryve Coworking" 
-              className="h-16 w-auto object-contain"
+              className="h-20 w-auto object-contain"
             />
           </div>
           
