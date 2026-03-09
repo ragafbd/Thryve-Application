@@ -354,7 +354,7 @@ export default function Bookings() {
         </div>
       </div>
 
-      {/* Date Navigation - Simplified */}
+      {/* Date Navigation - No calendar icon */}
       <Card className="border border-[#2E375B]/10">
         <CardContent className="p-4">
           <div className="flex items-center justify-center gap-4">
@@ -368,19 +368,9 @@ export default function Bookings() {
               <ChevronLeft className="w-5 h-5" />
             </Button>
             
-            <div className="flex items-center gap-3">
-              <span className="text-lg font-semibold text-[#2E375B]">
-                {formatDate(selectedDate)}
-              </span>
-              <Input
-                type="date"
-                value={selectedDate}
-                onChange={handleDateChange}
-                min={minDateStr}
-                max={maxDateStr}
-                className="w-auto border-[#2E375B]/20"
-              />
-            </div>
+            <span className="text-lg font-semibold text-[#2E375B]">
+              {formatDate(selectedDate)}
+            </span>
             
             <Button 
               variant="ghost" 
@@ -395,13 +385,13 @@ export default function Bookings() {
         </CardContent>
       </Card>
 
-      {/* Sunday/Holiday Warning */}
+      {/* Sunday/Holiday Warning with Holiday Name */}
       {currentDateBlocked && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
           <p className="text-red-700 font-medium">
             {new Date(selectedDate).getDay() === 0 
               ? "Bookings are not available on Sundays" 
-              : "Bookings are not available on this public holiday"}
+              : `Bookings are not available on ${getHolidayName(selectedDate) || 'this public holiday'}`}
           </p>
           <p className="text-red-600 text-sm mt-1">Please select a different date</p>
         </div>
