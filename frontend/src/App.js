@@ -84,7 +84,7 @@ function AdminRoutes() {
   
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+      <Route path="/login" element={user ? <Navigate to="/admin" replace /> : <Login />} />
       <Route path="/" element={
         <ProtectedRoute>
           <Layout />
