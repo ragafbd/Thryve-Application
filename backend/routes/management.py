@@ -410,6 +410,16 @@ async def check_availability(room_id: str, date: str):
             "message": "Bookings not available on Sundays"
         }
     
+    # Check if date is a public holiday
+    holiday = await db.public_holidays.find_one({"date": date, "is_active": True}, {"_id": 0})
+    if holiday:
+        return {
+            "room": room,
+            "date": date,
+            "slots": [],
+            "message": f"Bookings not available on {holiday['name']}"
+        }
+    
     # Get existing bookings for this room and date
     bookings = await db.bookings.find(
         {"room_id": room_id, "date": date, "status": {"$ne": "cancelled"}},
