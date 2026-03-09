@@ -31,12 +31,8 @@ def init_router(database, auth_func, perm_func):
     _get_current_user_func = auth_func
     _check_permission_func = perm_func
 
-async def get_current_user_wrapper():
-    """Wrapper to properly call the auth function"""
-    from fastapi import Request
-    from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-    # This will be called by FastAPI's dependency injection
-    # We need to return a callable that FastAPI can use
+def get_auth_dependency():
+    """Returns the auth dependency function"""
     return _get_current_user_func
 
 def check_permission(user: dict, permission: str):
