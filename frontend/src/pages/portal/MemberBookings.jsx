@@ -27,12 +27,9 @@ export default function MemberBookings() {
   const { member, refreshProfile } = useMemberAuth();
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [publicHolidays, setPublicHolidays] = useState([]);
   const [selectedDate, setSelectedDate] = useState(() => {
-    let date = new Date();
-    while (date.getDay() === 0 || PUBLIC_HOLIDAYS.includes(date.toISOString().split('T')[0])) {
-      date.setDate(date.getDate() + 1);
-    }
-    return date.toISOString().split('T')[0];
+    return new Date().toISOString().split('T')[0];
   });
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [slots, setSlots] = useState([]);
@@ -53,7 +50,16 @@ export default function MemberBookings() {
 
   const isBlockedDate = (dateStr) => {
     const date = new Date(dateStr);
-    return date.getDay() === 0 || PUBLIC_HOLIDAYS.includes(dateStr);
+    return date.getDay() === 0 || publicHolidays.includes(dateStr);
+  };
+
+  const fetchPublicHolidays = async () => {
+    try {
+      const response = await axios.get(`${HOLIDAYS_API}/holidays/dates`);
+      setPublicHolidays(response.data);
+    } catch (error) {
+      console.error("Failed to fetch public holidays");
+    }
   };
 
   const fetchRooms = async () => {
