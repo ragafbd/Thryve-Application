@@ -1,0 +1,127 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "Thryve Invoice",
+      "persona": "E1 - The Anti-AI Designer",
+      "core_philosophy": "Swiss Precision meets Organic Growth. Structural, clean, but alive.",
+      "theme_strategy": "Light Mode Dominant (Paper/Physical feel) with Deep Emerald accents."
+    },
+    "typography": {
+      "font_family": {
+        "headings": "Manrope, sans-serif",
+        "body": "Public Sans, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "scale": {
+        "h1": "text-4xl md:text-5xl font-bold tracking-tight leading-none",
+        "h2": "text-3xl font-semibold tracking-tight",
+        "h3": "text-2xl font-medium tracking-normal",
+        "body_lg": "text-lg leading-relaxed",
+        "body_base": "text-base leading-relaxed text-slate-600",
+        "caption": "text-sm font-medium tracking-wide uppercase text-slate-400",
+        "mono_num": "font-mono text-sm tracking-tight"
+      },
+      "rules": [
+        "Never use Inter for headings.",
+        "Use JetBrains Mono for ALL financial data (prices, GSTIN, invoice numbers).",
+        "Headings must be dark (slate-900), body text must be slate-600. Never pure black."
+      ]
+    },
+    "colors": {
+      "palette": {
+        "primary": {
+          "DEFAULT": "#064E3B",
+          "foreground": "#FFFFFF",
+          "hover": "#022C22"
+        },
+        "secondary": {
+          "DEFAULT": "#ECFDF5",
+          "foreground": "#064E3B"
+        },
+        "accent": {
+          "DEFAULT": "#C2410C",
+          "foreground": "#FFFFFF"
+        },
+        "background": "#F8FAFC",
+        "surface": "#FFFFFF",
+        "border": "#E2E8F0",
+        "muted": "#64748B"
+      },
+      "usage": {
+        "primary_action": "bg-[#064E3B] text-white hover:bg-[#022C22]",
+        "secondary_action": "bg-[#ECFDF5] text-[#064E3B] hover:bg-[#D1FAE5]",
+        "destructive": "bg-red-50 text-red-600 hover:bg-red-100",
+        "surface_card": "bg-white border border-slate-200 shadow-sm"
+      },
+      "forbidden": [
+        "#1B93A4 (Teal Blue)",
+        "#7351B7 (AI Purple)",
+        "Gradients on text",
+        "Pure Black (#000000)"
+      ]
+    },
+    "spacing": {
+      "scale": "Tailwind default but shifted up. Use p-6 or p-8 where you'd normally use p-4.",
+      "container_padding": "px-6 md:px-12 lg:px-24",
+      "section_gap": "gap-12 md:gap-24",
+      "component_gap": "gap-6"
+    },
+    "layout": {
+      "grid_system": "Bento Grid Mode B (High Density)",
+      "dashboard_structure": "Sidebar (Fixed Left) + Main Content (Scrollable)",
+      "invoice_builder": "Split View: Left Form (50%) + Right Preview (50% Sticky)",
+      "border_radius": {
+        "outer": "rounded-xl",
+        "inner": "rounded-lg",
+        "button": "rounded-md"
+      }
+    },
+    "components": {
+      "buttons": {
+        "style": "Sharp corners (rounded-md), flat colors, no gradients.",
+        "interaction": "transform active:scale-95 transition-all duration-150"
+      },
+      "cards": {
+        "style": "Flat white background, 1px border (slate-200), minimal shadow (shadow-sm).",
+        "hover": "hover:border-emerald-500/50 transition-colors duration-300"
+      },
+      "inputs": {
+        "style": "bg-slate-50 border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+      },
+      "tables": {
+        "style": "Clean rows, no vertical borders. Header: uppercase, text-xs, tracking-wider, text-slate-500.",
+        "row_hover": "hover:bg-slate-50 transition-colors"
+      }
+    },
+    "motion": {
+      "page_enter": "opacity-0 translate-y-4 -> opacity-100 translate-y-0 (duration-500 ease-out)",
+      "list_stagger": "Stagger children by 0.05s",
+      "micro_interactions": "Buttons scale down on click. Links underline expands on hover."
+    },
+    "assets": {
+      "icons": "Lucide React (Stroke width: 1.5px for elegance)",
+      "images": {
+        "login_bg": "https://images.unsplash.com/photo-1772081014501-cf52c3e0bf76?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBjb3dvcmtpbmclMjBzcGFjZSUyMGludGVyaW9yJTIwbWluaW1hbGlzdHxlbnwwfHx8fDE3NzMwNTIxMTd8MA&ixlib=rb-4.1.0&q=85",
+        "dashboard_hero": "https://images.unsplash.com/photo-1720139290958-d8676702c3ed?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBjb3dvcmtpbmclMjBzcGFjZSUyMGludGVyaW9yJTIwbWluaW1hbGlzdHxlbnwwfHx8fDE3NzMwNTIxMTd8MA&ixlib=rb-4.1.0&q=85",
+        "user_placeholder": "https://images.unsplash.com/photo-1720139291006-585bc5d18b3b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHw0fHxtb2Rlcm4lMjBjb3dvcmtpbmclMjBzcGFjZSUyMGludGVyaW9yJTIwbWluaW1hbGlzdHxlbnwwfHx8fDE3NzMwNTIxMTd8MA&ixlib=rb-4.1.0&q=85"
+      }
+    }
+  },
+  "implementation_guide": {
+    "steps": [
+      "1. Setup Tailwind Config: Extend colors with the 'Thryve' palette (Emerald/Slate).",
+      "2. Install Fonts: Add Manrope, Public Sans, and JetBrains Mono via Google Fonts.",
+      "3. Create Layout Shell: SidebarLayout with collapsible nav.",
+      "4. Build Core Components: InvoiceCard, ClientRow, StatusBadge.",
+      "5. Develop Invoice Builder: Complex form state management (use React Hook Form).",
+      "6. Implement PDF Export: Use 'react-to-print' or 'jspdf' for the preview component."
+    ],
+    "universal_rules": [
+      "DO NOT use gradients for backgrounds.",
+      "DO NOT use 'Inter' font.",
+      "Always use 'data-testid' for interactive elements.",
+      "Use 'sonner' for toast notifications.",
+      "Ensure all financial numbers are right-aligned and use JetBrains Mono."
+    ]
+  }
+}
