@@ -142,32 +142,21 @@ export default function Bookings() {
     fetchAvailability();
   }, [selectedDate, selectedRoom]);
 
+  // Change date by number of days (allows landing on blocked dates to show the warning)
   const changeDate = (days) => {
-    let date = new Date(selectedDate);
+    const date = new Date(selectedDate);
     date.setDate(date.getDate() + days);
-    let newDateStr = date.toISOString().split('T')[0];
+    const newDateStr = date.toISOString().split('T')[0];
     
-    // Skip Sundays and holidays when navigating
-    while (isBlockedDate(newDateStr) && newDateStr >= minDateStr && newDateStr <= maxDateStr) {
-      date.setDate(date.getDate() + (days > 0 ? 1 : -1));
-      newDateStr = date.toISOString().split('T')[0];
-    }
-    
-    // Enforce date limits
-    if (newDateStr >= minDateStr && newDateStr <= maxDateStr && !isBlockedDate(newDateStr)) {
+    // Only enforce date limits, allow blocked dates so warning can be shown
+    if (newDateStr >= minDateStr && newDateStr <= maxDateStr) {
       setSelectedDate(newDateStr);
     }
   };
 
+  // This is now only used for the hidden date input
   const handleDateChange = (e) => {
     const newDate = e.target.value;
-    
-    if (isBlockedDate(newDate)) {
-      const date = new Date(newDate);
-      const dayName = date.getDay() === 0 ? 'Sunday' : 'public holiday';
-      toast.error(`Bookings are not available on ${dayName}s`);
-      return;
-    }
     
     if (newDate >= minDateStr && newDate <= maxDateStr) {
       setSelectedDate(newDate);
