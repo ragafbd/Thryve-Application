@@ -347,11 +347,11 @@ class TestMemberPortalRouting:
         room_id = rooms_response.json()[0]["id"]
         today = datetime.now().strftime("%Y-%m-%d")
         
-        # Get availability
+        # Get availability - member portal uses /rooms/{room_id}/availability?date=
         avail_response = requests.get(
-            f"{BASE_URL}/api/member/bookings/availability",
+            f"{BASE_URL}/api/member/rooms/{room_id}/availability",
             headers={"Authorization": f"Bearer {token}"},
-            params={"room_id": room_id, "date": today}
+            params={"date": today}
         )
         
         assert avail_response.status_code == 200, f"Availability check failed: {avail_response.text}"
