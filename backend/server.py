@@ -68,14 +68,20 @@ class InvoiceLineItem(LineItem):
 class InvoiceCreate(BaseModel):
     client_id: str
     invoice_date: str
+    due_date: str
     line_items: List[LineItem]
     notes: Optional[str] = ""
+
+class InvoiceStatusUpdate(BaseModel):
+    status: str  # pending, paid, overdue
+    payment_date: Optional[str] = None
 
 class Invoice(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     invoice_number: str
     invoice_date: str
+    due_date: str
     client: dict
     line_items: List[dict]
     subtotal: float
@@ -84,6 +90,8 @@ class Invoice(BaseModel):
     total_tax: float
     grand_total: float
     notes: str = ""
+    status: str = "pending"  # pending, paid, overdue
+    payment_date: Optional[str] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     company: dict = Field(default_factory=lambda: COMPANY_DETAILS)
 
@@ -191,6 +199,7 @@ async def create_invoice(invoice_data: InvoiceCreate):
     invoice_obj = Invoice(
         invoice_number=invoice_number,
         invoice_date=invoice_data.invoice_date,
+        due_date=invoice_data.due_date,
         client=client,
         line_items=calculated_items,
         subtotal=round(subtotal, 2),
@@ -198,7 +207,8 @@ async def create_invoice(invoice_data: InvoiceCreate):
         total_sgst=round(total_sgst, 2),
         total_tax=round(total_tax, 2),
         grand_total=round(grand_total, 2),
-        notes=invoice_data.notes or ""
+        notes=invoice_data.notes or "",
+        status="pending"
     )
     
     doc = invoice_obj.model_dump()
@@ -224,21 +234,62 @@ async def delete_invoice(invoice_id: str):
         raise HTTPException(status_code=404, detail="Invoice not found")
     return {"message": "Invoice deleted successfully"}
 
+@api_router.patch("/invoices/{invoice_id}/status", response_model=Invoice)
+async def update_invoice_status(invoice_id: str, status_update: InvoiceStatusUpdate):
+    invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    update_data = {"status": status_update.status}
+    if status_update.status == "paid" and status_update.payment_date:
+        update_data["payment_date"] = status_update.payment_date
+    elif status_update.status == "paid":
+        update_data["payment_date"] = datetime.now(timezone.utc).isoformat().split('T')[0]
+    
+    await db.invoices.update_one({"id": invoice_id}, {"$set": update_data})
+    updated = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    return updated
+
 # Dashboard stats
 @api_router.get("/stats")
 async def get_stats():
     total_invoices = await db.invoices.count_documents({})
     total_clients = await db.clients.count_documents({})
     
-    # Calculate total revenue
-    invoices = await db.invoices.find({}, {"_id": 0, "grand_total": 1}).to_list(1000)
+    # Calculate totals by status
+    invoices = await db.invoices.find({}, {"_id": 0, "grand_total": 1, "status": 1, "due_date": 1}).to_list(1000)
     total_revenue = sum(inv.get("grand_total", 0) for inv in invoices)
+    
+    # Count by status
+    paid_count = sum(1 for inv in invoices if inv.get("status") == "paid")
+    pending_count = sum(1 for inv in invoices if inv.get("status") == "pending")
+    overdue_count = sum(1 for inv in invoices if inv.get("status") == "overdue")
+    
+    # Calculate pending/overdue amounts
+    pending_amount = sum(inv.get("grand_total", 0) for inv in invoices if inv.get("status") in ["pending", "overdue"])
+    paid_amount = sum(inv.get("grand_total", 0) for inv in invoices if inv.get("status") == "paid")
     
     return {
         "total_invoices": total_invoices,
         "total_clients": total_clients,
-        "total_revenue": round(total_revenue, 2)
+        "total_revenue": round(total_revenue, 2),
+        "paid_count": paid_count,
+        "pending_count": pending_count,
+        "overdue_count": overdue_count,
+        "pending_amount": round(pending_amount, 2),
+        "paid_amount": round(paid_amount, 2)
     }
+
+# Check and update overdue invoices
+@api_router.post("/invoices/check-overdue")
+async def check_overdue_invoices():
+    today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    # Find pending invoices with due_date before today
+    result = await db.invoices.update_many(
+        {"status": "pending", "due_date": {"$lt": today}},
+        {"$set": {"status": "overdue"}}
+    )
+    return {"updated_count": result.modified_count}
 
 # Include the router in the main app
 app.include_router(api_router)
