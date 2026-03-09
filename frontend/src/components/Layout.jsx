@@ -47,7 +47,48 @@ const navItems = [
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
+  const [changingPassword, setChangingPassword] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout, isAdmin } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    toast.success("Logged out successfully");
+    navigate("/login");
+  };
+
+  const handleChangePassword = async () => {
+    if (!passwords.current || !passwords.new || !passwords.confirm) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    if (passwords.new !== passwords.confirm) {
+      toast.error("New passwords don't match");
+      return;
+    }
+    if (passwords.new.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      await axios.post(`${API}/auth/change-password`, {
+        current_password: passwords.current,
+        new_password: passwords.new
+      });
+      toast.success("Password changed successfully");
+      setPasswordDialogOpen(false);
+      setPasswords({ current: "", new: "", confirm: "" });
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to change password");
+    } finally {
+      setChangingPassword(false);
+    }
+  };
 
   return (
     <div className="app-container">
