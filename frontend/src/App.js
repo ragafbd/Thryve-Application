@@ -95,6 +95,7 @@ function AdminRoutes() {
         <Route index element={<Dashboard />} />
         <Route path="create-invoice" element={<CreateInvoice />} />
         <Route path="bulk-invoice" element={<BulkInvoice />} />
+        <Route path="auto-invoice" element={<AutoInvoice />} />
         <Route path="invoices" element={<InvoiceList />} />
         <Route path="invoices/:id" element={<InvoiceView />} />
         <Route path="clients" element={<Clients />} />
