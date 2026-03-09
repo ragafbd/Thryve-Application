@@ -150,7 +150,6 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
             <p className="text-slate-600">{company.address}</p>
             <p><span className="text-slate-500">State Name:</span> {company.state || "Haryana"}</p>
             <p><span className="text-slate-500">GSTIN:</span> <span className="font-numbers">{company.gstin}</span></p>
-            <p><span className="text-slate-500">Terms of Delivery:</span></p>
           </div>
         </div>
         
