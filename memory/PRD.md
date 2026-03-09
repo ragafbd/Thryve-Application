@@ -247,10 +247,11 @@ A secure, separate portal for coworking members to self-serve their needs.
 - `/app/test_reports/iteration_2.json` - Authentication tests (17 passed)
 - `/app/test_reports/iteration_3.json` - Management tests (31 passed)
 - `/app/test_reports/iteration_4.json` - Member Portal tests (16 passed)
+- `/app/test_reports/iteration_5.json` - UI Restructure & Booking Rules (100% passed)
 
 ## Credentials
-- **Admin**: admin@thryve.in / admin123 (URL: `/login`)
-- **Test Member**: testmember@thryve.in / member123 (URL: `/portal/login`)
+- **Admin**: admin@thryve.in / admin123 (URL: `/admin/login`)
+- **Test Member**: testmember@thryve.in / member123 (URL: `/` - Landing page)
 
 ---
 Last Updated: March 9, 2026
