@@ -145,6 +145,11 @@ A secure, separate portal for coworking members to self-serve their needs.
 - **Sidebar**: Centered logo, consistent navigation styling
 - **Date Format**: Ordinal dates throughout (e.g., "Monday, 9th March, 2026")
 - **Browser Title**: "Thryve Coworking App"
+- **Booking Calendar**: 
+  - Removed duplicate date display (calendar icon removed)
+  - Navigation arrows allow browsing through all dates including blocked ones
+  - Shows specific holiday names when blocked (e.g., "Bookings are not available on Holi")
+  - Shows "Bookings are not available on Sundays" for Sunday dates
 
 ## Technical Architecture
 
