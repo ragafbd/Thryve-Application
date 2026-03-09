@@ -124,8 +124,23 @@ export default function Layout() {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          {/* Dashboard - Top Level */}
+          <NavLink
+            to="/"
+            data-testid="nav-dashboard"
+            className={cn(
+              "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 mb-2",
+              location.pathname === "/"
+                ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
+                : "text-white/70 hover:bg-white/10 hover:text-white"
+            )}
+          >
+            <LayoutDashboard className="w-5 h-5" strokeWidth={1.5} />
+            <span className="text-sm">Dashboard</span>
+          </NavLink>
+
           {/* Management Section */}
-          <p className="text-xs text-white/40 uppercase tracking-wider px-4 py-2">Management</p>
+          <p className="text-xs text-white/40 uppercase tracking-wider px-4 py-2 mt-2">Management</p>
           {managementNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
