@@ -312,6 +312,247 @@ async def check_overdue_invoices():
     )
     return {"updated_count": result.modified_count}
 
+# Download Excel Template
+@api_router.get("/excel/template")
+async def download_excel_template():
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Invoice Data"
+    
+    # Define headers
+    headers = [
+        "Client Company Name", "Client Address", "Client GSTIN",
+        "Service Type", "Description", "Quantity", "Rate",
+        "Is Taxable (Yes/No)", "Prorate Days", "Total Days",
+        "Invoice Date (YYYY-MM-DD)", "Due Date (YYYY-MM-DD)", "Notes"
+    ]
+    
+    # Style for headers
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="2E375B", end_color="2E375B", fill_type="solid")
+    header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    thin_border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+    
+    # Write headers
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_alignment
+        cell.border = thin_border
+        ws.column_dimensions[cell.column_letter].width = 20
+    
+    # Add sample data row
+    sample_data = [
+        "ABC Tech Pvt Ltd", "123 Tech Park, Sector 15, Faridabad", "06AABCT1234F1Z5",
+        "Monthly Plan", "Dedicated Desk - January 2026", "1", "15000",
+        "Yes", "", "30",
+        "2026-01-01", "2026-01-15", "First month billing"
+    ]
+    for col, value in enumerate(sample_data, 1):
+        cell = ws.cell(row=2, column=col, value=value)
+        cell.border = thin_border
+    
+    # Add instructions sheet
+    ws_instructions = wb.create_sheet("Instructions")
+    instructions = [
+        ["EXCEL TEMPLATE INSTRUCTIONS FOR THRYVE INVOICE GENERATOR"],
+        [""],
+        ["Column Details:"],
+        ["Client Company Name", "Required - Company name for the invoice"],
+        ["Client Address", "Required - Full address of the client"],
+        ["Client GSTIN", "Required - GST Identification Number"],
+        ["Service Type", "Required - One of: Monthly Plan, Security Deposit, Setup Charges, Day Pass, Meeting Room"],
+        ["Description", "Optional - Custom description for the line item"],
+        ["Quantity", "Required - Number of units (default: 1)"],
+        ["Rate", "Required - Rate per unit in INR"],
+        ["Is Taxable (Yes/No)", "Required - Whether GST applies (Yes for plans, No for deposits)"],
+        ["Prorate Days", "Optional - Number of days to charge (for prorated billing)"],
+        ["Total Days", "Optional - Total days in billing period (default: 30)"],
+        ["Invoice Date", "Required - Format: YYYY-MM-DD (e.g., 2026-01-01)"],
+        ["Due Date", "Required - Format: YYYY-MM-DD"],
+        ["Notes", "Optional - Additional notes for the invoice"],
+        [""],
+        ["Tips:"],
+        ["- Multiple line items for same client: Add multiple rows with same client details"],
+        ["- Service Types: Monthly Plan (GST), Day Pass (GST), Meeting Room (GST), Security Deposit (No GST), Setup Charges (No GST)"],
+        ["- Prorate: Leave Prorate Days empty for full month billing"],
+    ]
+    for row_num, row_data in enumerate(instructions, 1):
+        for col_num, value in enumerate(row_data, 1):
+            cell = ws_instructions.cell(row=row_num, column=col_num, value=value)
+            if row_num == 1:
+                cell.font = Font(bold=True, size=14)
+            elif row_num == 3:
+                cell.font = Font(bold=True)
+    ws_instructions.column_dimensions['A'].width = 25
+    ws_instructions.column_dimensions['B'].width = 60
+    
+    # Save to BytesIO
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return Response(
+        content=output.getvalue(),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=thryve_invoice_template.xlsx"}
+    )
+
+# Process Excel and generate invoices
+@api_router.post("/excel/upload")
+async def upload_excel_and_generate_invoices(file: UploadFile = File(...)):
+    if not file.filename.endswith(('.xlsx', '.xls')):
+        raise HTTPException(status_code=400, detail="Please upload an Excel file (.xlsx or .xls)")
+    
+    try:
+        contents = await file.read()
+        wb = load_workbook(filename=BytesIO(contents))
+        ws = wb.active
+        
+        # Get headers from first row
+        headers = [cell.value for cell in ws[1]]
+        
+        # Group rows by client (to create one invoice per client)
+        client_invoices = {}
+        
+        for row_num, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+            if not row[0]:  # Skip empty rows
+                continue
+                
+            row_data = dict(zip(headers, row))
+            
+            # Extract client info
+            client_key = f"{row_data.get('Client Company Name', '')}|{row_data.get('Client GSTIN', '')}"
+            
+            if client_key not in client_invoices:
+                client_invoices[client_key] = {
+                    "client": {
+                        "company_name": row_data.get("Client Company Name", ""),
+                        "address": row_data.get("Client Address", ""),
+                        "gstin": row_data.get("Client GSTIN", "")
+                    },
+                    "invoice_date": str(row_data.get("Invoice Date (YYYY-MM-DD)", datetime.now().strftime('%Y-%m-%d'))),
+                    "due_date": str(row_data.get("Due Date (YYYY-MM-DD)", "")),
+                    "notes": row_data.get("Notes", "") or "",
+                    "line_items": []
+                }
+            
+            # Map service type
+            service_type_map = {
+                "Monthly Plan": "monthly_rental",
+                "Security Deposit": "security_deposit",
+                "Setup Charges": "setup_charges",
+                "Day Pass": "day_pass",
+                "Meeting Room": "meeting_room"
+            }
+            service_type = service_type_map.get(row_data.get("Service Type", ""), "monthly_rental")
+            
+            # Parse taxable
+            is_taxable = str(row_data.get("Is Taxable (Yes/No)", "Yes")).lower() in ["yes", "y", "true", "1"]
+            
+            # Parse prorate
+            prorate_days = row_data.get("Prorate Days")
+            prorate_total = row_data.get("Total Days", 30)
+            is_prorated = prorate_days is not None and prorate_days != ""
+            
+            line_item = {
+                "description": row_data.get("Description", "") or row_data.get("Service Type", ""),
+                "service_type": service_type,
+                "quantity": float(row_data.get("Quantity", 1) or 1),
+                "rate": float(row_data.get("Rate", 0) or 0),
+                "is_taxable": is_taxable,
+                "hsn_sac": "997212" if service_type in ["monthly_rental", "day_pass", "meeting_room"] else "",
+                "unit": "Month" if service_type == "monthly_rental" else "Units",
+                "is_prorated": is_prorated,
+                "prorate_days": int(prorate_days) if is_prorated and prorate_days else None,
+                "prorate_total_days": int(prorate_total) if prorate_total else 30
+            }
+            
+            client_invoices[client_key]["line_items"].append(line_item)
+        
+        # Create invoices
+        created_invoices = []
+        errors = []
+        
+        for client_key, invoice_data in client_invoices.items():
+            try:
+                # Check if client exists, if not create
+                client = await db.clients.find_one(
+                    {"gstin": invoice_data["client"]["gstin"]}, 
+                    {"_id": 0}
+                )
+                
+                if not client:
+                    # Create new client
+                    client_obj = Client(**invoice_data["client"])
+                    client_doc = client_obj.model_dump()
+                    await db.clients.insert_one(client_doc)
+                    client = client_doc
+                
+                # Generate invoice number
+                invoice_number = await generate_invoice_number()
+                
+                # Calculate line items
+                calculated_items = []
+                for item in invoice_data["line_items"]:
+                    line_item = LineItem(**item)
+                    calculated_items.append(calculate_line_item(line_item))
+                
+                # Calculate totals
+                subtotal = sum(item["amount"] for item in calculated_items)
+                total_cgst = sum(item["cgst"] for item in calculated_items)
+                total_sgst = sum(item["sgst"] for item in calculated_items)
+                total_tax = total_cgst + total_sgst
+                grand_total = subtotal + total_tax
+                
+                # Create invoice
+                invoice_obj = Invoice(
+                    invoice_number=invoice_number,
+                    invoice_date=invoice_data["invoice_date"],
+                    due_date=invoice_data["due_date"] if invoice_data["due_date"] else None,
+                    client=client,
+                    line_items=calculated_items,
+                    subtotal=round(subtotal, 2),
+                    total_cgst=round(total_cgst, 2),
+                    total_sgst=round(total_sgst, 2),
+                    total_tax=round(total_tax, 2),
+                    grand_total=round(grand_total, 2),
+                    notes=invoice_data["notes"],
+                    status="pending"
+                )
+                
+                doc = invoice_obj.model_dump()
+                doc = {k: v for k, v in doc.items() if v is not None}
+                await db.invoices.insert_one(doc)
+                
+                created_invoices.append({
+                    "invoice_number": invoice_number,
+                    "client": invoice_data["client"]["company_name"],
+                    "grand_total": round(grand_total, 2)
+                })
+                
+            except Exception as e:
+                errors.append({
+                    "client": invoice_data["client"]["company_name"],
+                    "error": str(e)
+                })
+        
+        return {
+            "success": True,
+            "created_count": len(created_invoices),
+            "created_invoices": created_invoices,
+            "errors": errors
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing Excel file: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
