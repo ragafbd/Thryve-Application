@@ -37,7 +37,12 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 relative">
+      {/* Admin Login Badge */}
+      <div className="absolute bottom-4 right-4">
+        <span className="text-xs text-slate-400 font-medium">Admin Login</span>
+      </div>
+      
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -47,7 +52,7 @@ export default function Login() {
             className="h-20 mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-[#2E375B] font-[Manrope]">
-            Invoice Generator
+            Manage your World
           </h1>
           <p className="text-slate-500 mt-1">Sign in to continue</p>
         </div>
