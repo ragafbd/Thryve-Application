@@ -280,7 +280,7 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
               </tr>
               <tr className="bg-[#2E375B]">
                 <td className="border border-slate-300 px-3 py-2 font-bold text-white whitespace-nowrap">Total Amount</td>
-                <td className="border border-slate-300 px-3 py-2 text-right font-numbers font-bold text-lg text-white whitespace-nowrap">
+                <td className="border border-slate-300 px-3 py-2 text-right font-numbers font-bold text-white whitespace-nowrap">
                   {formatCurrency(invoice?.grand_total)}
                 </td>
               </tr>
