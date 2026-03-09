@@ -570,6 +570,19 @@ export default function Members() {
         </CardContent>
       </Card>
 
+      {/* Bulk Terminate Button - Bottom Corner */}
+      <div className="flex justify-end">
+        <Button 
+          variant="outline"
+          className="border-red-200 text-red-600 hover:bg-red-50"
+          onClick={() => setBulkTerminateDialogOpen(true)}
+          data-testid="bulk-terminate-btn"
+        >
+          <UserX className="w-4 h-4 mr-2" />
+          Bulk Terminate Company
+        </Button>
+      </div>
+
       {/* Add/Edit Member Dialog */}
       <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
