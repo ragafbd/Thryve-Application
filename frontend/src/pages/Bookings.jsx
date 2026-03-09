@@ -32,13 +32,10 @@ export default function Bookings() {
   const [rooms, setRooms] = useState([]);
   const [members, setMembers] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [publicHolidays, setPublicHolidays] = useState([]);
   const [selectedDate, setSelectedDate] = useState(() => {
-    // Initialize with today, but skip if Sunday
-    let date = new Date();
-    while (date.getDay() === 0 || PUBLIC_HOLIDAYS.includes(date.toISOString().split('T')[0])) {
-      date.setDate(date.getDate() + 1);
-    }
-    return date.toISOString().split('T')[0];
+    // Initialize with today
+    return new Date().toISOString().split('T')[0];
   });
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [slots, setSlots] = useState([]);
@@ -66,7 +63,16 @@ export default function Bookings() {
   // Check if date is a Sunday or public holiday
   const isBlockedDate = (dateStr) => {
     const date = new Date(dateStr);
-    return date.getDay() === 0 || PUBLIC_HOLIDAYS.includes(dateStr);
+    return date.getDay() === 0 || publicHolidays.includes(dateStr);
+  };
+
+  const fetchPublicHolidays = async () => {
+    try {
+      const response = await axios.get(`${API}/holidays/dates`);
+      setPublicHolidays(response.data);
+    } catch (error) {
+      console.error("Failed to fetch public holidays");
+    }
   };
 
   const fetchRooms = async () => {
