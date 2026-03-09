@@ -326,6 +326,23 @@ async def toggle_user_status(user_id: str, current_user: dict = Depends(get_curr
     
     return {"message": f"User {'activated' if new_status else 'deactivated'}", "is_active": new_status}
 
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+@api_router.post("/auth/change-password")
+async def change_password(data: PasswordChange, current_user: dict = Depends(get_current_user)):
+    # Verify current password
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+    if not verify_password(data.current_password, user["password_hash"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    # Update password
+    new_hash = get_password_hash(data.new_password)
+    await db.users.update_one({"id": current_user["id"]}, {"$set": {"password_hash": new_hash}})
+    
+    return {"message": "Password changed successfully"}
+
 # Create default admin user on startup
 @app.on_event("startup")
 async def create_default_admin():
