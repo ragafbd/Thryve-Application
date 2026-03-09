@@ -11,7 +11,7 @@ import uuid
 from models.management import (
     PlanType, PlanTypeCreate,
     MeetingRoom, MeetingRoomCreate,
-    Member, MemberCreate, MemberUpdate,
+    Member, MemberCreate, MemberUpdate, MemberTerminate, BulkTerminate,
     Booking, BookingCreate,
     Ticket, TicketCreate, TicketUpdate,
     Announcement, AnnouncementCreate
