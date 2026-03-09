@@ -84,7 +84,7 @@ export default function MemberLogin() {
             alt="Thryve Coworking" 
             className="h-20 mx-auto mb-4"
           />
-          <h1 className="text-2xl font-bold text-white font-[Manrope]">Thryve Coworking</h1>
+          <h1 className="text-2xl font-bold text-white font-[Manrope]">Manage your World</h1>
           <p className="text-white/60 mt-1">Member Portal - Access your invoices, bookings & support</p>
         </div>
 
