@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FileText, Users, IndianRupee, PlusCircle, ArrowRight, Clock, CheckCircle, AlertTriangle } from "lucide-react";
+import { 
+  FileText, Users, IndianRupee, PlusCircle, ArrowRight, Clock, CheckCircle, 
+  AlertTriangle, UserPlus, CalendarDays, Ticket, Megaphone, FileSpreadsheet,
+  TrendingUp, Building2, CreditCard
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +23,7 @@ const StatusBadge = ({ status }) => {
 };
 
 export default function Dashboard() {
-  const [stats, setStats] = useState({ 
+  const [invoiceStats, setInvoiceStats] = useState({ 
     total_invoices: 0, 
     total_clients: 0, 
     total_revenue: 0,
@@ -28,6 +32,14 @@ export default function Dashboard() {
     overdue_count: 0,
     pending_amount: 0,
     paid_amount: 0
+  });
+  const [managementStats, setManagementStats] = useState({
+    total_members: 0,
+    active_members: 0,
+    todays_bookings: 0,
+    monthly_revenue: 0,
+    open_tickets: 0,
+    active_announcements: 0
   });
   const [recentInvoices, setRecentInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,12 +50,14 @@ export default function Dashboard() {
         // Check for overdue invoices first
         await axios.post(`${API}/invoices/check-overdue`);
         
-        const [statsRes, invoicesRes] = await Promise.all([
+        const [statsRes, invoicesRes, mgmtStatsRes] = await Promise.all([
           axios.get(`${API}/stats`),
-          axios.get(`${API}/invoices`)
+          axios.get(`${API}/invoices`),
+          axios.get(`${API}/management/stats`)
         ]);
-        setStats(statsRes.data);
+        setInvoiceStats(statsRes.data);
         setRecentInvoices(invoicesRes.data.slice(0, 5));
+        setManagementStats(mgmtStatsRes.data);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -53,26 +67,59 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  const statCards = [
+  // Quick action cards
+  const quickActions = [
     {
-      title: "Total Revenue",
-      value: `₹${stats.total_revenue.toLocaleString('en-IN')}`,
-      icon: IndianRupee,
-      color: "bg-[#2E375B]"
+      title: "Members",
+      description: "Manage coworking members",
+      icon: UserPlus,
+      link: "/members",
+      color: "bg-gradient-to-br from-[#2E375B] to-[#1a2038]",
+      stat: managementStats.active_members,
+      statLabel: "Active"
     },
     {
-      title: "Paid",
-      value: `₹${stats.paid_amount.toLocaleString('en-IN')}`,
-      subtitle: `${stats.paid_count} invoices`,
-      icon: CheckCircle,
-      color: "bg-[#FFA14A]"
+      title: "Room Bookings",
+      description: "Book meeting rooms",
+      icon: CalendarDays,
+      link: "/bookings",
+      color: "bg-gradient-to-br from-[#FFA14A] to-[#e8893a]",
+      stat: managementStats.todays_bookings,
+      statLabel: "Today"
     },
     {
-      title: "Pending",
-      value: `₹${stats.pending_amount.toLocaleString('en-IN')}`,
-      subtitle: `${stats.pending_count + stats.overdue_count} invoices`,
-      icon: Clock,
-      color: "bg-amber-500"
+      title: "Support Tickets",
+      description: "Handle requests",
+      icon: Ticket,
+      link: "/tickets",
+      color: "bg-gradient-to-br from-blue-500 to-blue-700",
+      stat: managementStats.open_tickets,
+      statLabel: "Open"
+    },
+    {
+      title: "Announcements",
+      description: "Community updates",
+      icon: Megaphone,
+      link: "/announcements",
+      color: "bg-gradient-to-br from-purple-500 to-purple-700",
+      stat: managementStats.active_announcements,
+      statLabel: "Active"
+    },
+    {
+      title: "Create Invoice",
+      description: "Generate new invoice",
+      icon: PlusCircle,
+      link: "/create-invoice",
+      color: "bg-gradient-to-br from-emerald-500 to-emerald-700",
+      stat: null
+    },
+    {
+      title: "Bulk Invoice",
+      description: "Upload Excel file",
+      icon: FileSpreadsheet,
+      link: "/bulk-invoice",
+      color: "bg-gradient-to-br from-amber-500 to-amber-700",
+      stat: null
     }
   ];
 
@@ -82,88 +129,167 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight font-[Manrope]">
-            Dashboard
+            Thryve Coworking
           </h1>
           <p className="text-slate-600 mt-1">
-            Welcome to Thryve Invoice Generator
+            Manage your workspace, members, and billing
           </p>
         </div>
-        <Link to="/create-invoice">
-          <Button 
-            className="bg-[#2E375B] hover:bg-[#232B47] text-white"
-            data-testid="create-invoice-btn"
-          >
-            <PlusCircle className="w-4 h-4 mr-2" />
-            Create Invoice
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2 text-sm text-slate-500">
+          <Clock className="w-4 h-4" />
+          {new Date().toLocaleDateString('en-IN', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })}
+        </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {statCards.map((stat, index) => (
-          <Card 
-            key={stat.title} 
-            className="border border-slate-200 shadow-sm card-hover"
+      {/* Quick Actions Grid - Icon Style */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {quickActions.map((action, index) => (
+          <Link 
+            key={action.title} 
+            to={action.link}
+            className="group"
             style={{ animationDelay: `${index * 0.05}s` }}
           >
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">
-                    {stat.title}
-                  </p>
-                  <p className="text-2xl font-bold text-slate-900 mt-2 font-mono">
-                    {loading ? "..." : stat.value}
-                  </p>
-                  {stat.subtitle && (
-                    <p className="text-xs text-slate-400 mt-1">{stat.subtitle}</p>
-                  )}
+            <Card className="h-full border-0 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group-hover:scale-[1.02]">
+              <CardContent className={`p-0 ${action.color}`}>
+                <div className="p-4 text-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                      <action.icon className="w-5 h-5" strokeWidth={1.5} />
+                    </div>
+                    {action.stat !== null && (
+                      <div className="text-right">
+                        <p className="text-2xl font-bold">{loading ? "..." : action.stat}</p>
+                        <p className="text-xs text-white/70">{action.statLabel}</p>
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-semibold text-sm">{action.title}</h3>
+                  <p className="text-xs text-white/70 mt-0.5">{action.description}</p>
                 </div>
-                <div className={`w-12 h-12 rounded-xl ${stat.color} flex items-center justify-center`}>
-                  <stat.icon className="w-6 h-6 text-white" strokeWidth={1.5} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
-      {/* Quick Stats Row */}
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Member Stats */}
+        <Card className="border border-slate-200 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold text-slate-700 font-[Manrope] flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-[#2E375B]" />
+              Workspace Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center p-3 bg-slate-50 rounded-lg">
+                <p className="text-2xl font-bold text-[#2E375B]">{managementStats.total_members}</p>
+                <p className="text-xs text-slate-500">Total Members</p>
+              </div>
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <p className="text-2xl font-bold text-green-600">{managementStats.active_members}</p>
+                <p className="text-xs text-slate-500">Active</p>
+              </div>
+              <div className="text-center p-3 bg-[#FFA14A]/10 rounded-lg">
+                <p className="text-2xl font-bold text-[#FFA14A]">Rs. {(managementStats.monthly_revenue/1000).toFixed(0)}k</p>
+                <p className="text-xs text-slate-500">Monthly</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Invoice Stats */}
+        <Card className="border border-slate-200 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold text-slate-700 font-[Manrope] flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-[#FFA14A]" />
+              Billing Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center p-3 bg-slate-50 rounded-lg">
+                <p className="text-2xl font-bold text-[#2E375B]">₹{(invoiceStats.total_revenue/1000).toFixed(1)}k</p>
+                <p className="text-xs text-slate-500">Total Revenue</p>
+              </div>
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <p className="text-2xl font-bold text-green-600">{invoiceStats.paid_count}</p>
+                <p className="text-xs text-slate-500">Paid</p>
+              </div>
+              <div className="text-center p-3 bg-amber-50 rounded-lg">
+                <p className="text-2xl font-bold text-amber-600">{invoiceStats.pending_count + invoiceStats.overdue_count}</p>
+                <p className="text-xs text-slate-500">Pending</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Financial Summary Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="border border-slate-200">
-          <CardContent className="p-4 flex items-center gap-3">
-            <FileText className="w-5 h-5 text-slate-400" />
-            <div>
-              <p className="text-2xl font-bold text-slate-900 font-mono">{stats.total_invoices}</p>
-              <p className="text-xs text-slate-500">Total Invoices</p>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#2E375B] flex items-center justify-center">
+                <IndianRupee className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-slate-900 font-mono">
+                  ₹{invoiceStats.total_revenue.toLocaleString('en-IN')}
+                </p>
+                <p className="text-xs text-slate-500">Total Revenue</p>
+              </div>
             </div>
           </CardContent>
         </Card>
         <Card className="border border-slate-200">
-          <CardContent className="p-4 flex items-center gap-3">
-            <Users className="w-5 h-5 text-slate-400" />
-            <div>
-              <p className="text-2xl font-bold text-slate-900 font-mono">{stats.total_clients}</p>
-              <p className="text-xs text-slate-500">Total Clients</p>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-slate-900 font-mono">
+                  ₹{invoiceStats.paid_amount.toLocaleString('en-IN')}
+                </p>
+                <p className="text-xs text-slate-500">Collected</p>
+              </div>
             </div>
           </CardContent>
         </Card>
         <Card className="border border-slate-200">
-          <CardContent className="p-4 flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-[#FFA14A]" />
-            <div>
-              <p className="text-2xl font-bold text-[#FFA14A] font-mono">{stats.paid_count}</p>
-              <p className="text-xs text-slate-500">Paid Invoices</p>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-amber-500 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-slate-900 font-mono">
+                  ₹{invoiceStats.pending_amount.toLocaleString('en-IN')}
+                </p>
+                <p className="text-xs text-slate-500">Pending</p>
+              </div>
             </div>
           </CardContent>
         </Card>
         <Card className="border border-slate-200">
-          <CardContent className="p-4 flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-500" />
-            <div>
-              <p className="text-2xl font-bold text-red-600 font-mono">{stats.overdue_count}</p>
-              <p className="text-xs text-slate-500">Overdue</p>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-red-600 font-mono">{invoiceStats.overdue_count}</p>
+                <p className="text-xs text-slate-500">Overdue Invoices</p>
+              </div>
             </div>
           </CardContent>
         </Card>
