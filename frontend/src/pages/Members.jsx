@@ -332,15 +332,6 @@ export default function Members() {
         </div>
         <div className="flex gap-2">
           <Button 
-            variant="outline"
-            className="border-red-200 text-red-600 hover:bg-red-50"
-            onClick={() => setBulkTerminateDialogOpen(true)}
-            data-testid="bulk-terminate-btn"
-          >
-            <UserX className="w-4 h-4 mr-2" />
-            Bulk Terminate
-          </Button>
-          <Button 
             className="bg-[#2E375B] hover:bg-[#232B47] text-white"
             onClick={() => handleOpenDialog()}
             data-testid="add-member-btn"
