@@ -483,6 +483,11 @@ async def create_booking(booking_data: BookingCreate, current_user: dict = Depen
     if booking_date.weekday() == 6:
         raise HTTPException(status_code=400, detail="Bookings are not available on Sundays")
     
+    # Check if date is a public holiday
+    holiday = await db.public_holidays.find_one({"date": booking_data.date, "is_active": True}, {"_id": 0})
+    if holiday:
+        raise HTTPException(status_code=400, detail=f"Bookings are not available on {holiday['name']}")
+    
     # Get room details
     room = await db.meeting_rooms.find_one({"id": booking_data.room_id}, {"_id": 0})
     if not room:
