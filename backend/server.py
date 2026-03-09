@@ -68,7 +68,7 @@ class InvoiceLineItem(LineItem):
 class InvoiceCreate(BaseModel):
     client_id: str
     invoice_date: str
-    due_date: str
+    due_date: Optional[str] = None
     line_items: List[LineItem]
     notes: Optional[str] = ""
 
@@ -81,7 +81,7 @@ class Invoice(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     invoice_number: str
     invoice_date: str
-    due_date: str
+    due_date: Optional[str] = None
     client: dict
     line_items: List[dict]
     subtotal: float
@@ -212,6 +212,8 @@ async def create_invoice(invoice_data: InvoiceCreate):
     )
     
     doc = invoice_obj.model_dump()
+    # Remove None values to avoid storing them
+    doc = {k: v for k, v in doc.items() if v is not None}
     await db.invoices.insert_one(doc)
     return invoice_obj
 
