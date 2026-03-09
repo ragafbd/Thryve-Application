@@ -1,5 +1,30 @@
 /* Thryve Invoice Generator Styles */
 
+/* Thryve Brand Colors */
+.bg-thryve-navy {
+    background-color: #2D3E50;
+}
+
+.bg-thryve-gold {
+    background-color: #C9A227;
+}
+
+.text-thryve-navy {
+    color: #2D3E50;
+}
+
+.text-thryve-gold {
+    color: #C9A227;
+}
+
+.border-thryve-navy {
+    border-color: #2D3E50;
+}
+
+.border-thryve-gold {
+    border-color: #C9A227;
+}
+
 /* Layout */
 .app-container {
     display: flex;
@@ -9,7 +34,7 @@
 /* Sidebar */
 .sidebar {
     width: 280px;
-    background: #064E3B;
+    background: #2D3E50;
     color: white;
     position: fixed;
     height: 100vh;
@@ -80,13 +105,13 @@
 
 /* Button interactions */
 .btn-primary {
-    background: #064E3B;
+    background: #2D3E50;
     color: white;
     transition: all 0.15s ease;
 }
 
 .btn-primary:hover {
-    background: #022C22;
+    background: #1E2A36;
 }
 
 .btn-primary:active {
@@ -99,7 +124,7 @@
 }
 
 .card-hover:hover {
-    border-color: rgba(6, 78, 59, 0.5);
+    border-color: rgba(201, 162, 39, 0.5);
 }
 
 /* Form inputs */
@@ -111,8 +136,8 @@
 
 .form-input:focus {
     background: white;
-    border-color: #064E3B;
-    box-shadow: 0 0 0 3px rgba(6, 78, 59, 0.1);
+    border-color: #2D3E50;
+    box-shadow: 0 0 0 3px rgba(45, 62, 80, 0.1);
 }
 
 /* Animation delays for stagger effect */
