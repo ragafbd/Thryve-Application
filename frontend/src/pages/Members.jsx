@@ -66,6 +66,7 @@ const StatusBadge = ({ status, hasOutstandingDues }) => {
 export default function Members() {
   const [members, setMembers] = useState([]);
   const [plans, setPlans] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -74,6 +75,17 @@ export default function Members() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState(null);
   const [saving, setSaving] = useState(false);
+  
+  // Termination states
+  const [terminateDialogOpen, setTerminateDialogOpen] = useState(false);
+  const [memberToTerminate, setMemberToTerminate] = useState(null);
+  const [bulkTerminateDialogOpen, setBulkTerminateDialogOpen] = useState(false);
+  const [companyToTerminate, setCompanyToTerminate] = useState("");
+  const [terminateData, setTerminateData] = useState({
+    end_date: new Date().toISOString().split('T')[0],
+    termination_reason: "",
+    has_outstanding_dues: false
+  });
 
   const [formData, setFormData] = useState({
     name: "",
