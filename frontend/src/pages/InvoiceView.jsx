@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Download, Printer, Trash2, CheckCircle, Clock, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Download, Printer, Trash2, CheckCircle, Clock, AlertTriangle, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -65,6 +65,31 @@ export default function InvoiceView() {
     documentTitle: invoice ? `Invoice-${invoice.invoice_number}` : 'Invoice',
     onAfterPrint: () => toast.success("Invoice printed/saved as PDF"),
   });
+
+  const handleDownloadPDF = async () => {
+    try {
+      const response = await axios.get(`${API}/invoices/${id}/pdf`, {
+        responseType: 'blob'
+      });
+      
+      // Get filename from invoice number
+      const filename = invoice.invoice_number.replace(/\//g, '-') + '.pdf';
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(`Downloaded ${filename}`);
+    } catch (error) {
+      toast.error("Failed to download PDF");
+    }
+  };
 
   const handleDelete = async () => {
     try {
@@ -153,6 +178,14 @@ export default function InvoiceView() {
             </Button>
           )}
           <Button
+            onClick={handleDownloadPDF}
+            className="bg-[#FFA14A] hover:bg-[#E8923E] text-[#2E375B]"
+            data-testid="download-pdf-btn"
+          >
+            <FileDown className="w-4 h-4 mr-2" />
+            Download PDF
+          </Button>
+          <Button
             variant="outline"
             onClick={handlePrint}
             className="border-[#2E375B] text-[#2E375B] hover:bg-[#FFD4B0]"
@@ -160,15 +193,6 @@ export default function InvoiceView() {
           >
             <Printer className="w-4 h-4 mr-2" />
             Print
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handlePrint}
-            className="border-[#2E375B] text-[#2E375B] hover:bg-[#FFD4B0]"
-            data-testid="download-pdf-btn"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Download PDF
           </Button>
           <Button
             variant="outline"
