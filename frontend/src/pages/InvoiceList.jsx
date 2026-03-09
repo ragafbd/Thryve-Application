@@ -107,7 +107,7 @@ export default function InvoiceList() {
         </div>
         <Link to="/create-invoice">
           <Button 
-            className="bg-[#064E3B] hover:bg-[#022C22] text-white"
+            className="bg-[#2D3E50] hover:bg-[#1E2A36] text-white"
             data-testid="create-invoice-btn"
           >
             <PlusCircle className="w-4 h-4 mr-2" />
@@ -154,7 +154,7 @@ export default function InvoiceList() {
               </p>
               {!searchQuery && statusFilter === "all" && (
                 <Link to="/create-invoice">
-                  <Button className="mt-4 bg-[#064E3B] hover:bg-[#022C22]">
+                  <Button className="mt-4 bg-[#2D3E50] hover:bg-[#1E2A36]">
                     Create Your First Invoice
                   </Button>
                 </Link>
@@ -185,7 +185,7 @@ export default function InvoiceList() {
                       <td className="font-mono text-sm">
                         <Link 
                           to={`/invoices/${invoice.id}`}
-                          className="text-[#064E3B] hover:underline font-medium"
+                          className="text-[#2D3E50] hover:underline font-medium"
                           data-testid={`invoice-link-${invoice.id}`}
                         >
                           {invoice.invoice_number}
@@ -224,7 +224,7 @@ export default function InvoiceList() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-slate-500 hover:text-[#064E3B]"
+                              className="h-8 w-8 text-slate-500 hover:text-[#2D3E50]"
                               data-testid={`view-invoice-${invoice.id}`}
                             >
                               <Eye className="w-4 h-4" />

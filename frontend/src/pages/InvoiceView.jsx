@@ -155,7 +155,7 @@ export default function InvoiceView() {
           <Button
             variant="outline"
             onClick={handlePrint}
-            className="border-[#064E3B] text-[#064E3B] hover:bg-[#ECFDF5]"
+            className="border-[#2D3E50] text-[#2D3E50] hover:bg-[#E8D59A]"
             data-testid="print-invoice-btn"
           >
             <Printer className="w-4 h-4 mr-2" />
@@ -164,7 +164,7 @@ export default function InvoiceView() {
           <Button
             variant="outline"
             onClick={handlePrint}
-            className="border-[#064E3B] text-[#064E3B] hover:bg-[#ECFDF5]"
+            className="border-[#2D3E50] text-[#2D3E50] hover:bg-[#E8D59A]"
             data-testid="download-pdf-btn"
           >
             <Download className="w-4 h-4 mr-2" />
