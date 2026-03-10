@@ -22,8 +22,11 @@ Build an automatic invoice generator and comprehensive management system for Thr
   - GSTIN and PAN placeholders updated to generic "Enter..." text (validation rules remain: uppercase, 15 chars for GSTIN, 10 chars for PAN)
   - Meeting room credits now entered per seat - label updated to "Meeting Room Credits (minutes per seat)"
   - Added "Internet/Bandwidth Details" section with ISP Provider, Bandwidth Speed, and Account/Connection ID
+  - Rate per Seat field no longer auto-populates when selecting a plan - must be entered manually with blank placeholder
 - **Clients Page Stats**: Removed redundant "Credits/Seat" stat card (now shows 3 cards: Active Companies, Seats Occupied, Monthly Revenue)
-- **Terminate/Suspend Clients**: Available via 3-dot menu on each client card (Edit Company, Add Member, Terminate, Delete Permanently)
+- **Terminate/Suspend Clients**: Available via 3-dot menu on each client card (Edit Company, Add Member, Terminate, Reactivate)
+- **Removed Delete Option**: Companies can no longer be permanently deleted to preserve historical records
+- **Export Feature**: Added "Export" button to download all client data as CSV file with comprehensive fields (company details, signatory info, subscription, internet details)
 
 ## User Personas
 - **Admin**: Full access to all features, user management, settings (at `/admin`)
