@@ -19,7 +19,8 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Enhanced Add Client Form**: 
   - Added Email ID and Website fields to Company Details
   - Added new "Authorised Signatory Details" section with Name, Phone, Email, Aadhar, and PAN fields
-  - GSTIN and PAN placeholders updated to generic "Enter..." text
+  - GSTIN and PAN placeholders updated to generic "Enter..." text (validation rules remain: uppercase, 15 chars for GSTIN, 10 chars for PAN)
+  - Added "Meeting Room Credits (minutes)" field for manual entry - removed automatic 120 min/seat calculation
 
 ## User Personas
 - **Admin**: Full access to all features, user management, settings (at `/admin`)
