@@ -606,129 +606,177 @@ export default function Members() {
 
       {/* Add/Edit Member Dialog */}
       <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-[Manrope]">
               {editingMember ? "Edit Member" : "Add New Member"}
             </DialogTitle>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div className="space-y-2">
-              <Label>Name *</Label>
-              <Input
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Member name"
-              />
+          <div className="space-y-6 py-4">
+            {/* Authorized Person Details */}
+            <div>
+              <h3 className="text-sm font-semibold text-[#2E375B] mb-3 border-b pb-2">Authorized Person Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Name *</Label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Authorized person's name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Email *</Label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="email@example.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Phone *</Label>
+                  <Input
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="+91 98765 43210"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Aadhar Number</Label>
+                  <Input
+                    value={formData.aadhar_number}
+                    onChange={(e) => setFormData({ ...formData, aadhar_number: e.target.value.replace(/\D/g, '').slice(0, 12) })}
+                    placeholder="1234 5678 9012"
+                    maxLength={12}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>PAN Number</Label>
+                  <Input
+                    value={formData.pan_number}
+                    onChange={(e) => setFormData({ ...formData, pan_number: e.target.value.toUpperCase().slice(0, 10) })}
+                    placeholder="ABCDE1234F"
+                    maxLength={10}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Email *</Label>
-              <Input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="email@example.com"
-              />
+
+            {/* Company Details */}
+            <div>
+              <h3 className="text-sm font-semibold text-[#2E375B] mb-3 border-b pb-2">Company Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Company Name *</Label>
+                  <Input
+                    value={formData.company_name}
+                    onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                    placeholder="Company name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Company GSTIN</Label>
+                  <Input
+                    value={formData.company_gstin}
+                    onChange={(e) => setFormData({ ...formData, company_gstin: e.target.value.toUpperCase().slice(0, 15) })}
+                    placeholder="22AAAAA0000A1Z5"
+                    maxLength={15}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Company PAN</Label>
+                  <Input
+                    value={formData.company_pan}
+                    onChange={(e) => setFormData({ ...formData, company_pan: e.target.value.toUpperCase().slice(0, 10) })}
+                    placeholder="ABCDE1234F"
+                    maxLength={10}
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Company Address</Label>
+                  <Input
+                    value={formData.company_address}
+                    onChange={(e) => setFormData({ ...formData, company_address: e.target.value })}
+                    placeholder="Full registered address"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Phone *</Label>
-              <Input
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="+91 98765 43210"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Company Name *</Label>
-              <Input
-                value={formData.company_name}
-                onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                placeholder="Company name"
-              />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label>Company Address</Label>
-              <Input
-                value={formData.company_address}
-                onChange={(e) => setFormData({ ...formData, company_address: e.target.value })}
-                placeholder="Full address"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>GSTIN</Label>
-              <Input
-                value={formData.gstin}
-                onChange={(e) => setFormData({ ...formData, gstin: e.target.value.toUpperCase() })}
-                placeholder="22AAAAA0000A1Z5"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Plan *</Label>
-              <Select value={formData.plan_type_id} onValueChange={(value) => setFormData({ ...formData, plan_type_id: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select plan" />
-                </SelectTrigger>
-                <SelectContent>
-                  {plans.map(plan => (
-                    <SelectItem key={plan.id} value={plan.id}>
-                      {plan.name} - Rs. {plan.default_rate.toLocaleString()}/mo
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Seat/Cabin Number</Label>
-              <Input
-                value={formData.seat_number}
-                onChange={(e) => setFormData({ ...formData, seat_number: e.target.value })}
-                placeholder="e.g., A-12 or Cabin-3"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Custom Rate (Rs.)</Label>
-              <Input
-                type="number"
-                value={formData.custom_rate}
-                onChange={(e) => setFormData({ ...formData, custom_rate: e.target.value })}
-                placeholder={selectedPlan ? `Default: ${selectedPlan.default_rate}` : "Override default rate"}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Discount (%)</Label>
-              <Input
-                type="number"
-                value={formData.discount_percent}
-                onChange={(e) => setFormData({ ...formData, discount_percent: e.target.value })}
-                placeholder="0"
-                min="0"
-                max="100"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Meeting Room Credits (minutes)</Label>
-              <Input
-                type="number"
-                value={formData.meeting_room_credits}
-                onChange={(e) => setFormData({ ...formData, meeting_room_credits: e.target.value })}
-                placeholder={selectedPlan ? `Default: ${selectedPlan.meeting_room_credits}` : "Override default"}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Start Date *</Label>
-              <Input
-                type="date"
-                value={formData.start_date}
-                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label>Notes</Label>
-              <Input
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Any additional notes"
-              />
+
+            {/* Plan & Pricing Details */}
+            <div>
+              <h3 className="text-sm font-semibold text-[#2E375B] mb-3 border-b pb-2">Plan & Pricing</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Plan *</Label>
+                  <Select value={formData.plan_type_id} onValueChange={(value) => setFormData({ ...formData, plan_type_id: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select plan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {plans.map(plan => (
+                        <SelectItem key={plan.id} value={plan.id}>
+                          {plan.name} - Rs. {plan.default_rate.toLocaleString()}/mo
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Seat/Cabin Number</Label>
+                  <Input
+                    value={formData.seat_number}
+                    onChange={(e) => setFormData({ ...formData, seat_number: e.target.value })}
+                    placeholder="e.g., A-12 or Cabin-3"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Custom Rate (Rs.)</Label>
+                  <Input
+                    type="number"
+                    value={formData.custom_rate}
+                    onChange={(e) => setFormData({ ...formData, custom_rate: e.target.value })}
+                    placeholder={selectedPlan ? `Default: ${selectedPlan.default_rate}` : "Override default rate"}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Discount (%)</Label>
+                  <Input
+                    type="number"
+                    value={formData.discount_percent}
+                    onChange={(e) => setFormData({ ...formData, discount_percent: e.target.value })}
+                    placeholder="0"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Meeting Room Credits (minutes)</Label>
+                  <Input
+                    type="number"
+                    value={formData.meeting_room_credits}
+                    onChange={(e) => setFormData({ ...formData, meeting_room_credits: e.target.value })}
+                    placeholder={selectedPlan ? `Default: ${selectedPlan.meeting_room_credits}` : "Override default"}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Start Date *</Label>
+                  <Input
+                    type="date"
+                    value={formData.start_date}
+                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Notes</Label>
+                  <Input
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    placeholder="Any additional notes"
+                  />
+                </div>
+              </div>
             </div>
           </div>
           
