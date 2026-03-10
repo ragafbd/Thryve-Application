@@ -72,7 +72,12 @@ class CompanyCreate(BaseModel):
     total_seats: int  # Number of seats subscribed
     rate_per_seat: float  # Custom rate per seat (admin-set)
     discount_percent: float = 0  # Any discount
-    meeting_room_credits: int = 0  # Monthly meeting room credits (in minutes)
+    meeting_room_credits: int = 0  # Meeting room credits per seat (in minutes)
+    
+    # Internet/Bandwidth Details
+    isp_provider: Optional[str] = ""
+    bandwidth_speed: Optional[str] = ""
+    isp_account_id: Optional[str] = ""
     
     # Dates
     start_date: str
