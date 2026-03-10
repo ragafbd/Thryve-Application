@@ -70,11 +70,18 @@ export default function CreateInvoice() {
   const [invoiceDate, setInvoiceDate] = useState(new Date());
   const [dueDate, setDueDate] = useState(() => {
     const date = new Date();
-    date.setDate(date.getDate() + 15); // Default: 15 days from now
+    date.setDate(date.getDate() + 4); // Default: 4 days from invoice date
     return date;
   });
   const [lineItems, setLineItems] = useState([{ ...emptyLineItem }]);
   const [notes, setNotes] = useState("");
+
+  // Auto-update due date when invoice date changes (invoice date + 4 days)
+  useEffect(() => {
+    const newDueDate = new Date(invoiceDate);
+    newDueDate.setDate(newDueDate.getDate() + 4);
+    setDueDate(newDueDate);
+  }, [invoiceDate]);
 
   useEffect(() => {
     const fetchData = async () => {
