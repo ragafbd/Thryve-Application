@@ -97,9 +97,7 @@ function AdminRoutes() {
         <Route path="auto-invoice" element={<AutoInvoice />} />
         <Route path="invoices" element={<InvoiceList />} />
         <Route path="invoices/:id" element={<InvoiceView />} />
-        <Route path="clients" element={<Clients />} />
         <Route path="companies" element={<Companies />} />
-        <Route path="members" element={<Members />} />
         <Route path="bookings" element={<Bookings />} />
         <Route path="holidays" element={<PublicHolidays />} />
         <Route path="tickets" element={<Tickets />} />
