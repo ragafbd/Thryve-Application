@@ -821,7 +821,7 @@ export default function Companies() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Meeting Room Credits (minutes)</Label>
+                  <Label>Meeting Room Credits (minutes per seat)</Label>
                   <Input
                     type="text"
                     inputMode="numeric"
@@ -830,7 +830,7 @@ export default function Companies() {
                       const val = e.target.value.replace(/\D/g, '');
                       setCompanyForm({ ...companyForm, meeting_room_credits: val });
                     }}
-                    placeholder="Enter monthly credits"
+                    placeholder="Enter credits per seat"
                   />
                 </div>
                 <div className="space-y-2">
@@ -839,6 +839,37 @@ export default function Companies() {
                     type="date"
                     value={companyForm.start_date}
                     onChange={(e) => setCompanyForm({ ...companyForm, start_date: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Internet/Bandwidth Details */}
+            <div>
+              <h3 className="text-sm font-semibold text-[#2E375B] mb-3 border-b pb-2">Internet/Bandwidth Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>ISP Provider</Label>
+                  <Input
+                    value={companyForm.isp_provider}
+                    onChange={(e) => setCompanyForm({ ...companyForm, isp_provider: e.target.value })}
+                    placeholder="Enter ISP name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Bandwidth Speed</Label>
+                  <Input
+                    value={companyForm.bandwidth_speed}
+                    onChange={(e) => setCompanyForm({ ...companyForm, bandwidth_speed: e.target.value })}
+                    placeholder="e.g., 100 Mbps"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Account/Connection ID</Label>
+                  <Input
+                    value={companyForm.isp_account_id}
+                    onChange={(e) => setCompanyForm({ ...companyForm, isp_account_id: e.target.value })}
+                    placeholder="Enter account number"
                   />
                 </div>
                 <div className="space-y-2">
