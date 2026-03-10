@@ -197,19 +197,6 @@ export default function Layout() {
             <>
               <p className="text-xs text-white/60 uppercase tracking-wider px-4 py-2 mt-4 font-bold">Admin</p>
               <NavLink
-                to="clients"
-                data-testid="nav-clients"
-                className={cn(
-                  "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200",
-                  location.pathname === "/admin/clients"
-                    ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
-                    : "text-white/70 hover:bg-white/10 hover:text-white"
-                )}
-              >
-                <Users className="w-5 h-5" strokeWidth={1.5} />
-                <span className="text-sm">Clients (Legacy)</span>
-              </NavLink>
-              <NavLink
                 to="users"
                 data-testid="nav-users"
                 className={cn(
