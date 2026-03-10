@@ -867,7 +867,7 @@ export default function Companies() {
                   </div>
                   <div>
                     <p className="text-[#2E375B]/60">Meeting Credits</p>
-                    <p className="font-bold text-[#2E375B]">{CREDITS_PER_SEAT * (parseInt(companyForm.total_seats) || 0)} min</p>
+                    <p className="font-bold text-[#2E375B]">{companyForm.meeting_room_credits || 0} min</p>
                   </div>
                   <div>
                     <p className="text-[#2E375B]/60">Total/Month</p>
