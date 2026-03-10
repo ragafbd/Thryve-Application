@@ -834,6 +834,19 @@ export default function Companies() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label>Meeting Room Credits (minutes)</Label>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    value={companyForm.meeting_room_credits}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      setCompanyForm({ ...companyForm, meeting_room_credits: val });
+                    }}
+                    placeholder="Enter monthly credits"
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label>Start Date *</Label>
                   <Input
                     type="date"
