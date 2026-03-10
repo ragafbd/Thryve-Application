@@ -159,65 +159,62 @@ class MemberCreate(BaseModel):
     notes: Optional[str] = ""
 
 class Member(BaseModel):
-    """Member/Client at Thryve Coworking"""
+    """Member/Person under a Company subscription"""
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     
-    # Authorized Person Details
-    name: str  # Authorized person's name
+    # Company Reference
+    company_id: str  # Reference to Company
+    company_name: str = ""  # Denormalized for easy access
+    
+    # Person Details
+    name: str
     email: str
     phone: str
-    aadhar_number: str = ""  # Authorized person's Aadhar
-    pan_number: str = ""  # Authorized person's PAN
+    aadhar_number: str = ""
+    pan_number: str = ""
     
-    # Company Details
-    company_name: str
-    company_address: str = ""
-    company_gstin: str = ""  # Company GSTIN
-    company_pan: str = ""  # Company PAN
-    
-    # Legacy field (kept for backward compatibility)
-    gstin: str = ""
-    
-    # Plan Details
-    plan_type_id: str
-    plan_name: str = ""  # Denormalized for easy access
+    # Seat Assignment
     seat_number: Optional[str] = None
-    custom_rate: Optional[float] = None
-    discount_percent: float = 0
-    final_rate: float = 0  # Calculated: (custom_rate or default_rate) * (1 - discount/100)
-    meeting_room_credits: int = 0  # Monthly credits in minutes
-    credits_used: int = 0  # Credits used this month
-    credits_reset_date: str = ""  # When credits were last reset
-    start_date: str
-    end_date: Optional[str] = None  # Termination date
-    status: str = "active"  # active, inactive, suspended, terminated
-    termination_reason: Optional[str] = None  # Reason for leaving
-    has_outstanding_dues: bool = False  # Flag for unpaid invoices
+    is_primary_contact: bool = False
+    
+    # Status
+    status: str = "active"  # active, inactive
     notes: str = ""
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    terminated_at: Optional[str] = None  # When termination was processed
-    terminated_by: Optional[str] = None  # Who processed termination
     created_by: Optional[str] = None
+    
+    # Legacy fields for backward compatibility
+    plan_type_id: str = ""
+    plan_name: str = ""
+    company_address: str = ""
+    company_gstin: str = ""
+    company_pan: str = ""
+    gstin: str = ""
+    custom_rate: Optional[float] = None
+    discount_percent: float = 0
+    final_rate: float = 0
+    meeting_room_credits: int = 0
+    credits_used: int = 0
+    credits_reset_date: str = ""
+    start_date: str = ""
+    end_date: Optional[str] = None
+    termination_reason: Optional[str] = None
+    has_outstanding_dues: bool = False
+    terminated_at: Optional[str] = None
+    terminated_by: Optional[str] = None
 
 class MemberUpdate(BaseModel):
     """Update member details"""
-    # Authorized Person Details
     name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
     aadhar_number: Optional[str] = None
     pan_number: Optional[str] = None
-    
-    # Company Details
-    company_name: Optional[str] = None
-    company_address: Optional[str] = None
-    company_gstin: Optional[str] = None
-    company_pan: Optional[str] = None
-    gstin: Optional[str] = None  # Legacy
-    
-    # Plan Details
-    plan_type_id: Optional[str] = None
+    seat_number: Optional[str] = None
+    is_primary_contact: Optional[bool] = None
+    status: Optional[str] = None
+    notes: Optional[str] = None
     seat_number: Optional[str] = None
     custom_rate: Optional[float] = None
     discount_percent: Optional[float] = None
