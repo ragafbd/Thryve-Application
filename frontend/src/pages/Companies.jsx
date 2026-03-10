@@ -351,6 +351,71 @@ export default function Companies() {
     }
   };
 
+  // Export companies to Excel/CSV
+  const handleExport = () => {
+    try {
+      // Prepare data for export
+      const exportData = companies.map(company => ({
+        "Company Name": company.company_name,
+        "Status": company.status,
+        "Plan": company.plan_name,
+        "Total Seats": company.total_seats,
+        "Seats Occupied": company.seats_occupied,
+        "Rate per Seat": company.rate_per_seat,
+        "Discount %": company.discount_percent,
+        "Monthly Rate": company.total_rate,
+        "Meeting Credits/Seat": company.meeting_room_credits,
+        "Start Date": company.start_date,
+        "GSTIN": company.company_gstin,
+        "PAN": company.company_pan,
+        "Email": company.company_email,
+        "Website": company.company_website,
+        "Address": company.company_address,
+        "Signatory Name": company.signatory_name,
+        "Signatory Phone": company.signatory_phone,
+        "Signatory Email": company.signatory_email,
+        "Signatory Aadhar": company.signatory_aadhar,
+        "Signatory PAN": company.signatory_pan,
+        "ISP Provider": company.isp_provider,
+        "Bandwidth": company.bandwidth_speed,
+        "ISP Account ID": company.isp_account_id,
+        "Notes": company.notes,
+        "Created At": company.created_at
+      }));
+
+      // Convert to CSV
+      const headers = Object.keys(exportData[0] || {});
+      const csvContent = [
+        headers.join(","),
+        ...exportData.map(row => 
+          headers.map(header => {
+            const value = row[header] || "";
+            // Escape commas and quotes in values
+            if (typeof value === "string" && (value.includes(",") || value.includes('"'))) {
+              return `"${value.replace(/"/g, '""')}"`;
+            }
+            return value;
+          }).join(",")
+        )
+      ].join("\n");
+
+      // Create download link
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `thryve_clients_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success(`Exported ${exportData.length} clients to CSV`);
+    } catch (error) {
+      toast.error("Failed to export data");
+    }
+  };
+
   const filteredCompanies = companies.filter(c => 
     c.company_name.toLowerCase().includes(search.toLowerCase())
   );
