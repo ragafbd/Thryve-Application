@@ -192,10 +192,17 @@ export default function Companies() {
         company_address: company.company_address || "",
         company_gstin: company.company_gstin || "",
         company_pan: company.company_pan || "",
+        company_email: company.company_email || "",
+        company_website: company.company_website || "",
+        signatory_name: company.signatory_name || "",
+        signatory_aadhar: company.signatory_aadhar || "",
+        signatory_pan: company.signatory_pan || "",
+        signatory_phone: company.signatory_phone || "",
+        signatory_email: company.signatory_email || "",
         plan_type_id: company.plan_type_id,
         total_seats: company.total_seats,
         rate_per_seat: company.rate_per_seat,
-        discount_percent: company.discount_percent || 0,
+        discount_percent: company.discount_percent || "",
         start_date: company.start_date,
         notes: company.notes || ""
       });
