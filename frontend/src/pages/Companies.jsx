@@ -528,17 +528,6 @@ export default function Companies() {
                               Reactivate
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem 
-                            className="text-red-600"
-                            onClick={() => {
-                              setItemToDelete(company);
-                              setDeleteType("company");
-                              setDeleteDialogOpen(true);
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete Permanently
-                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
