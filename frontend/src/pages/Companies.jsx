@@ -762,13 +762,13 @@ export default function Companies() {
             </div>
 
             {/* Calculation Preview */}
-            {companyForm.plan_type_id && companyForm.rate_per_seat && (
+            {companyForm.plan_type_id && companyForm.rate_per_seat && companyForm.total_seats && (
               <div className="bg-[#2E375B]/5 p-4 rounded-lg">
                 <h4 className="font-semibold text-sm text-[#2E375B] mb-2">Subscription Summary</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
                     <p className="text-[#2E375B]/60">Seats</p>
-                    <p className="font-bold text-[#2E375B]">{companyForm.total_seats}</p>
+                    <p className="font-bold text-[#2E375B]">{companyForm.total_seats || 0}</p>
                   </div>
                   <div>
                     <p className="text-[#2E375B]/60">Rate/Seat</p>
@@ -776,13 +776,13 @@ export default function Companies() {
                   </div>
                   <div>
                     <p className="text-[#2E375B]/60">Meeting Credits</p>
-                    <p className="font-bold text-[#2E375B]">{CREDITS_PER_SEAT * (companyForm.total_seats || 1)} min</p>
+                    <p className="font-bold text-[#2E375B]">{CREDITS_PER_SEAT * (parseInt(companyForm.total_seats) || 0)} min</p>
                   </div>
                   <div>
                     <p className="text-[#2E375B]/60">Total/Month</p>
                     <p className="font-bold text-[#FFA14A]">
                       ₹{(
-                        (companyForm.total_seats || 1) * 
+                        (parseInt(companyForm.total_seats) || 0) * 
                         parseFloat(companyForm.rate_per_seat || 0) * 
                         (1 - (parseFloat(companyForm.discount_percent) || 0) / 100)
                       ).toLocaleString('en-IN')}
