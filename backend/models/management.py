@@ -153,6 +153,9 @@ class CompanyUpdate(BaseModel):
     rate_per_seat: Optional[float] = None
     discount_percent: Optional[float] = None
     meeting_room_credits: Optional[int] = None
+    isp_provider: Optional[str] = None
+    bandwidth_speed: Optional[str] = None
+    isp_account_id: Optional[str] = None
     status: Optional[str] = None
     notes: Optional[str] = None
 
