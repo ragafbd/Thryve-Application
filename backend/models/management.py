@@ -112,10 +112,15 @@ class Company(BaseModel):
     discount_percent: float = 0
     total_rate: float = 0  # Calculated: total_seats * rate_per_seat * (1 - discount/100)
     
-    # Meeting Room Credits (120 min per seat)
-    meeting_room_credits: int = 0  # Total: 120 * total_seats
+    # Meeting Room Credits (per seat)
+    meeting_room_credits: int = 0  # Credits per seat in minutes
     credits_used: int = 0
     credits_reset_date: str = ""
+    
+    # Internet/Bandwidth Details
+    isp_provider: str = ""
+    bandwidth_speed: str = ""
+    isp_account_id: str = ""
     
     # Status
     start_date: str
