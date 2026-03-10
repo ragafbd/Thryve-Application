@@ -163,8 +163,8 @@ class Member(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     
-    # Company Reference
-    company_id: str  # Reference to Company
+    # Company Reference (optional for backward compatibility)
+    company_id: Optional[str] = None  # Reference to Company
     company_name: str = ""  # Denormalized for easy access
     
     # Person Details
