@@ -102,6 +102,7 @@ function AdminRoutes() {
         <Route path="tickets" element={<Tickets />} />
         <Route path="announcements" element={<Announcements />} />
         <Route path="users" element={<Users />} />
+        <Route path="export" element={<ExportData />} />
       </Route>
     </Routes>
   );
