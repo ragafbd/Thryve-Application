@@ -371,6 +371,7 @@ export default function Bookings() {
                     <tr className="border-b">
                       <th className="text-left p-3 text-[#2E375B]">Room</th>
                       <th className="text-left p-3 text-[#2E375B]">Time</th>
+                      <th className="text-left p-3 text-[#2E375B]">Company</th>
                       <th className="text-left p-3 text-[#2E375B]">Member</th>
                       <th className="text-left p-3 text-[#2E375B]">Purpose</th>
                       <th className="text-left p-3 text-[#2E375B]">Status</th>
@@ -381,6 +382,7 @@ export default function Bookings() {
                       <tr key={booking.id} className="border-b hover:bg-slate-50">
                         <td className="p-3 font-medium text-[#2E375B]">{booking.room_name}</td>
                         <td className="p-3 text-[#2E375B]">{booking.start_time} - {booking.end_time}</td>
+                        <td className="p-3 text-[#2E375B]">{booking.company_name || "-"}</td>
                         <td className="p-3 text-[#2E375B]">{booking.member_name}</td>
                         <td className="p-3 text-[#2E375B]">{booking.purpose || "-"}</td>
                         <td className="p-3">
