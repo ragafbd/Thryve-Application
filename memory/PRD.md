@@ -10,6 +10,9 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Member self-service portal for viewing invoices, bookings, and tickets**
 - **Public holiday management for booking restrictions**
 
+## Recent Updates (March 10, 2026)
+- **Dashboard Cleanup**: Removed redundant quick action icon cards from dashboard (Members, Meeting Room Bookings, Support Tickets, Announcements, Create Invoice, Bulk Invoice). Dashboard now shows only analytics. Navigation is available via sidebar only to avoid duplicity.
+
 ## User Personas
 - **Admin**: Full access to all features, user management, settings (at `/admin`)
 - **Staff**: Invoice creation, member management, bookings, tickets (at `/admin`)
