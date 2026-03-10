@@ -47,8 +47,6 @@ import axios from "axios";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const CREDITS_PER_SEAT = 120; // Standard meeting room credits per seat
-
 const StatusBadge = ({ status }) => {
   const config = {
     active: { label: "Active", className: "bg-green-100 text-green-700" },
