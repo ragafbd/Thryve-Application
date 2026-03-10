@@ -97,13 +97,11 @@ async def create_company(
     
     # Calculate totals
     total_rate = company_data.total_seats * company_data.rate_per_seat * (1 - company_data.discount_percent / 100)
-    meeting_room_credits = MEETING_ROOM_CREDITS_PER_SEAT * company_data.total_seats
     
     company = Company(
         **company_data.model_dump(),
         plan_name=plan["name"],
         total_rate=total_rate,
-        meeting_room_credits=meeting_room_credits,
         credits_reset_date=datetime.now(timezone.utc).isoformat(),
         created_by=current_user.get("id")
     )
