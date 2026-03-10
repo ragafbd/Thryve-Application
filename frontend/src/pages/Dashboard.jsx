@@ -89,38 +89,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Actions Grid - Icon Style */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {quickActions.map((action, index) => (
-          <Link 
-            key={action.title} 
-            to={action.link}
-            className="group"
-            style={{ animationDelay: `${index * 0.05}s` }}
-          >
-            <div className={`h-full rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group-hover:scale-[1.02] ${action.color}`}>
-              <div className="p-4 text-white h-full flex flex-col">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                    <action.icon className="w-5 h-5" strokeWidth={1.5} />
-                  </div>
-                  {action.stat !== null && (
-                    <div className="text-right">
-                      <p className="text-2xl font-bold">{loading ? "..." : action.stat}</p>
-                      <p className="text-xs text-white/70">{action.statLabel}</p>
-                    </div>
-                  )}
-                </div>
-                <div className="mt-auto">
-                  <h3 className="font-semibold text-sm whitespace-nowrap">{action.title}</h3>
-                  <p className="text-xs text-white/70 mt-0.5">{action.description}</p>
-                </div>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-
       {/* Stats Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Member Stats */}
