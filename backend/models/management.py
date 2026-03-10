@@ -6,9 +6,6 @@ from typing import List, Optional
 from datetime import datetime, timezone
 import uuid
 
-# Standard meeting room credits per seat (in minutes)
-MEETING_ROOM_CREDITS_PER_SEAT = 120
-
 # ==================== PLAN/SERVICE TYPES ====================
 
 class PlanType(BaseModel):
