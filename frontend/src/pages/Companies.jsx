@@ -198,8 +198,8 @@ export default function Companies() {
   };
 
   const handleSaveCompany = async () => {
-    if (!companyForm.company_name || !companyForm.plan_type_id || !companyForm.rate_per_seat) {
-      toast.error("Please fill in all required fields");
+    if (!companyForm.company_name || !companyForm.plan_type_id || !companyForm.rate_per_seat || !companyForm.total_seats || !companyForm.start_date) {
+      toast.error("Please fill in all required fields (Company Name, Plan, Seats, Rate, Start Date)");
       return;
     }
 
@@ -207,9 +207,9 @@ export default function Companies() {
     try {
       const payload = {
         ...companyForm,
-        total_seats: parseInt(companyForm.total_seats),
-        rate_per_seat: parseFloat(companyForm.rate_per_seat),
-        discount_percent: parseFloat(companyForm.discount_percent) || 0
+        total_seats: parseInt(companyForm.total_seats) || 1,
+        rate_per_seat: parseFloat(companyForm.rate_per_seat) || 0,
+        discount_percent: companyForm.discount_percent ? parseFloat(companyForm.discount_percent) : 0
       };
 
       if (editingCompany) {
