@@ -90,6 +90,15 @@ class Company(BaseModel):
     company_address: str = ""
     company_gstin: str = ""
     company_pan: str = ""
+    company_email: str = ""
+    company_website: str = ""
+    
+    # Authorised Signatory Details
+    signatory_name: str = ""
+    signatory_aadhar: str = ""
+    signatory_pan: str = ""
+    signatory_phone: str = ""
+    signatory_email: str = ""
     
     # Subscription Details
     plan_type_id: str
