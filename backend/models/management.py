@@ -145,6 +145,7 @@ class CompanyUpdate(BaseModel):
     total_seats: Optional[int] = None
     rate_per_seat: Optional[float] = None
     discount_percent: Optional[float] = None
+    meeting_room_credits: Optional[int] = None
     status: Optional[str] = None
     notes: Optional[str] = None
 
