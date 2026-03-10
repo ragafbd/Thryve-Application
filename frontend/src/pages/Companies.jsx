@@ -233,7 +233,8 @@ export default function Companies() {
         ...companyForm,
         total_seats: parseInt(companyForm.total_seats) || 1,
         rate_per_seat: parseFloat(companyForm.rate_per_seat) || 0,
-        discount_percent: companyForm.discount_percent ? parseFloat(companyForm.discount_percent) : 0
+        discount_percent: companyForm.discount_percent ? parseFloat(companyForm.discount_percent) : 0,
+        meeting_room_credits: companyForm.meeting_room_credits ? parseInt(companyForm.meeting_room_credits) : 0
       };
 
       if (editingCompany) {
