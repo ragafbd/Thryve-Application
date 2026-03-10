@@ -795,7 +795,7 @@ export default function Companies() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setCompanyDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSaveCompany} disabled={saving} className="bg-[#2E375B] hover:bg-[#232B47]">
-              {saving ? "Saving..." : (editingCompany ? "Update" : "Create Company")}
+              {saving ? "Saving..." : (editingCompany ? "Update" : "Create Client")}
             </Button>
           </DialogFooter>
         </DialogContent>
