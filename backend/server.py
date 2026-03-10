@@ -1269,6 +1269,11 @@ from routes.auto_invoice import router as auto_invoice_router, init_router as in
 init_auto_invoice_router(db, get_current_user, check_permission, COMPANY_DETAILS)
 app.include_router(auto_invoice_router)
 
+# Include company routes
+from routes.companies import router as companies_router, init_router as init_companies_router
+init_companies_router(db, get_current_user, check_permission)
+app.include_router(companies_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
