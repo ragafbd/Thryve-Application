@@ -88,12 +88,19 @@ export default function Members() {
   });
 
   const [formData, setFormData] = useState({
+    // Authorized Person Details
     name: "",
     email: "",
     phone: "",
+    aadhar_number: "",
+    pan_number: "",
+    // Company Details
     company_name: "",
     company_address: "",
-    gstin: "",
+    company_gstin: "",
+    company_pan: "",
+    gstin: "", // Legacy
+    // Plan Details
     plan_type_id: "",
     seat_number: "",
     custom_rate: "",
