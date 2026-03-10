@@ -418,8 +418,8 @@ export default function Companies() {
                 <Users className="w-5 h-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-sm text-[#2E375B]/60">Credits/Seat</p>
-                <p className="text-2xl font-bold text-[#2E375B]">{CREDITS_PER_SEAT} min</p>
+                <p className="text-sm text-[#2E375B]/60">Total Credits</p>
+                <p className="text-2xl font-bold text-[#2E375B]">{(stats.total_credits || 0).toLocaleString('en-IN')} min</p>
               </div>
             </div>
           </CardContent>
