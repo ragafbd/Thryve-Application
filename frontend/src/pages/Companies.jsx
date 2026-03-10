@@ -87,6 +87,7 @@ export default function Companies() {
     total_seats: "",
     rate_per_seat: "",
     discount_percent: "",
+    meeting_room_credits: "",
     start_date: "",
     notes: ""
   });
