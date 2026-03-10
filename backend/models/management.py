@@ -133,6 +133,13 @@ class CompanyUpdate(BaseModel):
     company_address: Optional[str] = None
     company_gstin: Optional[str] = None
     company_pan: Optional[str] = None
+    company_email: Optional[str] = None
+    company_website: Optional[str] = None
+    signatory_name: Optional[str] = None
+    signatory_aadhar: Optional[str] = None
+    signatory_pan: Optional[str] = None
+    signatory_phone: Optional[str] = None
+    signatory_email: Optional[str] = None
     plan_type_id: Optional[str] = None
     total_seats: Optional[int] = None
     rate_per_seat: Optional[float] = None
