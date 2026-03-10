@@ -329,9 +329,14 @@ export default function Bookings() {
                           <div className="mt-1">
                             <Badge className="bg-red-100 text-red-700 text-xs">Booked</Badge>
                             {booking && (
-                              <p className="text-xs text-red-600 mt-1 truncate" title={booking.member_name}>
-                                {booking.member_name || "Member"}
-                              </p>
+                              <div className="text-xs text-red-600 mt-1">
+                                <p className="truncate font-medium" title={booking.company_name}>
+                                  {booking.company_name || "Company"}
+                                </p>
+                                <p className="truncate" title={booking.member_name}>
+                                  {booking.member_name || "Member"}
+                                </p>
+                              </div>
                             )}
                           </div>
                         ) : (
