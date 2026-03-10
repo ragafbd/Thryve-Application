@@ -228,6 +228,13 @@ class MemberTerminate(BaseModel):
     termination_reason: str  # Reason for termination
     has_outstanding_dues: bool = False  # Flag for unpaid invoices
 
+class BulkTerminate(BaseModel):
+    """Terminate all members from a company"""
+    company_name: str
+    end_date: str
+    termination_reason: str
+    has_outstanding_dues: bool = False
+
 # ==================== MEETING ROOM BOOKINGS ====================
 
 class BookingCreate(BaseModel):
