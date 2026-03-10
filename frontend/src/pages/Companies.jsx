@@ -77,10 +77,10 @@ export default function Companies() {
     company_gstin: "",
     company_pan: "",
     plan_type_id: "",
-    total_seats: 1,
+    total_seats: "",
     rate_per_seat: "",
-    discount_percent: 0,
-    start_date: new Date().toISOString().split('T')[0],
+    discount_percent: "",
+    start_date: "",
     notes: ""
   });
   
