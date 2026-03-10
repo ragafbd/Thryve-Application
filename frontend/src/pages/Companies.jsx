@@ -897,8 +897,8 @@ export default function Companies() {
                     <p className="font-bold text-[#2E375B]">₹{parseFloat(companyForm.rate_per_seat || 0).toLocaleString('en-IN')}</p>
                   </div>
                   <div>
-                    <p className="text-[#2E375B]/60">Meeting Credits</p>
-                    <p className="font-bold text-[#2E375B]">{companyForm.meeting_room_credits || 0} min</p>
+                    <p className="text-[#2E375B]/60">Total Meeting Credits</p>
+                    <p className="font-bold text-[#2E375B]">{(parseInt(companyForm.meeting_room_credits) || 0) * (parseInt(companyForm.total_seats) || 0)} min</p>
                   </div>
                   <div>
                     <p className="text-[#2E375B]/60">Total/Month</p>
