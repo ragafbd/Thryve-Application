@@ -127,7 +127,7 @@ export default function MemberLogin() {
                       <Input
                         id="login-password"
                         type={showPassword ? "text" : "password"}
-                        placeholder="••••••••"
+                        placeholder="Enter your password"
                         className="pl-10 pr-10"
                         value={loginData.password}
                         onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
