@@ -770,11 +770,9 @@ export default function Companies() {
                   <Select 
                     value={companyForm.plan_type_id} 
                     onValueChange={(value) => {
-                      const plan = plans.find(p => p.id === value);
                       setCompanyForm({ 
                         ...companyForm, 
-                        plan_type_id: value,
-                        rate_per_seat: companyForm.rate_per_seat || plan?.default_rate || ""
+                        plan_type_id: value
                       });
                     }}
                   >
@@ -813,7 +811,7 @@ export default function Companies() {
                       const val = e.target.value.replace(/[^\d.]/g, '');
                       setCompanyForm({ ...companyForm, rate_per_seat: val });
                     }}
-                    placeholder={selectedPlan ? `Default: ${selectedPlan.default_rate}` : "Enter rate"}
+                    placeholder=""
                   />
                 </div>
                 <div className="space-y-2">
