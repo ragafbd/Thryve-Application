@@ -663,7 +663,7 @@ export default function Companies() {
                   <Input
                     value={companyForm.company_name}
                     onChange={(e) => setCompanyForm({ ...companyForm, company_name: e.target.value })}
-                    placeholder="Company name"
+                    placeholder="Enter company name"
                   />
                 </div>
                 <div className="space-y-2">
@@ -671,7 +671,7 @@ export default function Companies() {
                   <Input
                     value={companyForm.company_gstin}
                     onChange={(e) => setCompanyForm({ ...companyForm, company_gstin: e.target.value.toUpperCase().slice(0, 15) })}
-                    placeholder="22AAAAA0000A1Z5"
+                    placeholder="Enter GSTIN"
                     maxLength={15}
                   />
                 </div>
@@ -680,8 +680,25 @@ export default function Companies() {
                   <Input
                     value={companyForm.company_pan}
                     onChange={(e) => setCompanyForm({ ...companyForm, company_pan: e.target.value.toUpperCase().slice(0, 10) })}
-                    placeholder="ABCDE1234F"
+                    placeholder="Enter PAN"
                     maxLength={10}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Email ID</Label>
+                  <Input
+                    type="email"
+                    value={companyForm.company_email}
+                    onChange={(e) => setCompanyForm({ ...companyForm, company_email: e.target.value })}
+                    placeholder="Enter company email"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Website</Label>
+                  <Input
+                    value={companyForm.company_website}
+                    onChange={(e) => setCompanyForm({ ...companyForm, company_website: e.target.value })}
+                    placeholder="Enter website URL"
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
@@ -689,7 +706,58 @@ export default function Companies() {
                   <Input
                     value={companyForm.company_address}
                     onChange={(e) => setCompanyForm({ ...companyForm, company_address: e.target.value })}
-                    placeholder="Full registered address"
+                    placeholder="Enter full registered address"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Authorised Signatory Details */}
+            <div>
+              <h3 className="text-sm font-semibold text-[#2E375B] mb-3 border-b pb-2">Authorised Signatory Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Name</Label>
+                  <Input
+                    value={companyForm.signatory_name}
+                    onChange={(e) => setCompanyForm({ ...companyForm, signatory_name: e.target.value })}
+                    placeholder="Enter signatory name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Phone Number</Label>
+                  <Input
+                    value={companyForm.signatory_phone}
+                    onChange={(e) => setCompanyForm({ ...companyForm, signatory_phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                    placeholder="Enter phone number"
+                    maxLength={10}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Email ID</Label>
+                  <Input
+                    type="email"
+                    value={companyForm.signatory_email}
+                    onChange={(e) => setCompanyForm({ ...companyForm, signatory_email: e.target.value })}
+                    placeholder="Enter email"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Aadhar Number</Label>
+                  <Input
+                    value={companyForm.signatory_aadhar}
+                    onChange={(e) => setCompanyForm({ ...companyForm, signatory_aadhar: e.target.value.replace(/\D/g, '').slice(0, 12) })}
+                    placeholder="Enter Aadhar number"
+                    maxLength={12}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>PAN</Label>
+                  <Input
+                    value={companyForm.signatory_pan}
+                    onChange={(e) => setCompanyForm({ ...companyForm, signatory_pan: e.target.value.toUpperCase().slice(0, 10) })}
+                    placeholder="Enter PAN"
+                    maxLength={10}
                   />
                 </div>
               </div>
