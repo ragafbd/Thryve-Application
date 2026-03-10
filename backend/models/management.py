@@ -60,6 +60,15 @@ class CompanyCreate(BaseModel):
     company_address: str = ""
     company_gstin: Optional[str] = ""
     company_pan: Optional[str] = ""
+    company_email: Optional[str] = ""
+    company_website: Optional[str] = ""
+    
+    # Authorised Signatory Details
+    signatory_name: Optional[str] = ""
+    signatory_aadhar: Optional[str] = ""
+    signatory_pan: Optional[str] = ""
+    signatory_phone: Optional[str] = ""
+    signatory_email: Optional[str] = ""
     
     # Subscription Details
     plan_type_id: str  # Type of plan (cabin, open desk, etc.)
