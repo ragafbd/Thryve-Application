@@ -139,7 +139,6 @@ async def update_company(
                 update_dict['plan_name'] = plan['name']
         
         update_dict['total_rate'] = total_seats * rate_per_seat * (1 - discount / 100)
-        update_dict['meeting_room_credits'] = MEETING_ROOM_CREDITS_PER_SEAT * total_seats
     
     if update_dict:
         await db.companies.update_one({"id": company_id}, {"$set": update_dict})
