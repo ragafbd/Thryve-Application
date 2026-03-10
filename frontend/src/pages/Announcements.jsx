@@ -175,7 +175,7 @@ export default function Announcements() {
             Community Announcements
           </h1>
           <p className="text-slate-600 mt-1">
-            Stay updated with the latest news and events
+            Announce the latest news, events and general messages
           </p>
         </div>
         {isAdmin() && (
