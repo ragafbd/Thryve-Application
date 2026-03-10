@@ -52,12 +52,23 @@ class MeetingRoomCreate(BaseModel):
 
 class MemberCreate(BaseModel):
     """Create a new member"""
-    name: str
+    # Authorized Person Details
+    name: str  # Authorized person's name
     email: str
     phone: str
+    aadhar_number: Optional[str] = ""  # Authorized person's Aadhar
+    pan_number: Optional[str] = ""  # Authorized person's PAN
+    
+    # Company Details
     company_name: str
     company_address: Optional[str] = ""
-    gstin: Optional[str] = ""
+    company_gstin: Optional[str] = ""  # Company GSTIN
+    company_pan: Optional[str] = ""  # Company PAN
+    
+    # Legacy field mapping
+    gstin: Optional[str] = ""  # Kept for backward compatibility
+    
+    # Plan Details
     plan_type_id: str
     seat_number: Optional[str] = None  # e.g., "A-12", "Cabin-3"
     custom_rate: Optional[float] = None  # Override default plan rate
@@ -70,12 +81,24 @@ class Member(BaseModel):
     """Member/Client at Thryve Coworking"""
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str
+    
+    # Authorized Person Details
+    name: str  # Authorized person's name
     email: str
     phone: str
+    aadhar_number: str = ""  # Authorized person's Aadhar
+    pan_number: str = ""  # Authorized person's PAN
+    
+    # Company Details
     company_name: str
     company_address: str = ""
+    company_gstin: str = ""  # Company GSTIN
+    company_pan: str = ""  # Company PAN
+    
+    # Legacy field (kept for backward compatibility)
     gstin: str = ""
+    
+    # Plan Details
     plan_type_id: str
     plan_name: str = ""  # Denormalized for easy access
     seat_number: Optional[str] = None
@@ -98,12 +121,21 @@ class Member(BaseModel):
 
 class MemberUpdate(BaseModel):
     """Update member details"""
+    # Authorized Person Details
     name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
+    aadhar_number: Optional[str] = None
+    pan_number: Optional[str] = None
+    
+    # Company Details
     company_name: Optional[str] = None
     company_address: Optional[str] = None
-    gstin: Optional[str] = None
+    company_gstin: Optional[str] = None
+    company_pan: Optional[str] = None
+    gstin: Optional[str] = None  # Legacy
+    
+    # Plan Details
     plan_type_id: Optional[str] = None
     seat_number: Optional[str] = None
     custom_rate: Optional[float] = None
