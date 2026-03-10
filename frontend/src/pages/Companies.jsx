@@ -331,10 +331,10 @@ export default function Companies() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[#2E375B] tracking-tight font-[Manrope]">
-            Company Subscriptions
+            Clients
           </h1>
           <p className="text-[#2E375B]/60 mt-1">
-            Manage company subscriptions and their members
+            Manage clients and their members
           </p>
         </div>
         <Button 
@@ -343,7 +343,7 @@ export default function Companies() {
           data-testid="add-company-btn"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Add Company
+          Add Client
         </Button>
       </div>
 
