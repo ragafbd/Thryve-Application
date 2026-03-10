@@ -75,6 +75,7 @@ class CompanyCreate(BaseModel):
     total_seats: int  # Number of seats subscribed
     rate_per_seat: float  # Custom rate per seat (admin-set)
     discount_percent: float = 0  # Any discount
+    meeting_room_credits: int = 0  # Monthly meeting room credits (in minutes)
     
     # Dates
     start_date: str
