@@ -205,6 +205,7 @@ export default function Companies() {
         total_seats: company.total_seats,
         rate_per_seat: company.rate_per_seat,
         discount_percent: company.discount_percent || "",
+        meeting_room_credits: company.meeting_room_credits || "",
         start_date: company.start_date,
         notes: company.notes || ""
       });
