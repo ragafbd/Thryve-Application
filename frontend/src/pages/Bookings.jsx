@@ -26,13 +26,21 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const MAX_ADVANCE_DAYS = 10;
 
+// Helper function to get local date string (YYYY-MM-DD)
+const getLocalDateString = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default function Bookings() {
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [members, setMembers] = useState([]);
   const [publicHolidays, setPublicHolidays] = useState([]);
   const [selectedDate, setSelectedDate] = useState(() => {
-    return new Date().toISOString().split('T')[0];
+    return getLocalDateString(new Date());
   });
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [slots, setSlots] = useState([]);
@@ -52,8 +60,8 @@ export default function Bookings() {
   const maxDate = new Date(today);
   maxDate.setDate(maxDate.getDate() + MAX_ADVANCE_DAYS);
   
-  const minDateStr = today.toISOString().split('T')[0];
-  const maxDateStr = maxDate.toISOString().split('T')[0];
+  const minDateStr = getLocalDateString(today);
+  const maxDateStr = getLocalDateString(maxDate);
 
   const isBlockedDate = (dateStr) => {
     const date = new Date(dateStr);
