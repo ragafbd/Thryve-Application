@@ -6,6 +6,9 @@ from typing import List, Optional
 from datetime import datetime, timezone
 import uuid
 
+# Standard meeting room credits per seat (in minutes)
+MEETING_ROOM_CREDITS_PER_SEAT = 120
+
 # ==================== PLAN/SERVICE TYPES ====================
 
 class PlanType(BaseModel):
@@ -48,16 +51,94 @@ class MeetingRoomCreate(BaseModel):
     hourly_rate: float
     slot_duration: int
 
-# ==================== MEMBERS ====================
+# ==================== COMPANY SUBSCRIPTIONS ====================
+
+class CompanyCreate(BaseModel):
+    """Create a new company subscription"""
+    # Company Details
+    company_name: str
+    company_address: str = ""
+    company_gstin: Optional[str] = ""
+    company_pan: Optional[str] = ""
+    
+    # Subscription Details
+    plan_type_id: str  # Type of plan (cabin, open desk, etc.)
+    total_seats: int  # Number of seats subscribed
+    rate_per_seat: float  # Custom rate per seat (admin-set)
+    discount_percent: float = 0  # Any discount
+    
+    # Dates
+    start_date: str
+    notes: Optional[str] = ""
+
+class Company(BaseModel):
+    """Company subscription at Thryve Coworking"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    
+    # Company Details
+    company_name: str
+    company_address: str = ""
+    company_gstin: str = ""
+    company_pan: str = ""
+    
+    # Subscription Details
+    plan_type_id: str
+    plan_name: str = ""  # Denormalized for easy access
+    total_seats: int  # Number of seats subscribed
+    seats_occupied: int = 0  # Number of members added
+    rate_per_seat: float  # Custom rate per seat
+    discount_percent: float = 0
+    total_rate: float = 0  # Calculated: total_seats * rate_per_seat * (1 - discount/100)
+    
+    # Meeting Room Credits (120 min per seat)
+    meeting_room_credits: int = 0  # Total: 120 * total_seats
+    credits_used: int = 0
+    credits_reset_date: str = ""
+    
+    # Status
+    start_date: str
+    end_date: Optional[str] = None
+    status: str = "active"  # active, inactive, suspended, terminated
+    termination_reason: Optional[str] = None
+    has_outstanding_dues: bool = False
+    
+    # Metadata
+    notes: str = ""
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    terminated_at: Optional[str] = None
+    created_by: Optional[str] = None
+
+class CompanyUpdate(BaseModel):
+    """Update company subscription"""
+    company_name: Optional[str] = None
+    company_address: Optional[str] = None
+    company_gstin: Optional[str] = None
+    company_pan: Optional[str] = None
+    plan_type_id: Optional[str] = None
+    total_seats: Optional[int] = None
+    rate_per_seat: Optional[float] = None
+    discount_percent: Optional[float] = None
+    status: Optional[str] = None
+    notes: Optional[str] = None
+
+# ==================== MEMBERS (Under Company) ====================
 
 class MemberCreate(BaseModel):
-    """Create a new member"""
-    # Authorized Person Details
-    name: str  # Authorized person's name
+    """Create a new member under a company"""
+    company_id: str  # Required: must belong to a company
+    
+    # Person Details
+    name: str
     email: str
     phone: str
-    aadhar_number: Optional[str] = ""  # Authorized person's Aadhar
-    pan_number: Optional[str] = ""  # Authorized person's PAN
+    aadhar_number: Optional[str] = ""
+    pan_number: Optional[str] = ""
+    
+    # Seat Assignment
+    seat_number: Optional[str] = None  # e.g., "A-12", "Cabin-3"
+    is_primary_contact: bool = False  # Primary contact for the company
+    notes: Optional[str] = ""
     
     # Company Details
     company_name: str
