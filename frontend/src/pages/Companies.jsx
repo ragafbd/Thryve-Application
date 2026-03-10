@@ -711,7 +711,7 @@ export default function Companies() {
                     value={companyForm.total_seats}
                     onChange={(e) => {
                       const val = e.target.value.replace(/\D/g, '');
-                      setCompanyForm({ ...companyForm, total_seats: parseInt(val) || 1 });
+                      setCompanyForm({ ...companyForm, total_seats: val });
                     }}
                     placeholder="Enter number of seats"
                   />
