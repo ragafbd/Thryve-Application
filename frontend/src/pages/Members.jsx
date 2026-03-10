@@ -175,12 +175,19 @@ export default function Members() {
     if (member) {
       setEditingMember(member);
       setFormData({
+        // Authorized Person Details
         name: member.name,
         email: member.email,
         phone: member.phone,
+        aadhar_number: member.aadhar_number || "",
+        pan_number: member.pan_number || "",
+        // Company Details
         company_name: member.company_name,
         company_address: member.company_address || "",
-        gstin: member.gstin || "",
+        company_gstin: member.company_gstin || "",
+        company_pan: member.company_pan || "",
+        gstin: member.gstin || "", // Legacy
+        // Plan Details
         plan_type_id: member.plan_type_id,
         seat_number: member.seat_number || "",
         custom_rate: member.custom_rate || "",
