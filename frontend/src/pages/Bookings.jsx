@@ -225,17 +225,14 @@ export default function Bookings() {
             </Button>
             
             <div className="text-center">
-              <p className="text-lg font-semibold text-[#2E375B]">{formatDate(selectedDate)}</p>
-              <div className="flex items-center justify-center gap-2 mt-1">
-                <input
-                  type="date"
-                  value={selectedDate}
-                  min={minDateStr}
-                  max={maxDateStr}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="text-sm border rounded px-2 py-1"
-                />
-              </div>
+              <input
+                type="date"
+                value={selectedDate}
+                min={minDateStr}
+                max={maxDateStr}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="text-lg font-semibold text-[#2E375B] border rounded px-3 py-2 cursor-pointer"
+              />
             </div>
             
             <Button
