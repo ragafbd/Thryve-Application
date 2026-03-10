@@ -215,25 +215,18 @@ class MemberUpdate(BaseModel):
     is_primary_contact: Optional[bool] = None
     status: Optional[str] = None
     notes: Optional[str] = None
-    seat_number: Optional[str] = None
-    custom_rate: Optional[float] = None
-    discount_percent: Optional[float] = None
-    meeting_room_credits: Optional[int] = None
-    status: Optional[str] = None
-    notes: Optional[str] = None
+
+class CompanyTerminate(BaseModel):
+    """Terminate a company subscription"""
+    end_date: str  # Last working day
+    termination_reason: str  # Reason for termination
+    has_outstanding_dues: bool = False  # Flag for unpaid invoices
 
 class MemberTerminate(BaseModel):
     """Terminate a member"""
     end_date: str  # Last working day
     termination_reason: str  # Reason for termination
     has_outstanding_dues: bool = False  # Flag for unpaid invoices
-
-class BulkTerminate(BaseModel):
-    """Terminate all members from a company"""
-    company_name: str
-    end_date: str
-    termination_reason: str
-    has_outstanding_dues: bool = False
 
 # ==================== MEETING ROOM BOOKINGS ====================
 
