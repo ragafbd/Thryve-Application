@@ -629,7 +629,7 @@ export default function Companies() {
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-[Manrope] text-[#2E375B]">
-              {editingCompany ? "Edit Company" : "Add New Company"}
+              {editingCompany ? "Edit Client" : "Add New Client"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-6 py-4">
