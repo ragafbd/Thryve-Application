@@ -6,7 +6,6 @@ import {
   PlusCircle, 
   Menu, 
   X,
-  FileSpreadsheet,
   LogOut,
   Key,
   UserCircle,
@@ -45,7 +44,6 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 // Invoice section (without Dashboard)
 const invoiceNavItems = [
   { path: "create-invoice", icon: PlusCircle, label: "Create Invoice" },
-  { path: "bulk-invoice", icon: FileSpreadsheet, label: "Bulk Invoice" },
   { path: "auto-invoice", icon: Zap, label: "Auto Generate" },
   { path: "invoices", icon: FileText, label: "Invoices" },
 ];

@@ -9,7 +9,6 @@ import Dashboard from "@/pages/Dashboard";
 import CreateInvoice from "@/pages/CreateInvoice";
 import InvoiceList from "@/pages/InvoiceList";
 import InvoiceView from "@/pages/InvoiceView";
-import BulkInvoice from "@/pages/BulkInvoice";
 import Users from "@/pages/Users";
 import Companies from "@/pages/Companies";
 import Bookings from "@/pages/Bookings";
@@ -93,7 +92,6 @@ function AdminRoutes() {
       }>
         <Route index element={<Dashboard />} />
         <Route path="create-invoice" element={<CreateInvoice />} />
-        <Route path="bulk-invoice" element={<BulkInvoice />} />
         <Route path="auto-invoice" element={<AutoInvoice />} />
         <Route path="invoices" element={<InvoiceList />} />
         <Route path="invoices/:id" element={<InvoiceView />} />
