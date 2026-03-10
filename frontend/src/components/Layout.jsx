@@ -118,35 +118,35 @@ export default function Layout() {
         data-testid="sidebar"
       >
         {/* Logo - Centered */}
-        <div className="p-6 border-b border-white/10">
+        <div className="p-4 border-b border-white/10">
           <div className="flex justify-center">
             <img 
               src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/jqltfue2_Gemini_Generated_Image_xy33ixy33ixy33ix.png" 
               alt="Thryve Coworking" 
-              className="h-12 w-auto"
+              className="h-10 w-auto"
             />
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
           {/* Dashboard - Top Level */}
           <NavLink
             to="/admin"
             data-testid="nav-dashboard"
             className={cn(
-              "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 mb-2",
+              "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 mb-1",
               location.pathname === "/admin" || location.pathname === "/admin/"
                 ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
                 : "text-white/70 hover:bg-white/10 hover:text-white"
             )}
           >
-            <LayoutDashboard className="w-5 h-5" strokeWidth={1.5} />
+            <LayoutDashboard className="w-4 h-4" strokeWidth={1.5} />
             <span className="text-sm">Dashboard</span>
           </NavLink>
 
           {/* Management Section */}
-          <p className="text-xs text-white/60 uppercase tracking-wider px-4 py-2 mt-2 font-bold">Management</p>
+          <p className="text-xs text-white/60 uppercase tracking-wider px-3 py-1.5 mt-1 font-bold">Management</p>
           {managementNavItems.map((item) => {
             const isActive = location.pathname === `/admin/${item.path}`;
             return (
@@ -155,20 +155,20 @@ export default function Layout() {
                 to={item.path}
                 data-testid={`nav-${item.label.toLowerCase().replace(/\s/g, '-')}`}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200",
+                  "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200",
                   isActive 
                     ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
                     : "text-white/70 hover:bg-white/10 hover:text-white"
                 )}
               >
-                <item.icon className="w-5 h-5" strokeWidth={1.5} />
+                <item.icon className="w-4 h-4" strokeWidth={1.5} />
                 <span className="text-sm">{item.label}</span>
               </NavLink>
             );
           })}
 
           {/* Invoice Section */}
-          <p className="text-xs text-white/60 uppercase tracking-wider px-4 py-2 mt-4 font-bold">Invoicing</p>
+          <p className="text-xs text-white/60 uppercase tracking-wider px-3 py-1.5 mt-2 font-bold">Invoicing</p>
           {invoiceNavItems.map((item) => {
             const isActive = location.pathname === `/admin/${item.path}`;
             return (
@@ -177,7 +177,7 @@ export default function Layout() {
                 to={item.path}
                 data-testid={`nav-${item.label.toLowerCase().replace(/\s/g, '-')}`}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200",
+                  "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200",
                   isActive 
                     ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
                     : "text-white/70 hover:bg-white/10 hover:text-white"
