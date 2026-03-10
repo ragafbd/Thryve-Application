@@ -14,6 +14,7 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Dashboard Cleanup**: Removed redundant quick action icon cards from dashboard (Members, Meeting Room Bookings, Support Tickets, Announcements, Create Invoice, Bulk Invoice). Dashboard now shows only analytics. Navigation is available via sidebar only to avoid duplicity.
 - **Sidebar Cleanup**: Removed "Clients (Legacy)" from ADMIN section. The new "Clients" page under MANAGEMENT is now the single source for client management.
 - **Code Cleanup**: Removed unused legacy files (`Clients.jsx`, `Members.jsx`) and their routes from App.js.
+- **Removed Bulk Invoice**: Completely removed the Excel-based bulk invoice feature. All invoices are now generated from the app's database to prevent typos and ensure data accuracy.
 
 ## User Personas
 - **Admin**: Full access to all features, user management, settings (at `/admin`)
