@@ -443,7 +443,7 @@ export default function Companies() {
         ) : filteredCompanies.length === 0 ? (
           <Card className="border border-[#2E375B]/10">
             <CardContent className="p-8 text-center text-[#2E375B]/60">
-              No companies found. Click "Add Company" to create one.
+              No clients found. Click "Add Client" to create one.
             </CardContent>
           </Card>
         ) : (
