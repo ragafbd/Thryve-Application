@@ -143,7 +143,7 @@ export default function ExportData() {
 
       {/* Export Options */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border border-[#2E375B]/10">
+        <Card className="border border-[#2E375B]/10 flex flex-col">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-[#2E375B]/10 rounded-lg">
@@ -155,8 +155,8 @@ export default function ExportData() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="flex flex-col flex-1">
+            <div className="flex-1">
               <div className="text-sm text-[#2E375B]">
                 <p className="font-medium mb-2">Includes:</p>
                 <ul className="list-disc list-inside space-y-1">
@@ -168,29 +168,29 @@ export default function ExportData() {
                   <li>Status and dates</li>
                 </ul>
               </div>
-              <Button 
-                onClick={exportClientsData}
-                disabled={exportingClients}
-                className="w-full bg-[#2E375B] hover:bg-[#232B47]"
-                data-testid="export-clients-btn"
-              >
-                {exportingClients ? (
-                  <>
-                    <FileSpreadsheet className="w-4 h-4 mr-2 animate-pulse" />
-                    Exporting...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4 mr-2" />
-                    Download Excel
-                  </>
-                )}
-              </Button>
             </div>
+            <Button 
+              onClick={exportClientsData}
+              disabled={exportingClients}
+              className="w-full bg-[#2E375B] hover:bg-[#232B47] mt-4"
+              data-testid="export-clients-btn"
+            >
+              {exportingClients ? (
+                <>
+                  <FileSpreadsheet className="w-4 h-4 mr-2 animate-pulse" />
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Excel
+                </>
+              )}
+            </Button>
           </CardContent>
         </Card>
 
-        <Card className="border border-[#2E375B]/10">
+        <Card className="border border-[#2E375B]/10 flex flex-col">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-[#2E375B]/10 rounded-lg">
@@ -202,8 +202,8 @@ export default function ExportData() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="flex flex-col flex-1">
+            <div className="flex-1">
               <div className="text-sm text-[#2E375B]">
                 <p className="font-medium mb-2">Includes:</p>
                 <ul className="list-disc list-inside space-y-1">
@@ -215,25 +215,25 @@ export default function ExportData() {
                   <li>Status and join dates</li>
                 </ul>
               </div>
-              <Button 
-                onClick={exportMembersData}
-                disabled={exportingMembers}
-                className="w-full bg-[#2E375B] hover:bg-[#232B47]"
-                data-testid="export-members-btn"
-              >
-                {exportingMembers ? (
-                  <>
-                    <FileSpreadsheet className="w-4 h-4 mr-2 animate-pulse" />
-                    Exporting...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4 mr-2" />
-                    Download Excel
-                  </>
-                )}
-              </Button>
             </div>
+            <Button 
+              onClick={exportMembersData}
+              disabled={exportingMembers}
+              className="w-full bg-[#2E375B] hover:bg-[#232B47] mt-4"
+              data-testid="export-members-btn"
+            >
+              {exportingMembers ? (
+                <>
+                  <FileSpreadsheet className="w-4 h-4 mr-2 animate-pulse" />
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Excel
+                </>
+              )}
+            </Button>
           </CardContent>
         </Card>
       </div>
