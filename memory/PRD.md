@@ -20,7 +20,10 @@ Build an automatic invoice generator and comprehensive management system for Thr
   - Added Email ID and Website fields to Company Details
   - Added new "Authorised Signatory Details" section with Name, Phone, Email, Aadhar, and PAN fields
   - GSTIN and PAN placeholders updated to generic "Enter..." text (validation rules remain: uppercase, 15 chars for GSTIN, 10 chars for PAN)
-  - Added "Meeting Room Credits (minutes)" field for manual entry - removed automatic 120 min/seat calculation
+  - Meeting room credits now entered per seat - label updated to "Meeting Room Credits (minutes per seat)"
+  - Added "Internet/Bandwidth Details" section with ISP Provider, Bandwidth Speed, and Account/Connection ID
+- **Clients Page Stats**: Removed redundant "Credits/Seat" stat card (now shows 3 cards: Active Companies, Seats Occupied, Monthly Revenue)
+- **Terminate/Suspend Clients**: Available via 3-dot menu on each client card (Edit Company, Add Member, Terminate, Delete Permanently)
 
 ## User Personas
 - **Admin**: Full access to all features, user management, settings (at `/admin`)
