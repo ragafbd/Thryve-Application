@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { 
-  FileText, Users, IndianRupee, PlusCircle, ArrowRight, Clock, CheckCircle, 
-  AlertTriangle, UserPlus, CalendarDays, Ticket, Megaphone, FileSpreadsheet,
-  TrendingUp, Building2, CreditCard
+  FileText, IndianRupee, ArrowRight, Clock, CheckCircle, 
+  AlertTriangle, Building2, CreditCard
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,62 +65,6 @@ export default function Dashboard() {
     };
     fetchData();
   }, []);
-
-  // Quick action cards - using only brand colors
-  const quickActions = [
-    {
-      title: "Members",
-      description: "Manage coworking members",
-      icon: UserPlus,
-      link: "members",
-      color: "bg-gradient-to-br from-[#2E375B] to-[#1a2038]",
-      stat: managementStats.active_members,
-      statLabel: "Active"
-    },
-    {
-      title: "Meeting Room Bookings",
-      description: "Book meeting rooms",
-      icon: CalendarDays,
-      link: "bookings",
-      color: "bg-gradient-to-br from-[#FFA14A] to-[#e8893a]",
-      stat: managementStats.todays_bookings,
-      statLabel: "Today"
-    },
-    {
-      title: "Support Tickets",
-      description: "Handle requests",
-      icon: Ticket,
-      link: "tickets",
-      color: "bg-gradient-to-br from-[#2E375B] to-[#1a2038]",
-      stat: managementStats.open_tickets,
-      statLabel: "Open"
-    },
-    {
-      title: "Announcements",
-      description: "Community updates",
-      icon: Megaphone,
-      link: "announcements",
-      color: "bg-gradient-to-br from-[#FFA14A] to-[#e8893a]",
-      stat: managementStats.active_announcements,
-      statLabel: "Active"
-    },
-    {
-      title: "Create Invoice",
-      description: "Generate new invoice",
-      icon: PlusCircle,
-      link: "create-invoice",
-      color: "bg-gradient-to-br from-[#2E375B] to-[#1a2038]",
-      stat: null
-    },
-    {
-      title: "Bulk Invoice",
-      description: "Upload Excel file",
-      icon: FileSpreadsheet,
-      link: "bulk-invoice",
-      color: "bg-gradient-to-br from-[#FFA14A] to-[#e8893a]",
-      stat: null
-    }
-  ];
 
   return (
     <div className="space-y-8 animate-fade-in" data-testid="dashboard">
