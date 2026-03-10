@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
-import { Calendar, Clock, Users, Building2, X, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
+import { Calendar, Clock, Users, Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -12,13 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import axios from "axios";
 
@@ -26,29 +17,17 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Booking rules
 const MAX_ADVANCE_DAYS = 10;
-const MIN_CANCEL_DAYS = 2;
 
 export default function Bookings() {
   const [rooms, setRooms] = useState([]);
-  const [members, setMembers] = useState([]);
   const [bookings, setBookings] = useState([]);
-  const [publicHolidays, setPublicHolidays] = useState([]); // Full holiday objects with names
+  const [publicHolidays, setPublicHolidays] = useState([]);
   const [selectedDate, setSelectedDate] = useState(() => {
     return new Date().toISOString().split('T')[0];
   });
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [slots, setSlots] = useState([]);
-  const [selectedSlots, setSelectedSlots] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const [formData, setFormData] = useState({
-    room_id: "",
-    member_id: "",
-    purpose: "",
-    attendees: ""
-  });
 
   // Calculate date limits
   const today = new Date();
@@ -90,232 +69,87 @@ export default function Bookings() {
       }
     } catch (error) {
       toast.error("Failed to fetch rooms");
-    }
-  };
-
-  const fetchMembers = async () => {
-    try {
-      const response = await axios.get(`${API}/management/members?status=active`);
-      setMembers(response.data);
-    } catch (error) {
-      toast.error("Failed to fetch members");
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchBookings = async () => {
     try {
-      const response = await axios.get(`${API}/management/bookings?date=${selectedDate}`);
+      const response = await axios.get(`${API}/management/bookings`);
       setBookings(response.data);
     } catch (error) {
-      toast.error("Failed to fetch bookings");
-    } finally {
-      setLoading(false);
+      console.error("Failed to fetch bookings");
     }
   };
 
   const fetchAvailability = async () => {
     if (!selectedRoom) return;
     
-    // Don't fetch slots for blocked dates
-    if (isBlockedDate(selectedDate)) {
-      setSlots([]);
-      return;
-    }
-    
     try {
-      const response = await axios.get(`${API}/management/bookings/availability?room_id=${selectedRoom.id}&date=${selectedDate}`);
-      setSlots(response.data.slots);
-      setSelectedSlots([]); // Reset selection on date/room change
+      const response = await axios.get(
+        `${API}/management/bookings/availability?room_id=${selectedRoom.id}&date=${selectedDate}`
+      );
+      setSlots(response.data.slots || []);
     } catch (error) {
       console.error("Failed to fetch availability");
+      setSlots([]);
     }
   };
 
   useEffect(() => {
     fetchPublicHolidays();
     fetchRooms();
-    fetchMembers();
+    fetchBookings();
   }, []);
 
   useEffect(() => {
-    fetchBookings();
     fetchAvailability();
   }, [selectedDate, selectedRoom]);
 
-  // Change date by number of days (allows landing on blocked dates to show the warning)
+  // Change date by number of days
   const changeDate = (days) => {
     const date = new Date(selectedDate);
     date.setDate(date.getDate() + days);
     const newDateStr = date.toISOString().split('T')[0];
     
-    // Only enforce date limits, allow blocked dates so warning can be shown
     if (newDateStr >= minDateStr && newDateStr <= maxDateStr) {
       setSelectedDate(newDateStr);
     }
   };
 
-  // This is now only used for the hidden date input
-  const handleDateChange = (e) => {
-    const newDate = e.target.value;
-    
-    if (newDate >= minDateStr && newDate <= maxDateStr) {
-      setSelectedDate(newDate);
-    } else {
-      toast.error(`Bookings can only be made up to ${MAX_ADVANCE_DAYS} days in advance`);
-    }
-  };
-
+  // Format date for display with ordinal suffix
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     const day = date.getDate();
-    const ordinal = (d) => {
-      if (d > 3 && d < 21) return 'th';
-      switch (d % 10) {
+    const weekday = date.toLocaleDateString('en-IN', { weekday: 'long' });
+    const month = date.toLocaleDateString('en-IN', { month: 'long' });
+    const year = date.getFullYear();
+    
+    const getOrdinal = (n) => {
+      if (n > 3 && n < 21) return 'th';
+      switch (n % 10) {
         case 1: return 'st';
         case 2: return 'nd';
         case 3: return 'rd';
         default: return 'th';
       }
     };
-    const weekday = date.toLocaleDateString('en-IN', { weekday: 'long' });
-    const month = date.toLocaleDateString('en-IN', { month: 'long' });
-    const year = date.getFullYear();
-    return `${weekday}, ${day}${ordinal(day)} ${month}, ${year}`;
-  };
-
-  // Check if slots are consecutive
-  const areConsecutive = (slotTimes) => {
-    if (slotTimes.length <= 1) return true;
-    const sortedSlots = [...slotTimes].sort();
     
-    for (let i = 1; i < sortedSlots.length; i++) {
-      const prevSlot = slots.find(s => s.start_time === sortedSlots[i - 1]);
-      const currSlot = slots.find(s => s.start_time === sortedSlots[i]);
-      if (prevSlot && currSlot && prevSlot.end_time !== currSlot.start_time) {
-        return false;
-      }
-    }
-    return true;
+    return `${weekday}, ${day}${getOrdinal(day)} ${month}, ${year}`;
   };
 
-  const handleSlotClick = (slot) => {
-    if (!slot.is_available) return;
-    
-    const slotTime = slot.start_time;
-    const isSelected = selectedSlots.includes(slotTime);
-    
-    if (isSelected) {
-      // Deselect
-      setSelectedSlots(selectedSlots.filter(t => t !== slotTime));
-    } else {
-      // Select - check if it would be consecutive
-      const newSelection = [...selectedSlots, slotTime];
-      if (areConsecutive(newSelection)) {
-        setSelectedSlots(newSelection);
-      } else {
-        toast.error("Please select consecutive time slots");
-      }
-    }
-  };
-
-  const openBookingDialog = () => {
-    if (selectedSlots.length === 0) {
-      toast.error("Please select at least one time slot");
-      return;
-    }
-    
-    const sortedSlots = [...selectedSlots].sort();
-    const firstSlot = slots.find(s => s.start_time === sortedSlots[0]);
-    const lastSlot = slots.find(s => s.start_time === sortedSlots[sortedSlots.length - 1]);
-    
-    setFormData({
-      room_id: selectedRoom.id,
-      member_id: "",
-      start_time: firstSlot.start_time,
-      end_time: lastSlot.end_time,
-      purpose: "",
-      attendees: ""
-    });
-    setDialogOpen(true);
-  };
-
-  const handleBooking = async () => {
-    if (!formData.member_id) {
-      toast.error("Please select a member");
-      return;
-    }
-
-    setSaving(true);
-    try {
-      await axios.post(`${API}/management/bookings`, {
-        ...formData,
-        date: selectedDate,
-        attendees: formData.attendees ? parseInt(formData.attendees) : null
-      });
-      toast.success("Booking created successfully");
-      setDialogOpen(false);
-      setSelectedSlots([]);
-      fetchBookings();
-      fetchAvailability();
-    } catch (error) {
-      const errorDetail = error.response?.data?.detail;
-      if (typeof errorDetail === 'string') {
-        toast.error(errorDetail);
-      } else if (Array.isArray(errorDetail)) {
-        toast.error(errorDetail[0]?.msg || "Validation error");
-      } else {
-        toast.error("Failed to create booking");
-      }
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const canCancelBooking = (booking) => {
-    const bookingDate = new Date(booking.date);
-    const todayDate = new Date();
-    todayDate.setHours(0, 0, 0, 0);
-    const diffTime = bookingDate - todayDate;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays >= MIN_CANCEL_DAYS;
-  };
-
-  const handleCancelBooking = async (booking) => {
-    if (!canCancelBooking(booking)) {
-      toast.error(`Bookings can only be cancelled ${MIN_CANCEL_DAYS} or more days before the event`);
-      return;
-    }
-    
-    if (!window.confirm("Are you sure you want to cancel this booking?")) return;
-    
-    try {
-      await axios.delete(`${API}/management/bookings/${booking.id}`);
-      toast.success("Booking cancelled");
-      fetchBookings();
-      fetchAvailability();
-    } catch (error) {
-      const errorDetail = error.response?.data?.detail;
-      if (typeof errorDetail === 'string') {
-        toast.error(errorDetail);
-      } else if (Array.isArray(errorDetail)) {
-        toast.error(errorDetail[0]?.msg || "Validation error");
-      } else {
-        toast.error("Failed to cancel booking");
-      }
-    }
-  };
-
-  const getRoomBookings = (roomId) => {
-    return bookings.filter(b => b.room_id === roomId);
-  };
-
-  const selectedMember = members.find(m => m.id === formData.member_id);
-  
-  // Calculate total duration for selected slots
-  const totalMinutes = selectedSlots.length * (selectedRoom?.slot_duration || 30);
-  
-  // Check if current date is blocked
   const currentDateBlocked = isBlockedDate(selectedDate);
+
+  // Get booking info for a slot
+  const getBookingForSlot = (slot) => {
+    return bookings.find(b => 
+      b.room_id === selectedRoom?.id && 
+      b.date === selectedDate && 
+      b.start_time === slot.start_time &&
+      b.status !== 'cancelled'
+    );
+  };
 
   return (
     <div className="space-y-6 animate-fade-in" data-testid="bookings-page">
@@ -323,15 +157,15 @@ export default function Bookings() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[#2E375B] tracking-tight font-[Manrope]">
-            Meeting Room Booking
+            Meeting Room Bookings
           </h1>
           <p className="text-[#2E375B]/60 mt-1">
-            View and manage room availability (10 AM - 7 PM, Mon-Sat)
+            View room availability and bookings (10 AM - 7 PM, Mon-Sat)
           </p>
         </div>
       </div>
 
-      {/* Date Navigation - No calendar icon */}
+      {/* Date Navigation */}
       <Card className="border border-[#2E375B]/10">
         <CardContent className="p-4">
           <div className="flex items-center justify-center gap-4">
@@ -374,120 +208,85 @@ export default function Bookings() {
         </div>
       )}
 
-      {/* Room Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-2">
-        {rooms.map(room => (
-          <Button
-            key={room.id}
-            variant={selectedRoom?.id === room.id ? "default" : "outline"}
-            className={selectedRoom?.id === room.id 
-              ? "bg-[#2E375B] hover:bg-[#232B47]" 
-              : "border-[#2E375B]/20 text-[#2E375B] hover:bg-[#2E375B]/10"}
-            onClick={() => setSelectedRoom(room)}
-          >
-            <Building2 className="w-4 h-4 mr-2" />
-            {room.name}
-            <span className="ml-2 text-xs opacity-70">({room.capacity} seats)</span>
-          </Button>
-        ))}
-      </div>
-
-      {/* Room Info & Slots */}
-      {selectedRoom && !currentDateBlocked && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Room Details */}
-          <Card className="border border-[#2E375B]/10">
+      {/* Room Selection and Slots */}
+      {!currentDateBlocked && (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Room Selection */}
+          <Card className="lg:col-span-1 border border-[#2E375B]/10">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold font-[Manrope] text-[#2E375B]">
-                {selectedRoom.display_name}
+              <CardTitle className="text-lg font-semibold font-[Manrope] flex items-center gap-2 text-[#2E375B]">
+                <Building2 className="w-5 h-5" />
+                Select Room
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-[#2E375B]/70">
-                <Users className="w-4 h-4" />
-                <span>{selectedRoom.capacity} seats</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-[#2E375B]/70">
-                <Clock className="w-4 h-4" />
-                <span>{selectedRoom.slot_duration} min slots</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm font-semibold text-[#2E375B]">
-                <span>Rs. {selectedRoom.hourly_rate}/hour</span>
-              </div>
-              <div className="pt-2 border-t border-[#2E375B]/10">
-                <p className="text-xs text-[#2E375B]/60">
-                  Select multiple consecutive slots, then click "Book Selected"
-                </p>
-              </div>
+            <CardContent className="space-y-2">
+              {rooms.map(room => (
+                <button
+                  key={room.id}
+                  onClick={() => setSelectedRoom(room)}
+                  className={`w-full text-left p-3 rounded-lg border transition-all ${
+                    selectedRoom?.id === room.id
+                      ? "border-[#FFA14A] bg-[#FFA14A]/10"
+                      : "border-[#2E375B]/10 hover:border-[#2E375B]/30"
+                  }`}
+                >
+                  <p className="font-medium text-[#2E375B]">{room.display_name}</p>
+                  <p className="text-sm text-[#2E375B]/60">
+                    {room.capacity} seats • ₹{room.hourly_rate}/hr
+                  </p>
+                </button>
+              ))}
             </CardContent>
           </Card>
 
           {/* Time Slots */}
-          <Card className="border border-[#2E375B]/10 lg:col-span-2">
-            <CardHeader className="flex flex-row items-center justify-between">
+          <Card className="lg:col-span-3 border border-[#2E375B]/10">
+            <CardHeader>
               <CardTitle className="text-lg font-semibold font-[Manrope] flex items-center gap-2 text-[#2E375B]">
                 <Clock className="w-5 h-5" />
-                Available Slots (10 AM - 7 PM)
+                {selectedRoom?.display_name || "Room"} - Availability
               </CardTitle>
-              {selectedSlots.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-[#FFA14A] text-white">
-                    {selectedSlots.length} slot{selectedSlots.length > 1 ? 's' : ''} ({totalMinutes} min)
-                  </Badge>
-                  <Button 
-                    size="sm" 
-                    className="bg-[#2E375B] hover:bg-[#232B47]"
-                    onClick={openBookingDialog}
-                  >
-                    Book Selected
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    className="border-[#2E375B]/20 text-[#2E375B]"
-                    onClick={() => setSelectedSlots([])}
-                  >
-                    Clear
-                  </Button>
-                </div>
-              )}
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-                {slots.map((slot, idx) => {
-                  const isSelected = selectedSlots.includes(slot.start_time);
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => handleSlotClick(slot)}
-                      disabled={!slot.is_available}
-                      className={`p-2 rounded-lg text-xs font-medium transition-all ${
-                        isSelected
-                          ? "bg-[#2E375B] text-white ring-2 ring-[#FFA14A]"
-                          : slot.is_available
-                          ? "bg-[#2E375B]/10 text-[#2E375B] hover:bg-[#2E375B]/20 cursor-pointer"
-                          : "bg-[#2E375B]/5 text-[#2E375B]/30 cursor-not-allowed"
-                      }`}
-                    >
-                      {slot.start_time}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="flex items-center gap-4 mt-4 text-xs text-[#2E375B]/70">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-[#2E375B]/10"></div>
-                  <span>Available</span>
+              {slots.length === 0 ? (
+                <p className="text-center py-8 text-[#2E375B]/60">
+                  {loading ? "Loading slots..." : "No slots available"}
+                </p>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {slots.map((slot, idx) => {
+                    const booking = getBookingForSlot(slot);
+                    const isBooked = !slot.is_available || booking;
+                    
+                    return (
+                      <div
+                        key={idx}
+                        className={`p-3 rounded-lg border text-center ${
+                          isBooked
+                            ? "bg-red-50 border-red-200"
+                            : "bg-green-50 border-green-200"
+                        }`}
+                      >
+                        <p className={`font-medium ${isBooked ? "text-red-700" : "text-green-700"}`}>
+                          {slot.start_time} - {slot.end_time}
+                        </p>
+                        {isBooked ? (
+                          <div className="mt-1">
+                            <Badge className="bg-red-100 text-red-700 text-xs">Booked</Badge>
+                            {booking && (
+                              <p className="text-xs text-red-600 mt-1 truncate" title={booking.member_name}>
+                                {booking.member_name || "Member"}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <Badge className="bg-green-100 text-green-700 text-xs mt-1">Available</Badge>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-[#2E375B]"></div>
-                  <span>Selected</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-[#2E375B]/5"></div>
-                  <span>Booked</span>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -496,159 +295,54 @@ export default function Bookings() {
       {/* Today's Bookings */}
       <Card className="border border-[#2E375B]/10">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold font-[Manrope] text-[#2E375B]">
+          <CardTitle className="text-lg font-semibold font-[Manrope] flex items-center gap-2 text-[#2E375B]">
+            <Calendar className="w-5 h-5" />
             Bookings for {formatDate(selectedDate)}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <p className="text-[#2E375B]/60">Loading...</p>
-          ) : bookings.length === 0 ? (
-            <p className="text-[#2E375B]/60">No bookings for this date</p>
-          ) : (
-            <div className="space-y-4">
-              {rooms.map(room => {
-                const roomBookings = getRoomBookings(room.id);
-                if (roomBookings.length === 0) return null;
-                
-                return (
-                  <div key={room.id}>
-                    <h4 className="font-semibold text-sm text-[#2E375B]/70 mb-2">{room.display_name}</h4>
-                    <div className="space-y-2">
-                      {roomBookings.map(booking => {
-                        const canCancel = canCancelBooking(booking);
-                        return (
-                          <div 
-                            key={booking.id} 
-                            className="flex items-center justify-between p-3 bg-[#2E375B]/5 rounded-lg"
-                          >
-                            <div className="flex items-center gap-4">
-                              <div className="text-center">
-                                <p className="font-mono font-semibold text-[#2E375B]">
-                                  {booking.start_time} - {booking.end_time}
-                                </p>
-                                <p className="text-xs text-[#2E375B]/60">{booking.duration_minutes} min</p>
-                              </div>
-                              <div>
-                                <p className="font-medium text-[#2E375B]">{booking.member_name}</p>
-                                <p className="text-xs text-[#2E375B]/60">{booking.company_name}</p>
-                                {booking.purpose && (
-                                  <p className="text-xs text-[#2E375B]/70 mt-1">{booking.purpose}</p>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {booking.credits_used > 0 && (
-                                <Badge className="bg-[#2E375B]/10 text-[#2E375B]">
-                                  {booking.credits_used} min credits
-                                </Badge>
-                              )}
-                              {booking.billable_amount > 0 && (
-                                <Badge className="bg-[#FFA14A]/10 text-[#FFA14A]">
-                                  Rs. {booking.billable_amount}
-                                </Badge>
-                              )}
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className={`h-8 w-8 ${canCancel ? 'text-red-500 hover:text-red-700' : 'text-[#2E375B]/20 cursor-not-allowed'}`}
-                                onClick={() => handleCancelBooking(booking)}
-                                disabled={!canCancel}
-                                title={canCancel ? 'Cancel booking' : `Can only cancel ${MIN_CANCEL_DAYS}+ days before`}
-                              >
-                                <X className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          {(() => {
+            const dayBookings = bookings.filter(b => b.date === selectedDate && b.status !== 'cancelled');
+            if (dayBookings.length === 0) {
+              return <p className="text-center py-4 text-[#2E375B]/60">No bookings for this date</p>;
+            }
+            return (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-3 text-[#2E375B]/70">Room</th>
+                      <th className="text-left p-3 text-[#2E375B]/70">Time</th>
+                      <th className="text-left p-3 text-[#2E375B]/70">Member</th>
+                      <th className="text-left p-3 text-[#2E375B]/70">Purpose</th>
+                      <th className="text-left p-3 text-[#2E375B]/70">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dayBookings.map((booking) => (
+                      <tr key={booking.id} className="border-b hover:bg-slate-50">
+                        <td className="p-3 font-medium text-[#2E375B]">{booking.room_name}</td>
+                        <td className="p-3 text-[#2E375B]">{booking.start_time} - {booking.end_time}</td>
+                        <td className="p-3 text-[#2E375B]">{booking.member_name}</td>
+                        <td className="p-3 text-[#2E375B]/70">{booking.purpose || "-"}</td>
+                        <td className="p-3">
+                          <Badge className={
+                            booking.status === 'confirmed' 
+                              ? "bg-green-100 text-green-700" 
+                              : "bg-amber-100 text-amber-700"
+                          }>
+                            {booking.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
         </CardContent>
       </Card>
-
-      {/* Booking Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-[Manrope] text-[#2E375B]">Book {selectedRoom?.display_name}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="bg-[#2E375B]/5 p-3 rounded-lg">
-              <p className="text-sm font-medium text-[#2E375B]">{formatDate(selectedDate)}</p>
-              <p className="text-lg font-semibold text-[#2E375B]">
-                {formData.start_time} - {formData.end_time}
-              </p>
-              <p className="text-xs text-[#2E375B]/60 mt-1">
-                {selectedSlots.length} slot{selectedSlots.length > 1 ? 's' : ''} • {totalMinutes} minutes total
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label className="text-[#2E375B]">Member *</Label>
-              <Select value={formData.member_id} onValueChange={(value) => setFormData({ ...formData, member_id: value })}>
-                <SelectTrigger className="border-[#2E375B]/20">
-                  <SelectValue placeholder="Select member" />
-                </SelectTrigger>
-                <SelectContent>
-                  {members.map(member => (
-                    <SelectItem key={member.id} value={member.id}>
-                      {member.name} ({member.company_name})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {selectedMember && (
-              <div className="bg-[#2E375B]/5 p-3 rounded-lg text-sm">
-                <p className="font-medium text-[#2E375B]">Credits Available</p>
-                <p className="text-[#2E375B]/70">
-                  {selectedMember.meeting_room_credits - selectedMember.credits_used} min remaining
-                </p>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label className="text-[#2E375B]">Purpose</Label>
-              <Input
-                value={formData.purpose}
-                onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
-                placeholder="Meeting purpose (optional)"
-                className="border-[#2E375B]/20"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-[#2E375B]">Number of Attendees</Label>
-              <Input
-                type="number"
-                value={formData.attendees}
-                onChange={(e) => setFormData({ ...formData, attendees: e.target.value })}
-                placeholder={`Max: ${selectedRoom?.capacity}`}
-                max={selectedRoom?.capacity}
-                className="border-[#2E375B]/20"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} className="border-[#2E375B]/20 text-[#2E375B]">
-              Cancel
-            </Button>
-            <Button 
-              className="bg-[#2E375B] hover:bg-[#232B47]"
-              onClick={handleBooking}
-              disabled={saving}
-            >
-              {saving ? "Booking..." : "Confirm Booking"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
