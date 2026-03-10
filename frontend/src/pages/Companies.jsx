@@ -434,14 +434,25 @@ export default function Companies() {
             Manage clients and their members
           </p>
         </div>
-        <Button 
-          onClick={() => openCompanyDialog()}
-          className="bg-[#2E375B] hover:bg-[#232B47]"
-          data-testid="add-company-btn"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Client
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={handleExport}
+            className="border-[#2E375B]/20"
+            data-testid="export-clients-btn"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+          <Button 
+            onClick={() => openCompanyDialog()}
+            className="bg-[#2E375B] hover:bg-[#232B47]"
+            data-testid="add-company-btn"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Client
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
