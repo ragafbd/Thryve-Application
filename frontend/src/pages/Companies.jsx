@@ -87,6 +87,9 @@ export default function Companies() {
     discount_percent: "",
     meeting_room_credits: "",
     start_date: "",
+    isp_provider: "",
+    bandwidth_speed: "",
+    isp_account_id: "",
     notes: ""
   });
   
