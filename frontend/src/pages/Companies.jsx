@@ -211,6 +211,9 @@ export default function Companies() {
         discount_percent: company.discount_percent || "",
         meeting_room_credits: company.meeting_room_credits || "",
         start_date: company.start_date,
+        isp_provider: company.isp_provider || "",
+        bandwidth_speed: company.bandwidth_speed || "",
+        isp_account_id: company.isp_account_id || "",
         notes: company.notes || ""
       });
     } else {
