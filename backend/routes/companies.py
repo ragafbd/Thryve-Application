@@ -367,11 +367,13 @@ async def get_company_stats(current_user: dict = Depends(get_current_user)):
     total_seats = 0
     occupied_seats = 0
     total_revenue = 0
+    total_credits = 0
     
     async for company in db.companies.find({"status": "active"}, {"_id": 0}):
         total_seats += company.get("total_seats", 0)
         occupied_seats += company.get("seats_occupied", 0)
         total_revenue += company.get("total_rate", 0)
+        total_credits += company.get("meeting_room_credits", 0)
     
     return {
         "total_companies": total_companies,
@@ -380,5 +382,5 @@ async def get_company_stats(current_user: dict = Depends(get_current_user)):
         "occupied_seats": occupied_seats,
         "available_seats": total_seats - occupied_seats,
         "monthly_revenue": total_revenue,
-        "credits_per_seat": MEETING_ROOM_CREDITS_PER_SEAT
+        "total_credits": total_credits
     }
