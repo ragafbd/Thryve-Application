@@ -15,6 +15,7 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Sidebar Cleanup**: Removed "Clients (Legacy)" from ADMIN section. The new "Clients" page under MANAGEMENT is now the single source for client management.
 - **Code Cleanup**: Removed unused legacy files (`Clients.jsx`, `Members.jsx`) and their routes from App.js.
 - **Removed Bulk Invoice**: Completely removed the Excel-based bulk invoice feature. All invoices are now generated from the app's database to prevent typos and ensure data accuracy.
+- **Fixed Add Client Form**: Number of Seats, Rate per Seat, Discount, and Start Date fields are now blank by default instead of pre-filled, allowing admins to enter values manually without clearing existing defaults.
 
 ## User Personas
 - **Admin**: Full access to all features, user management, settings (at `/admin`)
