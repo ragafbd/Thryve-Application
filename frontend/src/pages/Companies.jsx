@@ -706,30 +706,40 @@ export default function Companies() {
                 <div className="space-y-2">
                   <Label>Number of Seats *</Label>
                   <Input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     value={companyForm.total_seats}
-                    onChange={(e) => setCompanyForm({ ...companyForm, total_seats: parseInt(e.target.value) || 1 })}
-                    min="1"
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      setCompanyForm({ ...companyForm, total_seats: parseInt(val) || 1 });
+                    }}
+                    placeholder="Enter number of seats"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Rate per Seat (₹) *</Label>
                   <Input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     value={companyForm.rate_per_seat}
-                    onChange={(e) => setCompanyForm({ ...companyForm, rate_per_seat: e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^\d.]/g, '');
+                      setCompanyForm({ ...companyForm, rate_per_seat: val });
+                    }}
                     placeholder={selectedPlan ? `Default: ${selectedPlan.default_rate}` : "Enter rate"}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Discount (%)</Label>
                   <Input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     value={companyForm.discount_percent}
-                    onChange={(e) => setCompanyForm({ ...companyForm, discount_percent: e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^\d.]/g, '');
+                      setCompanyForm({ ...companyForm, discount_percent: val });
+                    }}
                     placeholder="0"
-                    min="0"
-                    max="100"
                   />
                 </div>
                 <div className="space-y-2">
