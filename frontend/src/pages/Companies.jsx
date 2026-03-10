@@ -371,7 +371,7 @@ export default function Companies() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="border border-[#2E375B]/10">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -407,19 +407,6 @@ export default function Companies() {
               <div>
                 <p className="text-sm text-[#2E375B]/60">Monthly Revenue</p>
                 <p className="text-2xl font-bold text-[#2E375B]">₹{(stats.monthly_revenue || 0).toLocaleString('en-IN')}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border border-[#2E375B]/10">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-[#2E375B]/60">Total Credits</p>
-                <p className="text-2xl font-bold text-[#2E375B]">{(stats.total_credits || 0).toLocaleString('en-IN')} min</p>
               </div>
             </div>
           </CardContent>
