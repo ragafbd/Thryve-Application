@@ -414,21 +414,25 @@ export default function Layout() {
       <main 
         className={cn(
           "main-content min-h-screen bg-[#F8FAFC]",
-          !sidebarOpen && "main-content-expanded"
+          "pt-14 lg:pt-0", // Account for mobile header
+          "lg:ml-[220px]" // Sidebar width on desktop
         )}
       >
-        {/* Top Bar */}
-        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 no-print">
+        {/* Top Bar - Hidden on mobile (we have mobile header) */}
+        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 no-print hidden lg:block">
           <div className="flex items-center justify-between px-6 py-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              data-testid="sidebar-toggle"
-              className="hover:bg-slate-100"
-            >
-              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </Button>
+            <div className="flex items-center gap-4">
+              {/* Notification indicator */}
+              {newTicketCount > 0 && (
+                <button
+                  onClick={() => navigate("/admin/tickets")}
+                  className="flex items-center gap-2 text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full hover:bg-amber-100 transition-colors"
+                >
+                  <Bell className="w-4 h-4 animate-pulse" />
+                  <span className="text-sm font-medium">{newTicketCount} new ticket{newTicketCount > 1 ? 's' : ''}</span>
+                </button>
+              )}
+            </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-slate-500 font-mono hidden sm:block">
                 {new Date().toLocaleDateString('en-IN', { 
