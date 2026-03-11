@@ -216,12 +216,14 @@ export default function MemberLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex">
-      {/* Sidebar - Matching Admin Layout */}
+    <div className="min-h-screen bg-[#F8FAFC]">
+      {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-[#2E375B] text-white transition-transform duration-300 ease-in-out flex flex-col",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full md:w-0 md:overflow-hidden"
+          "fixed left-0 top-0 z-50 w-64 bg-[#2E375B] text-white transition-transform duration-300 ease-in-out flex flex-col",
+          "lg:translate-x-0 lg:h-screen",
+          "h-[calc(100vh-56px)] top-14 lg:top-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
         data-testid="member-sidebar"
       >
