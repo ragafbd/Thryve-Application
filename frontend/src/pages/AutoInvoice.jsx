@@ -29,7 +29,7 @@ export default function AutoInvoice() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [runs, setRuns] = useState([]);
-  const [members, setMembers] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [previewData, setPreviewData] = useState(null);
   const [resultDialogOpen, setResultDialogOpen] = useState(false);
   const [lastResult, setLastResult] = useState(null);
