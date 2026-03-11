@@ -176,6 +176,7 @@ export default function Companies() {
       notes: ""
     });
     setEditingCompany(null);
+    setSignatoryIsMember(false);
   };
 
   const resetMemberForm = () => {
