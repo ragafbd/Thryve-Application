@@ -126,6 +126,42 @@ export default function MemberDashboard() {
         </Card>
       </div>
 
+      {/* Pending Meeting Room Charges - Only show if there are pending charges */}
+      {pendingCharges.length > 0 && (
+        <Card className="border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold flex items-center gap-2 text-amber-800">
+              <Video className="w-5 h-5" />
+              Pending Meeting Room Charges
+              <Badge className="bg-amber-500 text-white ml-2">
+                ₹{pendingCharges.reduce((sum, c) => sum + c.amount, 0).toLocaleString('en-IN')}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-amber-700 mb-3">
+              These charges will be added to your next invoice.
+            </p>
+            <div className="space-y-2">
+              {pendingCharges.map((charge, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3 bg-white/80 rounded-lg">
+                  <div>
+                    <p className="font-medium text-slate-800">{charge.room_name}</p>
+                    <p className="text-xs text-slate-500">
+                      {charge.date} • {charge.start_time} - {charge.end_time}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-mono font-semibold text-amber-700">₹{charge.amount.toLocaleString('en-IN')}</p>
+                    <Badge className="text-xs bg-amber-100 text-amber-700">{charge.status}</Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Invoices */}
