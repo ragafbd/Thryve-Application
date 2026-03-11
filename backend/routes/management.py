@@ -493,11 +493,6 @@ async def create_booking(booking_data: BookingCreate, current_user: dict = Depen
     if not room:
         raise HTTPException(status_code=400, detail="Invalid room")
     
-    # Get member details
-    member = await db.members.find_one({"id": booking_data.member_id}, {"_id": 0})
-    if not member:
-        raise HTTPException(status_code=400, detail="Invalid member")
-    
     # Calculate duration in minutes
     start = datetime.strptime(booking_data.start_time, "%H:%M")
     end = datetime.strptime(booking_data.end_time, "%H:%M")
@@ -518,6 +513,54 @@ async def create_booking(booking_data: BookingCreate, current_user: dict = Depen
     
     if conflicts:
         raise HTTPException(status_code=400, detail="Time slot is already booked")
+    
+    # Handle guest booking
+    if booking_data.is_guest:
+        if not booking_data.guest_name or not booking_data.guest_phone or not booking_data.guest_id_number:
+            raise HTTPException(status_code=400, detail="Guest name, phone and ID number are required")
+        
+        # Calculate payment for guest (no credits)
+        hourly_rate = room.get("hourly_rate", 500)
+        payment_amount = booking_data.payment_amount or (duration / 60) * hourly_rate
+        
+        booking = Booking(
+            room_id=booking_data.room_id,
+            room_name=room["name"],
+            member_id=None,
+            member_name=booking_data.guest_name,
+            company_name=booking_data.guest_company or "Guest",
+            date=booking_data.date,
+            start_time=booking_data.start_time,
+            end_time=booking_data.end_time,
+            duration_minutes=duration,
+            purpose=booking_data.purpose or "",
+            attendees=booking_data.attendees,
+            credits_used=0,
+            billable_amount=round(payment_amount, 2),
+            is_guest=True,
+            guest_name=booking_data.guest_name,
+            guest_phone=booking_data.guest_phone,
+            guest_email=booking_data.guest_email,
+            guest_company=booking_data.guest_company,
+            guest_id_type=booking_data.guest_id_type,
+            guest_id_number=booking_data.guest_id_number,
+            payment_amount=round(payment_amount, 2),
+            payment_status=booking_data.payment_status or "pending",
+            created_by=current_user.get("id")
+        )
+        
+        doc = booking.model_dump()
+        await db.bookings.insert_one(doc)
+        return booking
+    
+    # Handle member booking
+    if not booking_data.member_id:
+        raise HTTPException(status_code=400, detail="Member ID is required for member bookings")
+    
+    # Get member details
+    member = await db.members.find_one({"id": booking_data.member_id}, {"_id": 0})
+    if not member:
+        raise HTTPException(status_code=400, detail="Invalid member")
     
     # Calculate credits and billing
     member_credits = member.get("meeting_room_credits", 0) - member.get("credits_used", 0)
