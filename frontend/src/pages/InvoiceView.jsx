@@ -384,6 +384,178 @@ export default function InvoiceView() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Invoice Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-[#2E375B]">
+              Edit Invoice - {invoice.invoice_number}
+            </DialogTitle>
+            <p className="text-sm text-slate-500">
+              Invoice date cannot be changed. Invoice number is preserved.
+            </p>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {/* Client Selection */}
+            <div className="space-y-2">
+              <Label className="text-[#2E375B]">Client</Label>
+              <Select
+                value={editForm.client_id}
+                onValueChange={(value) => setEditForm({ ...editForm, client_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select client" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.company_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Due Date */}
+            <div className="space-y-2">
+              <Label className="text-[#2E375B]">Due Date</Label>
+              <Input
+                type="date"
+                value={editForm.due_date}
+                onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })}
+              />
+            </div>
+
+            {/* Line Items */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-[#2E375B]">Line Items</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddLineItem}
+                >
+                  <Plus className="w-4 h-4 mr-1" /> Add Item
+                </Button>
+              </div>
+
+              {editForm.line_items.map((item, index) => (
+                <div key={index} className="p-4 border rounded-lg space-y-3 bg-slate-50">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-slate-600">Item #{index + 1}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => handleRemoveLineItem(index)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2 space-y-1">
+                      <Label className="text-xs">Description</Label>
+                      <Input
+                        value={item.description}
+                        onChange={(e) => handleLineItemChange(index, "description", e.target.value)}
+                        placeholder="Service description"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-xs">Service Type</Label>
+                      <Select
+                        value={item.service_type}
+                        onValueChange={(value) => handleLineItemChange(index, "service_type", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {serviceTypes.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Qty</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => handleLineItemChange(index, "quantity", parseInt(e.target.value) || 1)}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Rate (₹)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={item.rate}
+                          onChange={(e) => handleLineItemChange(index, "rate", parseFloat(e.target.value) || 0)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`taxable-${index}`}
+                      checked={item.is_taxable}
+                      onChange={(e) => handleLineItemChange(index, "is_taxable", e.target.checked)}
+                      className="rounded border-slate-300"
+                    />
+                    <Label htmlFor={`taxable-${index}`} className="text-sm font-normal cursor-pointer">
+                      Apply GST (18%)
+                    </Label>
+                  </div>
+                </div>
+              ))}
+
+              {editForm.line_items.length === 0 && (
+                <p className="text-center text-slate-500 py-4">
+                  No line items. Click "Add Item" to add services.
+                </p>
+              )}
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label className="text-[#2E375B]">Notes</Label>
+              <Textarea
+                value={editForm.notes}
+                onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                placeholder="Additional notes (optional)"
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveEdit}
+              disabled={saving}
+              className="bg-[#2E375B] hover:bg-[#232B47]"
+            >
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
