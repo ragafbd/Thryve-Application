@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { 
   FileText, CalendarDays, Ticket, CreditCard, Clock, CheckCircle, 
-  AlertTriangle, ArrowRight, Building2
+  AlertTriangle, ArrowRight, Building2, Video
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,21 +18,24 @@ export default function MemberDashboard() {
   const [bookings, setBookings] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
+  const [pendingCharges, setPendingCharges] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [invRes, bookRes, tickRes, annRes] = await Promise.all([
+        const [invRes, bookRes, tickRes, annRes, chargesRes] = await Promise.all([
           axios.get(`${API}/invoices`),
           axios.get(`${API}/bookings?upcoming_only=true`),
           axios.get(`${API}/tickets`),
-          axios.get(`${API}/announcements`)
+          axios.get(`${API}/announcements`),
+          axios.get(`${API}/pending-charges`).catch(() => ({ data: [] }))
         ]);
         setInvoices(invRes.data);
         setBookings(bookRes.data);
         setTickets(tickRes.data);
         setAnnouncements(annRes.data.slice(0, 3));
+        setPendingCharges(chargesRes.data || []);
         refreshProfile(); // Refresh credits info
       } catch (error) {
         console.error("Error fetching data:", error);
