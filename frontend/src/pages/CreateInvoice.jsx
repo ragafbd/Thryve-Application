@@ -75,6 +75,7 @@ export default function CreateInvoice() {
   });
   const [lineItems, setLineItems] = useState([{ ...emptyLineItem }]);
   const [notes, setNotes] = useState("");
+  const [pendingCharges, setPendingCharges] = useState([]);
 
   // Auto-update due date when invoice date changes (invoice date + 4 days)
   useEffect(() => {
@@ -82,6 +83,52 @@ export default function CreateInvoice() {
     newDueDate.setDate(newDueDate.getDate() + 4);
     setDueDate(newDueDate);
   }, [invoiceDate]);
+
+  // Fetch pending meeting room charges when client is selected
+  useEffect(() => {
+    const fetchPendingCharges = async () => {
+      if (!selectedClientId) {
+        setPendingCharges([]);
+        return;
+      }
+      try {
+        const response = await axios.get(`${API}/management/pending-charges`);
+        const clientCharges = response.data.company_charges.find(
+          c => c.company_name === selectedClient?.company_name
+        );
+        if (clientCharges && clientCharges.bookings.length > 0) {
+          setPendingCharges(clientCharges.bookings);
+          // Auto-add meeting room charges as line items
+          const meetingRoomItems = clientCharges.bookings.map(booking => ({
+            description: `Meeting Room - ${booking.room_name} (${booking.date})`,
+            service_type: "meeting_room",
+            quantity: 1,
+            rate: booking.amount,
+            is_taxable: true,
+            hsn_sac: "997212",
+            unit: "Units",
+            is_prorated: false,
+            prorate_days: null,
+            prorate_total_days: 30,
+            booking_id: booking.booking_id // Track which booking this is for
+          }));
+          // Add to existing line items
+          setLineItems(prev => {
+            // Remove any existing meeting room items that are auto-added
+            const nonMeetingItems = prev.filter(item => !item.booking_id);
+            return [...nonMeetingItems, ...meetingRoomItems];
+          });
+        } else {
+          setPendingCharges([]);
+          // Remove auto-added meeting room items
+          setLineItems(prev => prev.filter(item => !item.booking_id));
+        }
+      } catch (error) {
+        console.error("Failed to fetch pending charges");
+      }
+    };
+    fetchPendingCharges();
+  }, [selectedClientId, selectedClient?.company_name]);
 
   useEffect(() => {
     const fetchData = async () => {
