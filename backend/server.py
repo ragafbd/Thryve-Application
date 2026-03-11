@@ -615,7 +615,15 @@ async def update_invoice(invoice_id: str, update_data: InvoiceUpdate):
     
     # Update line items and recalculate totals
     if update_data.line_items is not None:
-        calculated_items = [calculate_line_item(item) for item in update_data.line_items]
+        # Convert dict items to LineItem objects for calculation
+        line_item_objects = []
+        for item in update_data.line_items:
+            if isinstance(item, dict):
+                line_item_objects.append(LineItem(**item))
+            else:
+                line_item_objects.append(item)
+        
+        calculated_items = [calculate_line_item(li) for li in line_item_objects]
         
         subtotal = sum(item["amount"] for item in calculated_items)
         total_cgst = sum(item["cgst"] for item in calculated_items)
