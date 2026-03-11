@@ -87,7 +87,7 @@ export default function CreateInvoice() {
     const fetchData = async () => {
       try {
         const [clientsRes, companyRes] = await Promise.all([
-          axios.get(`${API}/clients`),
+          axios.get(`${API}/companies`),  // Use companies instead of clients
           axios.get(`${API}/company`)
         ]);
         setClients(clientsRes.data);
