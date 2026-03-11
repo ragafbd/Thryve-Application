@@ -335,7 +335,7 @@ class Booking(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     room_id: str
     room_name: str = ""
-    member_id: str
+    member_id: Optional[str] = None  # Optional for guest bookings
     member_name: str = ""
     company_name: str = ""
     date: str
@@ -347,6 +347,18 @@ class Booking(BaseModel):
     credits_used: int = 0  # Credits deducted for this booking
     billable_amount: float = 0  # Amount to bill (if credits exhausted)
     status: str = "confirmed"  # confirmed, cancelled, completed
+    
+    # Guest booking fields
+    is_guest: bool = False
+    guest_name: Optional[str] = None
+    guest_phone: Optional[str] = None
+    guest_email: Optional[str] = None
+    guest_company: Optional[str] = None
+    guest_id_type: Optional[str] = None
+    guest_id_number: Optional[str] = None
+    payment_amount: float = 0
+    payment_status: str = "pending"
+    
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     created_by: Optional[str] = None
 
