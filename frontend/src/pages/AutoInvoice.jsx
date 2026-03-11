@@ -237,7 +237,7 @@ export default function AutoInvoice() {
               ) : (
                 <>
                   <Play className="w-4 h-4 mr-2" />
-                  Generate {totalActiveMembers} Invoices
+                  Generate {totalActiveCompanies} Invoices
                 </>
               )}
             </Button>
@@ -246,7 +246,7 @@ export default function AutoInvoice() {
           <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
             <p className="text-sm text-blue-700">
               <AlertCircle className="w-4 h-4 inline mr-1" />
-              This will generate invoices for <strong>{totalActiveMembers} active members</strong> for{" "}
+              This will generate invoices for <strong>{totalActiveCompanies} active companies</strong> for{" "}
               <strong>{formatMonth(billingMonth)}</strong>. Each invoice will include a PDF attachment.
             </p>
           </div>
