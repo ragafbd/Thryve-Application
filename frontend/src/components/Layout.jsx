@@ -263,20 +263,31 @@ export default function Layout() {
           <p className="text-xs text-white/60 uppercase tracking-wider px-3 py-1.5 mt-1 font-bold">Management</p>
           {managementNavItems.map((item) => {
             const isActive = location.pathname === `/admin/${item.path}`;
+            const isTickets = item.path === 'tickets';
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
                 data-testid={`nav-${item.label.toLowerCase().replace(/\s/g, '-')}`}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200",
+                  "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 relative",
                   isActive 
                     ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
                     : "text-white/70 hover:bg-white/10 hover:text-white"
                 )}
+                onClick={() => {
+                  // Reset ticket count when visiting tickets page
+                  if (isTickets) setNewTicketCount(0);
+                }}
               >
                 <item.icon className="w-4 h-4" strokeWidth={1.5} />
                 <span className="text-sm">{item.label}</span>
+                {/* Badge for new tickets */}
+                {isTickets && newTicketCount > 0 && (
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center animate-pulse">
+                    {newTicketCount}
+                  </span>
+                )}
               </NavLink>
             );
           })}
