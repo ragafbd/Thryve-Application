@@ -53,18 +53,20 @@ export default function AutoInvoice() {
     }
   };
 
-  const fetchMembers = async () => {
+  const fetchCompanies = async () => {
     try {
-      const response = await axios.get(`${API}/management/members?status=active`);
-      setMembers(response.data);
+      const response = await axios.get(`${API}/companies`);
+      // Filter only active companies
+      const activeCompanies = response.data.filter(c => c.status === 'active');
+      setCompanies(activeCompanies);
     } catch (error) {
-      console.error("Failed to fetch members");
+      console.error("Failed to fetch companies");
     }
   };
 
   useEffect(() => {
     fetchRuns();
-    fetchMembers();
+    fetchCompanies();
   }, []);
 
   const handleGenerate = async () => {
