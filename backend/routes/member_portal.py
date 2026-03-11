@@ -242,6 +242,43 @@ async def get_member_invoice(invoice_id: str, current_member: dict = Depends(get
     
     return invoice
 
+# ==================== MEMBER'S PENDING CHARGES ====================
+
+@router.get("/pending-charges")
+async def get_member_pending_charges(current_member: dict = Depends(get_current_member)):
+    """Get pending meeting room charges for the current member's company"""
+    # Get bookings with billable_amount > 0 that aren't paid
+    pending_bookings = await db.bookings.find(
+        {
+            "company_name": current_member["company_name"],
+            "billable_amount": {"$gt": 0},
+            "payment_status": {"$nin": ["paid", "completed"]},
+            "$or": [
+                {"status": "confirmed"},
+                {"status": "cancelled", "cancellation_charge": True}
+            ]
+        },
+        {"_id": 0}
+    ).to_list(100)
+    
+    charges = []
+    total_pending = 0
+    
+    for booking in pending_bookings:
+        charges.append({
+            "booking_id": booking.get("id"),
+            "member_name": booking.get("member_name"),
+            "date": booking.get("date"),
+            "room_name": booking.get("room_name"),
+            "start_time": booking.get("start_time"),
+            "end_time": booking.get("end_time"),
+            "amount": booking.get("billable_amount", 0),
+            "status": "Late Cancellation" if booking.get("status") == "cancelled" else "Pending"
+        })
+        total_pending += booking.get("billable_amount", 0)
+    
+    return charges
+
 # ==================== MEMBER'S SUPPORT TICKETS ====================
 
 @router.get("/tickets")
