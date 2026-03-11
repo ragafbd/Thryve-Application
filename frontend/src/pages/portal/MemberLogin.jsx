@@ -152,10 +152,10 @@ export default function MemberLogin() {
                   <Button
                     type="submit"
                     className="w-full bg-[#2E375B] hover:bg-[#232B47]"
-                    disabled={loading}
+                    disabled={submitting}
                     data-testid="member-login-submit"
                   >
-                    {loading ? "Signing in..." : "Sign In"}
+                    {submitting ? "Signing in..." : "Sign In"}
                   </Button>
                   <div className="text-center">
                     <button
