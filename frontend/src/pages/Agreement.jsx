@@ -118,66 +118,66 @@ export default function Agreement() {
         
         <p style="margin: 16pt 0 12pt 0;">The Licensor and the Licensee are collectively referred to as the "Parties" and individually as a "Party."</p>
         
-        <h3 style="margin-top: 30px; font-size: 14px;">WHEREAS</h3>
-        <ol style="margin-left: 20px;">
-          <li style="text-align: justify;">The Licensor is operating a coworking facility known as "Thryve Coworking" at Plot No. 3, First Floor, Near Ajronda Metro Station, 18/1, Mathura Road, Faridabad 121007 ("hereinafter referred to as Premises").</li>
-          <li style="text-align: justify;">The Licensor is in lawful possession of the Premises and entitled to grant a license for the use of certain designated workspace(s), cabins, meeting rooms, and/or coworking desks.</li>
-          <li style="text-align: justify;">The Licensee has requested use of the Licensor's coworking facilities and services, and the Licensor has agreed to grant the Licensee a limited, non-exclusive, revocable license with rights to enter and strictly for business use on the terms and conditions set forth below:</li>
+        <h3 style="margin-top: 20pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">WHEREAS</h3>
+        <ol style="margin-left: 20pt; margin-bottom: 12pt;">
+          <li style="text-align: justify; margin-bottom: 6pt;">The Licensor is operating a coworking facility known as "Thryve Coworking" at Plot No. 3, First Floor, Near Ajronda Metro Station, 18/1, Mathura Road, Faridabad 121007 ("hereinafter referred to as Premises").</li>
+          <li style="text-align: justify; margin-bottom: 6pt;">The Licensor is in lawful possession of the Premises and entitled to grant a license for the use of certain designated workspace(s), cabins, meeting rooms, and/or coworking desks.</li>
+          <li style="text-align: justify; margin-bottom: 6pt;">The Licensee has requested use of the Licensor's coworking facilities and services, and the Licensor has agreed to grant the Licensee a limited, non-exclusive, revocable license with rights to enter and strictly for business use on the terms and conditions set forth below:</li>
         </ol>
         
-        <p style="margin-top: 20px;"><strong>NOW, THEREFORE, THE PARTIES AGREE AS FOLLOWS:</strong></p>
+        <p style="margin: 16pt 0 12pt 0;"><strong>NOW, THEREFORE, THE PARTIES AGREE AS FOLLOWS:</strong></p>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">1. LICENSED AREA & SERVICES</h3>
-        <p style="text-align: justify;"><strong>1.1</strong> The Licensor grants to the Licensee a non-exclusive, non-transferable, revocable license for right to enter and use the following workspace(s) at the Premises:</p>
-        <ul style="margin-left: 30px;">
-          <li>${data.Space_Description}</li>
-          <li>Number of Seats: <strong>${data.Seats}</strong></li>
-          <li>Meeting Room Access: As per usage/plan</li>
-          <li>Common Areas: Reception, Lounge, Pantry, Washrooms, Hallways, and such other areas as designated by the Licensor.</li>
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">1. LICENSED AREA & SERVICES</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>1.1</strong> The Licensor grants to the Licensee a non-exclusive, non-transferable, revocable license for right to enter and use the following workspace(s) at the Premises:</p>
+        <ul style="margin-left: 24pt; margin-bottom: 8pt;">
+          <li style="margin-bottom: 4pt;">${data.Space_Description}</li>
+          <li style="margin-bottom: 4pt;">Number of Seats: <strong>${data.Seats}</strong></li>
+          <li style="margin-bottom: 4pt;">Meeting Room Access: As per usage/plan</li>
+          <li style="margin-bottom: 4pt;">Common Areas: Reception, Lounge, Pantry, Washrooms, Hallways, and such other areas as designated by the Licensor.</li>
         </ul>
-        <p style="text-align: justify;"><strong>1.2</strong> The License is limited to right to enter and use only, and no tenancy, lease, or rights of possession are created or transferred.</p>
-        <p style="text-align: justify;"><strong>1.3</strong> The following services are included (as applicable to the chosen plan):</p>
-        <ul style="margin-left: 30px;">
-          <li>High-speed Internet</li>
-          <li>Electricity & Air Conditioning during business hours</li>
-          <li>Housekeeping of common spaces</li>
-          <li>Power Backup</li>
-          <li>Front Desk Assistance</li>
-          <li>Access to Pantry Facilities</li>
-          <li>Access to Conference Rooms (subject to availability and booking rules)</li>
-          <li>CCTV Surveillance (excluding private cabins)</li>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>1.2</strong> The License is limited to right to enter and use only, and no tenancy, lease, or rights of possession are created or transferred.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>1.3</strong> The following services are included (as applicable to the chosen plan):</p>
+        <ul style="margin-left: 24pt; margin-bottom: 8pt;">
+          <li style="margin-bottom: 3pt;">High-speed Internet</li>
+          <li style="margin-bottom: 3pt;">Electricity & Air Conditioning during business hours</li>
+          <li style="margin-bottom: 3pt;">Housekeeping of common spaces</li>
+          <li style="margin-bottom: 3pt;">Power Backup</li>
+          <li style="margin-bottom: 3pt;">Front Desk Assistance</li>
+          <li style="margin-bottom: 3pt;">Access to Pantry Facilities</li>
+          <li style="margin-bottom: 3pt;">Access to Conference Rooms (subject to availability and booking rules)</li>
+          <li style="margin-bottom: 3pt;">CCTV Surveillance (excluding private cabins)</li>
         </ul>
-        <p style="text-align: justify;"><strong>1.4</strong> The Licensor may modify or enhance services at its discretion.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>1.4</strong> The Licensor may modify or enhance services at its discretion.</p>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">2. TERM</h3>
-        <p style="text-align: justify;"><strong>2.1</strong> The term of this Agreement shall be for 11 months, commencing from <strong>${data.Start_Date}</strong> ("Start Date") until <strong>${data.End_Date}</strong> ("End Date"), unless terminated earlier. There will be a lock-in period of <strong>${data.Lock_in} months</strong> before which the Licensee will not terminate this Leave & License Deed.</p>
-        <p style="text-align: justify;"><strong>2.2</strong> Renewal shall be subject to discretion of the Licensor and a new Leave & License Deed will be executed.</p>
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">2. TERM</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>2.1</strong> The term of this Agreement shall be for 11 months, commencing from <strong>${data.Start_Date}</strong> ("Start Date") until <strong>${data.End_Date}</strong> ("End Date"), unless terminated earlier. There will be a lock-in period of <strong>${data.Lock_in} months</strong> before which the Licensee will not terminate this Leave & License Deed.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>2.2</strong> Renewal shall be subject to discretion of the Licensor and a new Leave & License Deed will be executed.</p>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">3. LICENSE FEES & PAYMENTS</h3>
-        <p style="text-align: justify;"><strong>3.1</strong> The Licensee agrees to pay:</p>
-        <ul style="margin-left: 30px;">
-          <li>Monthly License Fee per seat/member: <strong>Rs. ${data.License_fee.toLocaleString('en-IN')}/-</strong></li>
-          <li>Security Deposit (interest-free): <strong>Rs. ${data.Security.toLocaleString('en-IN')}/-</strong></li>
-          <li>Setup Charges (if any): <strong>${typeof data.Setup_charges === 'number' ? `Rs. ${data.Setup_charges.toLocaleString('en-IN')}/-` : data.Setup_charges}</strong></li>
-          <li>GST/other applicable taxes/extra usage of facilities will be paid extra.</li>
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">3. LICENSE FEES & PAYMENTS</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>3.1</strong> The Licensee agrees to pay:</p>
+        <ul style="margin-left: 24pt; margin-bottom: 8pt;">
+          <li style="margin-bottom: 4pt;">Monthly License Fee per seat/member: <strong>Rs. ${data.License_fee.toLocaleString('en-IN')}/-</strong></li>
+          <li style="margin-bottom: 4pt;">Security Deposit (interest-free): <strong>Rs. ${data.Security.toLocaleString('en-IN')}/-</strong></li>
+          <li style="margin-bottom: 4pt;">Setup Charges (if any): <strong>${typeof data.Setup_charges === 'number' ? `Rs. ${data.Setup_charges.toLocaleString('en-IN')}/-` : data.Setup_charges}</strong></li>
+          <li style="margin-bottom: 4pt;">GST/other applicable taxes/extra usage of facilities will be paid extra.</li>
         </ul>
-        <p style="text-align: justify;"><strong>3.2</strong> The License Fee shall be payable in advance on or before the 5th day of each English calendar month.</p>
-        <p style="text-align: justify;"><strong>3.3</strong> Delay in payment beyond the due date attracts a penalty of Rs. 500/- per day apart from the outstanding dues until the full outstanding payment is made.</p>
-        <p style="text-align: justify;"><strong>3.4</strong> Non-payment for two consecutive months constitutes a material breach, allowing the Licensor to terminate the Agreement without further notice.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>3.2</strong> The License Fee shall be payable in advance on or before the 5th day of each English calendar month.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>3.3</strong> Delay in payment beyond the due date attracts a penalty of Rs. 500/- per day apart from the outstanding dues until the full outstanding payment is made.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>3.4</strong> Non-payment for two consecutive months constitutes a material breach, allowing the Licensor to terminate the Agreement without further notice.</p>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">4. SECURITY DEPOSIT</h3>
-        <p style="text-align: justify;"><strong>4.1</strong> The Security Deposit shall be refunded within 30 working days from the date of vacating the Premises, after adjusting:</p>
-        <ul style="margin-left: 30px;">
-          <li>Pending dues</li>
-          <li>Damages (if any)</li>
-          <li>Loss of property or assets</li>
-          <li>Outstanding penalties</li>
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">4. SECURITY DEPOSIT</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>4.1</strong> The Security Deposit shall be refunded within 30 working days from the date of vacating the Premises, after adjusting:</p>
+        <ul style="margin-left: 24pt; margin-bottom: 8pt;">
+          <li style="margin-bottom: 3pt;">Pending dues</li>
+          <li style="margin-bottom: 3pt;">Damages (if any)</li>
+          <li style="margin-bottom: 3pt;">Loss of property or assets</li>
+          <li style="margin-bottom: 3pt;">Outstanding penalties</li>
         </ul>
-        <p style="text-align: justify;"><strong>4.2</strong> The Security Deposit shall not be used by the Licensee towards monthly fees.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>4.2</strong> The Security Deposit shall not be used by the Licensee towards monthly fees.</p>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">5. USE OF PREMISES</h3>
-        <p style="text-align: justify;"><strong>5.1</strong> The Premises shall be used only for lawful business activities. Any illegal, immoral, or hazardous activities are strictly prohibited.</p>
-        <p style="text-align: justify;"><strong>5.2</strong> The Licensee shall not:</p>
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">5. USE OF PREMISES</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>5.1</strong> The Premises shall be used only for lawful business activities. Any illegal, immoral, or hazardous activities are strictly prohibited.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>5.2</strong> The Licensee shall not:</p>
         <ul style="margin-left: 30px;">
           <li>Install permanent fixtures</li>
           <li>Alter or damage the Premises</li>
