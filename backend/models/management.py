@@ -196,6 +196,7 @@ class MemberCreate(BaseModel):
     phone: str
     aadhar_number: Optional[str] = ""
     pan_number: Optional[str] = ""
+    date_of_birth: Optional[str] = None  # Birthday field for member
     
     # Seat Assignment
     seat_number: Optional[str] = None  # e.g., "A-12", "Cabin-3"
