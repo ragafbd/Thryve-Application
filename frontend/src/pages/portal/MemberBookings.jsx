@@ -52,8 +52,8 @@ export default function MemberBookings() {
   const maxDate = new Date(today);
   maxDate.setDate(maxDate.getDate() + MAX_ADVANCE_DAYS);
   
-  const minDateStr = today.toISOString().split('T')[0];
-  const maxDateStr = maxDate.toISOString().split('T')[0];
+  const minDateStr = getLocalDateString(today);
+  const maxDateStr = getLocalDateString(maxDate);
 
   // Ensure selectedDate is never in the past
   useEffect(() => {
