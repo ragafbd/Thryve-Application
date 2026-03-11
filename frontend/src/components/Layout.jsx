@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
@@ -17,7 +17,8 @@ import {
   Zap,
   Building2,
   Download,
-  FileSignature
+  FileSignature,
+  Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
