@@ -280,15 +280,21 @@ export default function Bookings() {
               <ChevronLeft className="w-4 h-4" />
             </Button>
             
-            <div className="text-center">
-              <input
-                type="date"
-                value={selectedDate}
-                min={minDateStr}
-                max={maxDateStr}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="text-lg font-semibold text-[#2E375B] border rounded px-3 py-2 cursor-pointer"
-              />
+            <div className="text-center flex items-center gap-3">
+              <Calendar className="w-5 h-5 text-[#2E375B]" />
+              <div className="relative">
+                <input
+                  type="date"
+                  value={selectedDate}
+                  min={minDateStr}
+                  max={maxDateStr}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
+                <span className="text-lg font-semibold text-[#2E375B] pointer-events-none">
+                  {formatDate(selectedDate)}
+                </span>
+              </div>
             </div>
             
             <Button
