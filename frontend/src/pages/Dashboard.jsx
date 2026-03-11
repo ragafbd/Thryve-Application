@@ -278,6 +278,57 @@ export default function Dashboard() {
         </Card>
       )}
 
+      {/* Pending Meeting Room Charges */}
+      {pendingCharges.total_pending > 0 && (
+        <Card className="border border-slate-200 shadow-sm bg-gradient-to-r from-amber-50 to-orange-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold text-slate-700 font-[Manrope] flex items-center gap-2">
+              <Video className="w-5 h-5 text-amber-600" />
+              Pending Meeting Room Charges
+              <Badge className="bg-amber-500 text-white ml-2">
+                ₹{pendingCharges.total_pending.toLocaleString('en-IN')}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {/* Company charges */}
+              {pendingCharges.company_charges.map((company) => (
+                <div key={company.company_id} className="p-3 bg-white/80 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-medium text-slate-800">{company.company_name}</p>
+                    <Badge className="bg-amber-100 text-amber-700">
+                      ₹{company.total_amount.toLocaleString('en-IN')}
+                    </Badge>
+                  </div>
+                  <div className="space-y-1">
+                    {company.bookings.slice(0, 3).map((booking, idx) => (
+                      <p key={idx} className="text-sm text-slate-500">
+                        {booking.member_name} - {booking.room_name} ({booking.date}) - ₹{booking.amount}
+                      </p>
+                    ))}
+                    {company.bookings.length > 3 && (
+                      <p className="text-xs text-slate-400">+{company.bookings.length - 3} more bookings</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {/* Guest charges */}
+              {pendingCharges.guest_charges.length > 0 && (
+                <div className="p-3 bg-white/80 rounded-lg">
+                  <p className="font-medium text-slate-800 mb-2">Guest Bookings</p>
+                  {pendingCharges.guest_charges.slice(0, 3).map((guest, idx) => (
+                    <p key={idx} className="text-sm text-slate-500">
+                      {guest.guest_name} ({guest.guest_company || 'Walk-in'}) - ₹{guest.amount}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Recent Invoices */}
       <Card className="border border-slate-200 shadow-sm">
         <CardHeader className="border-b border-slate-100">
