@@ -49,9 +49,21 @@ export default function Bookings() {
   // Booking dialog
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [bookingType, setBookingType] = useState("member"); // "member" or "guest"
   const [bookingForm, setBookingForm] = useState({
     member_id: "",
     purpose: ""
+  });
+  const [guestForm, setGuestForm] = useState({
+    guest_name: "",
+    guest_phone: "",
+    guest_email: "",
+    guest_company: "",
+    guest_id_type: "aadhar",
+    guest_id_number: "",
+    purpose: "",
+    payment_amount: 0,
+    payment_status: "pending"
   });
   const [saving, setSaving] = useState(false);
 
