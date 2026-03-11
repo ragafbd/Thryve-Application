@@ -103,6 +103,7 @@ export default function Companies() {
     phone: "",
     aadhar_number: "",
     pan_number: "",
+    date_of_birth: "",
     seat_number: "",
     is_primary_contact: false,
     notes: ""
