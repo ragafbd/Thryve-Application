@@ -286,11 +286,41 @@ export default function MemberLayout() {
         </div>
       </aside>
 
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-[#2E375B] z-30 flex items-center px-4 gap-3">
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="text-white p-2 hover:bg-white/10 rounded-lg"
+        >
+          {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+        <img 
+          src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/jqltfue2_Gemini_Generated_Image_xy33ixy33ixy33ix.png" 
+          alt="Thryve" 
+          className="h-8"
+        />
+        {newAnnouncementCount > 0 && (
+          <div className="ml-auto flex items-center gap-2 text-white">
+            <Bell className="w-5 h-5 text-amber-400 animate-pulse" />
+            <span className="bg-red-500 text-xs font-bold px-2 py-0.5 rounded-full">{newAnnouncementCount}</span>
+          </div>
+        )}
+      </div>
+
       {/* Main Content */}
       <main 
         className={cn(
           "flex-1 flex flex-col min-h-screen transition-all duration-300",
-          sidebarOpen ? "md:ml-64" : "md:ml-0"
+          "pt-14 lg:pt-0",
+          "lg:ml-64"
         )}
       >
         {/* Top Bar - Matching Admin */}
