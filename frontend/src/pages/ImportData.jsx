@@ -87,7 +87,7 @@ export default function ImportData() {
     setImportResult(null);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("thryve_token");
       const response = await axios.post(
         `${API}/import/clients`,
         { clients: previewData },
