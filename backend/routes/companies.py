@@ -245,7 +245,7 @@ async def get_company_members(company_id: str, current_user: dict = Depends(get_
 @router.post("/{company_id}/members")
 async def add_member_to_company(
     company_id: str,
-    member_data: MemberCreate,
+    member_data: CompanyMemberCreate,
     current_user: dict = Depends(get_current_user)
 ):
     """Add a member to a company"""
