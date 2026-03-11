@@ -135,7 +135,7 @@ export default function MemberBookings() {
   const changeDate = (days) => {
     const date = new Date(selectedDate);
     date.setDate(date.getDate() + days);
-    const newDateStr = date.toISOString().split('T')[0];
+    const newDateStr = getLocalDateString(date);
     
     // Only enforce date limits, allow blocked dates so warning can be shown
     if (newDateStr >= minDateStr && newDateStr <= maxDateStr) {
