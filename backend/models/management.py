@@ -62,6 +62,8 @@ class CompanyCreate(BaseModel):
     
     # Authorised Signatory Details
     signatory_name: Optional[str] = ""
+    signatory_father_name: Optional[str] = ""  # NEW: For LLA
+    signatory_designation: Optional[str] = ""  # NEW: For LLA
     signatory_aadhar: Optional[str] = ""
     signatory_pan: Optional[str] = ""
     signatory_phone: Optional[str] = ""
@@ -69,10 +71,16 @@ class CompanyCreate(BaseModel):
     
     # Subscription Details
     plan_type_id: str  # Type of plan (cabin, open desk, etc.)
+    space_description: Optional[str] = ""  # NEW: e.g., "Six Seater Cabin", "Open Seat"
     total_seats: int  # Number of seats subscribed
     rate_per_seat: float  # Custom rate per seat (admin-set)
     discount_percent: float = 0  # Any discount
     meeting_room_credits: int = 0  # Meeting room credits per seat (in minutes)
+    
+    # LLA Financial Details
+    security_deposit: Optional[float] = 0  # NEW: For LLA
+    setup_charges: Optional[str] = ""  # NEW: For LLA (can be "Not applicable")
+    lock_in_months: Optional[int] = 11  # NEW: For LLA
     
     # Internet/Bandwidth Details
     isp_provider: Optional[str] = ""
@@ -81,6 +89,7 @@ class CompanyCreate(BaseModel):
     
     # Dates
     start_date: str
+    end_date: Optional[str] = ""  # NEW: For LLA
     notes: Optional[str] = ""
 
 class Company(BaseModel):
