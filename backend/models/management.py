@@ -302,12 +302,23 @@ class BulkTerminate(BaseModel):
 class BookingCreate(BaseModel):
     """Create a meeting room booking (admin)"""
     room_id: str
-    member_id: str
+    member_id: Optional[str] = None  # Optional for guest bookings
     date: str  # YYYY-MM-DD
     start_time: str  # HH:MM (24h format)
     end_time: str  # HH:MM (24h format)
     purpose: Optional[str] = ""
     attendees: Optional[int] = None
+    
+    # Guest booking fields
+    is_guest: bool = False
+    guest_name: Optional[str] = None
+    guest_phone: Optional[str] = None
+    guest_email: Optional[str] = None
+    guest_company: Optional[str] = None
+    guest_id_type: Optional[str] = None  # aadhar, pan, driving_license, passport
+    guest_id_number: Optional[str] = None
+    payment_amount: Optional[float] = 0
+    payment_status: Optional[str] = "pending"  # paid, pending
 
 class MemberBookingCreate(BaseModel):
     """Create a meeting room booking (member portal - no member_id needed)"""
