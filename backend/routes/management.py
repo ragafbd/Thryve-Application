@@ -912,11 +912,15 @@ async def get_upcoming_birthdays(days: int = 30):
 async def get_pending_meeting_charges():
     """Get all pending meeting room charges grouped by company"""
     # Get bookings with billable_amount > 0 and payment not marked as paid
+    # Include confirmed bookings and cancelled bookings with late cancellation charges
     pending_bookings = await db.bookings.find(
         {
             "billable_amount": {"$gt": 0},
             "payment_status": {"$nin": ["paid", "completed"]},
-            "status": {"$ne": "cancelled"}
+            "$or": [
+                {"status": "confirmed"},
+                {"status": "cancelled", "cancellation_charge": True}
+            ]
         },
         {"_id": 0}
     ).to_list(1000)
