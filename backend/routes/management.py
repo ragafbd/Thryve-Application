@@ -603,30 +603,46 @@ async def cancel_booking(booking_id: str, current_user: dict = Depends(get_curre
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
     
-    # Validate cancellation (must be at least 2 days before)
-    booking_date = datetime.strptime(booking["date"], "%Y-%m-%d").date()
-    today = datetime.now(timezone.utc).date()
-    days_until = (booking_date - today).days
+    # Calculate hours until booking
+    booking_date = datetime.strptime(booking["date"], "%Y-%m-%d")
+    booking_time = booking.get("start_time", "09:00")
+    booking_hour, booking_min = map(int, booking_time.split(":"))
+    booking_datetime = booking_date.replace(hour=booking_hour, minute=booking_min, tzinfo=timezone.utc)
+    now = datetime.now(timezone.utc)
+    hours_until = (booking_datetime - now).total_seconds() / 3600
     
-    if days_until < MIN_CANCEL_DAYS:
-        raise HTTPException(
-            status_code=400, 
-            detail=f"Bookings can only be cancelled {MIN_CANCEL_DAYS} or more days before the event"
-        )
+    # 48-hour cancellation policy
+    # If cancelled 48+ hours before: no charge, restore credits
+    # If cancelled within 48 hours: charge applies, billable amount retained
     
-    # Restore credits if applicable
-    if booking.get("credits_used", 0) > 0:
-        await db.members.update_one(
-            {"id": booking["member_id"]},
-            {"$inc": {"credits_used": -booking["credits_used"]}}
-        )
+    update_data = {"status": "cancelled", "cancelled_at": now.isoformat()}
+    
+    if hours_until >= 48:
+        # Free cancellation - remove billable amount and restore credits
+        update_data["billable_amount"] = 0
+        update_data["cancellation_charge"] = False
+        
+        # Restore credits if applicable
+        if booking.get("credits_used", 0) > 0:
+            await db.members.update_one(
+                {"id": booking["member_id"]},
+                {"$inc": {"credits_used": -booking["credits_used"]}}
+            )
+    else:
+        # Late cancellation - charge applies
+        update_data["cancellation_charge"] = True
+        # Don't restore credits and keep billable amount
     
     await db.bookings.update_one(
         {"id": booking_id},
-        {"$set": {"status": "cancelled"}}
+        {"$set": update_data}
     )
     
-    return {"message": "Booking cancelled successfully"}
+    message = "Booking cancelled successfully"
+    if hours_until < 48:
+        message += " (Late cancellation - charges apply)"
+    
+    return {"message": message, "charges_apply": hours_until < 48}
 
 # ==================== SUPPORT TICKETS ====================
 
