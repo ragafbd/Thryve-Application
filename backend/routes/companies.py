@@ -277,6 +277,7 @@ async def add_member_to_company(
         phone=member_data.phone,
         aadhar_number=member_data.aadhar_number or "",
         pan_number=member_data.pan_number or "",
+        date_of_birth=member_data.date_of_birth,
         seat_number=member_data.seat_number,
         is_primary_contact=member_data.is_primary_contact,
         notes=member_data.notes or "",
