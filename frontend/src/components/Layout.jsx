@@ -16,7 +16,8 @@ import {
   Megaphone,
   Zap,
   Building2,
-  Download
+  Download,
+  FileSignature
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
