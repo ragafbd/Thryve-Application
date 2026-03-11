@@ -487,10 +487,24 @@ async def delete_client(client_id: str):
 # Invoice CRUD
 @api_router.post("/invoices", response_model=Invoice)
 async def create_invoice(invoice_data: InvoiceCreate):
-    # Get client details
+    # Get client details - check both clients and companies collections
     client = await db.clients.find_one({"id": invoice_data.client_id}, {"_id": 0})
     if not client:
-        raise HTTPException(status_code=404, detail="Client not found")
+        # Try companies collection
+        company = await db.companies.find_one({"id": invoice_data.client_id}, {"_id": 0})
+        if company:
+            # Map company fields to client format for invoice
+            client = {
+                "id": company["id"],
+                "name": company.get("signatory_name", ""),
+                "company_name": company["company_name"],
+                "address": company.get("company_address", ""),
+                "gstin": company.get("company_gstin", ""),
+                "email": company.get("signatory_email", ""),
+                "phone": company.get("signatory_phone", "")
+            }
+        else:
+            raise HTTPException(status_code=404, detail="Client not found")
     
     # Generate invoice number with company name
     company_name = client.get("company_name") or client.get("name", "")
