@@ -53,6 +53,7 @@ const invoiceNavItems = [
 // Management section
 const managementNavItems = [
   { path: "companies", icon: Building2, label: "Clients" },
+  { path: "agreement", icon: FileSignature, label: "LLA Generator" },
   { path: "bookings", icon: CalendarDays, label: "Meeting Room Bookings" },
   { path: "tickets", icon: Ticket, label: "Support Tickets" },
   { path: "announcements", icon: Megaphone, label: "Announcements" },
