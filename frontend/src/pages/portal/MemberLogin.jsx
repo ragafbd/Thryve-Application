@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Building2, Mail, Lock, Eye, EyeOff, UserPlus, LogIn, Shield } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,16 +8,30 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useMemberAuth } from "@/contexts/MemberAuthContext";
+import axios from "axios";
 
 export default function MemberLogin() {
   const navigate = useNavigate();
-  const { login, register } = useMemberAuth();
+  const { login, register, member } = useMemberAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
 
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [registerData, setRegisterData] = useState({ email: "", password: "", confirmPassword: "" });
+
+  // Clear any stale member tokens when login page loads
+  useEffect(() => {
+    // If member is already logged in, redirect to portal
+    if (member) {
+      navigate("/portal");
+      return;
+    }
+    
+    // Clear stale member tokens to prevent "invalid email/password" errors
+    localStorage.removeItem('member_token');
+    delete axios.defaults.headers.common['Authorization'];
+  }, [member, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
