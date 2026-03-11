@@ -124,10 +124,10 @@ export default function Login() {
               <Button
                 type="submit"
                 className="w-full bg-[#1E2640] hover:bg-[#2E375B] text-white font-medium"
-                disabled={loading}
+                disabled={submitting}
                 data-testid="login-submit"
               >
-                {loading ? (
+                {submitting ? (
                   "Signing in..."
                 ) : (
                   <>
