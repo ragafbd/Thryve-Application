@@ -421,17 +421,12 @@ export default function CreateInvoice() {
                           ))}
                         </SelectContent>
                       </Select>
-                    </div>
-
-                    {/* Description */}
-                    <div className="col-span-2 space-y-2">
-                      <Label>Description</Label>
-                      <Input
-                        value={item.description}
-                        onChange={(e) => handleLineItemChange(index, "description", e.target.value)}
-                        placeholder="Enter description"
-                        data-testid={`description-${index}`}
-                      />
+                      {/* Display selected description */}
+                      {item.description && (
+                        <p className="text-sm text-slate-600 mt-1">
+                          Description: <span className="font-medium">{item.description}</span>
+                        </p>
+                      )}
                     </div>
 
                     {/* Quantity */}
