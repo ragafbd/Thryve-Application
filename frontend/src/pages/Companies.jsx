@@ -69,6 +69,7 @@ export default function Companies() {
   // Company dialog
   const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState(null);
+  const [signatoryIsMember, setSignatoryIsMember] = useState(false);
   const [companyForm, setCompanyForm] = useState({
     company_name: "",
     company_address: "",
