@@ -21,7 +21,14 @@ const HOLIDAYS_API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Booking rules
 const MAX_ADVANCE_DAYS = 10;
-const MIN_CANCEL_DAYS = 2;
+
+// Helper function to get local date string (YYYY-MM-DD) without timezone issues
+const getLocalDateString = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 export default function MemberBookings() {
   const { member, refreshProfile } = useMemberAuth();
@@ -29,7 +36,7 @@ export default function MemberBookings() {
   const [bookings, setBookings] = useState([]);
   const [publicHolidays, setPublicHolidays] = useState([]); // Full holiday objects with names
   const [selectedDate, setSelectedDate] = useState(() => {
-    return new Date().toISOString().split('T')[0];
+    return getLocalDateString(new Date());
   });
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [slots, setSlots] = useState([]);
