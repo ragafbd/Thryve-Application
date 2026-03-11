@@ -462,7 +462,7 @@ export default function MemberBookings() {
                           : "bg-[#2E375B]/5 text-[#2E375B]/30 cursor-not-allowed"
                       }`}
                     >
-                      {slot.start_time}
+                      {isPastSlot ? "Past" : slot.start_time}
                     </button>
                   );
                 })}
@@ -479,6 +479,10 @@ export default function MemberBookings() {
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded bg-[#2E375B]/5"></div>
                   <span>Booked</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded bg-gray-100"></div>
+                  <span>Past</span>
                 </div>
               </div>
             </CardContent>
