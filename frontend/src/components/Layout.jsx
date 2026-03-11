@@ -256,10 +256,10 @@ export default function Layout() {
       {/* Sidebar */}
       <aside 
         className={cn(
-          "sidebar fixed left-0 top-0 z-40 flex flex-col transition-transform duration-300",
-          "lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full",
-          "pt-14 lg:pt-0" // Account for mobile header
+          "fixed left-0 top-0 z-40 flex flex-col transition-transform duration-300 bg-[#2E375B] w-[220px]",
+          "lg:translate-x-0 lg:h-screen",
+          "h-[calc(100vh-56px)] top-14 lg:top-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
         data-testid="sidebar"
       >
