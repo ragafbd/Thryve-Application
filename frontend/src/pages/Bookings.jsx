@@ -183,26 +183,62 @@ export default function Bookings() {
 
   const openBookingDialog = (slot) => {
     setSelectedSlot(slot);
+    setBookingType("member");
     setBookingForm({ member_id: "", purpose: "" });
+    setGuestForm({
+      guest_name: "",
+      guest_phone: "",
+      guest_email: "",
+      guest_company: "",
+      guest_id_type: "aadhar",
+      guest_id_number: "",
+      purpose: "",
+      payment_amount: selectedRoom?.hourly_rate || 500,
+      payment_status: "paid"
+    });
     setBookingDialogOpen(true);
   };
 
   const handleBookSlot = async () => {
-    if (!bookingForm.member_id) {
+    if (bookingType === "member" && !bookingForm.member_id) {
       toast.error("Please select a member");
       return;
     }
 
+    if (bookingType === "guest") {
+      if (!guestForm.guest_name || !guestForm.guest_phone || !guestForm.guest_id_number) {
+        toast.error("Please fill in guest name, phone and ID number");
+        return;
+      }
+    }
+
     setSaving(true);
     try {
-      await axios.post(`${API}/management/bookings`, {
+      const payload = {
         room_id: selectedRoom.id,
-        member_id: bookingForm.member_id,
         date: selectedDate,
         start_time: selectedSlot.start_time,
         end_time: selectedSlot.end_time,
-        purpose: bookingForm.purpose
-      });
+      };
+
+      if (bookingType === "member") {
+        payload.member_id = bookingForm.member_id;
+        payload.purpose = bookingForm.purpose;
+      } else {
+        // Guest booking
+        payload.is_guest = true;
+        payload.guest_name = guestForm.guest_name;
+        payload.guest_phone = guestForm.guest_phone;
+        payload.guest_email = guestForm.guest_email;
+        payload.guest_company = guestForm.guest_company;
+        payload.guest_id_type = guestForm.guest_id_type;
+        payload.guest_id_number = guestForm.guest_id_number;
+        payload.purpose = guestForm.purpose;
+        payload.payment_amount = guestForm.payment_amount;
+        payload.payment_status = guestForm.payment_status;
+      }
+
+      await axios.post(`${API}/management/bookings`, payload);
       
       toast.success("Booking created successfully");
       setBookingDialogOpen(false);
