@@ -107,6 +107,8 @@ class Company(BaseModel):
     
     # Authorised Signatory Details
     signatory_name: str = ""
+    signatory_father_name: str = ""  # NEW: For LLA (e.g., "S/o Sh. Satish K. Kukreja")
+    signatory_designation: str = ""  # NEW: For LLA (e.g., "Partner", "Director")
     signatory_aadhar: str = ""
     signatory_pan: str = ""
     signatory_phone: str = ""
@@ -115,11 +117,17 @@ class Company(BaseModel):
     # Subscription Details
     plan_type_id: str
     plan_name: str = ""  # Denormalized for easy access
+    space_description: str = ""  # NEW: e.g., "Six Seater Cabin", "Open Seat"
     total_seats: int  # Number of seats subscribed
     seats_occupied: int = 0  # Number of members added
     rate_per_seat: float  # Custom rate per seat
     discount_percent: float = 0
     total_rate: float = 0  # Calculated: total_seats * rate_per_seat * (1 - discount/100)
+    
+    # LLA Financial Details
+    security_deposit: float = 0  # NEW: For LLA
+    setup_charges: str = ""  # NEW: For LLA (can be "Not applicable")
+    lock_in_months: int = 11  # NEW: For LLA (default 11 months)
     
     # Meeting Room Credits (per seat)
     meeting_room_credits: int = 0  # Credits per seat in minutes
