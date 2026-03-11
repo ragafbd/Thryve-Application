@@ -199,8 +199,8 @@ export default function CreateInvoice() {
       toast.error("Please select a client");
       return;
     }
-    if (lineItems.some(item => !item.description || item.rate <= 0)) {
-      toast.error("Please fill in all line items with valid rates");
+    if (lineItems.some(item => item.rate <= 0)) {
+      toast.error("Please enter valid rates for all line items");
       return;
     }
 
