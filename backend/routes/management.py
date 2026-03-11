@@ -895,17 +895,17 @@ async def get_upcoming_birthdays(days: int = 30):
 @router.get("/pending-charges")
 async def get_pending_meeting_charges():
     """Get all pending meeting room charges grouped by company"""
-    # Get bookings with billable_amount > 0 and payment_status = pending
+    # Get bookings with billable_amount > 0 and payment not marked as paid
     pending_bookings = await db.bookings.find(
         {
             "billable_amount": {"$gt": 0},
-            "payment_status": {"$in": ["pending", None]},
+            "payment_status": {"$nin": ["paid", "completed"]},
             "status": {"$ne": "cancelled"}
         },
         {"_id": 0}
     ).to_list(1000)
     
-    # Group by company
+    # Group by company_name (since company_id might not always be set)
     company_charges = {}
     guest_charges = []
     
@@ -921,23 +921,25 @@ async def get_pending_meeting_charges():
                 "payment_status": booking.get("payment_status", "pending")
             })
         else:
-            company_id = booking.get("company_id")
-            if company_id:
-                if company_id not in company_charges:
-                    company_charges[company_id] = {
-                        "company_id": company_id,
-                        "company_name": booking.get("company_name", ""),
-                        "bookings": [],
-                        "total_amount": 0
-                    }
-                company_charges[company_id]["bookings"].append({
-                    "booking_id": booking.get("id"),
-                    "member_name": booking.get("member_name"),
-                    "date": booking.get("date"),
-                    "room_name": booking.get("room_name"),
-                    "amount": booking.get("billable_amount", 0)
-                })
-                company_charges[company_id]["total_amount"] += booking.get("billable_amount", 0)
+            # Use company_name as the grouping key
+            company_name = booking.get("company_name", "Unknown Company")
+            company_id = booking.get("company_id") or booking.get("member_id", "unknown")
+            
+            if company_name not in company_charges:
+                company_charges[company_name] = {
+                    "company_id": company_id,
+                    "company_name": company_name,
+                    "bookings": [],
+                    "total_amount": 0
+                }
+            company_charges[company_name]["bookings"].append({
+                "booking_id": booking.get("id"),
+                "member_name": booking.get("member_name"),
+                "date": booking.get("date"),
+                "room_name": booking.get("room_name"),
+                "amount": booking.get("billable_amount", 0)
+            })
+            company_charges[company_name]["total_amount"] += booking.get("billable_amount", 0)
     
     return {
         "company_charges": list(company_charges.values()),
