@@ -296,11 +296,17 @@ async def register_user(user_data: UserCreate, current_user: dict = Depends(get_
 
 @api_router.post("/auth/login")
 async def login(user_data: UserLogin):
+    print(f"[LOGIN] Attempting login for: {user_data.email}")
     user = await db.users.find_one({"email": user_data.email.lower()}, {"_id": 0})
     if not user:
+        print(f"[LOGIN] User not found: {user_data.email}")
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
-    if not verify_password(user_data.password, user["password_hash"]):
+    print(f"[LOGIN] User found: {user.get('email')}")
+    password_valid = verify_password(user_data.password, user["password_hash"])
+    print(f"[LOGIN] Password valid: {password_valid}")
+    
+    if not password_valid:
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
     if not user.get("is_active", True):
