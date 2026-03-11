@@ -7,29 +7,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { LogIn, Eye, EyeOff, Shield, Users } from "lucide-react";
-import axios from "axios";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, user } = useAuth();
+  const { login, user, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  // Clear any stale admin tokens when login page loads
+  // Redirect if already logged in
   useEffect(() => {
-    // If user is already logged in, redirect to admin
-    if (user) {
+    if (!loading && user) {
       navigate("/admin");
-      return;
     }
-    
-    // Clear stale admin tokens to prevent "invalid email/password" errors
-    localStorage.removeItem('thryve_token');
-    localStorage.removeItem('thryve_user');
-    delete axios.defaults.headers.common['Authorization'];
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,15 +31,15 @@ export default function Login() {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     try {
       await login(email, password);
       toast.success("Welcome back!");
       navigate("/admin");
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Login failed");
+      toast.error(error.response?.data?.detail || "Login failed. Please try again.");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
