@@ -288,7 +288,13 @@ export default function Bookings() {
                   value={selectedDate}
                   min={minDateStr}
                   max={maxDateStr}
-                  onChange={(e) => setSelectedDate(e.target.value)}
+                  onChange={(e) => {
+                    const newDate = e.target.value;
+                    // Only allow dates >= today and <= maxDate
+                    if (newDate >= minDateStr && newDate <= maxDateStr) {
+                      setSelectedDate(newDate);
+                    }
+                  }}
                   className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                 />
                 <span className="text-lg font-semibold text-[#2E375B] pointer-events-none">
