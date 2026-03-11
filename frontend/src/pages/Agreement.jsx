@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import axios from "axios";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, TabStopType, TabStopPosition } from "docx";
 import { saveAs } from "file-saver";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -65,37 +65,36 @@ export default function Agreement() {
     return date.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
   };
 
-  // Calculate end date (11 months from start)
-  const calculateEndDate = (startDateStr) => {
+  const calculateEndDate = (startDateStr, months = 11) => {
     if (!startDateStr) return "";
     const startDate = new Date(startDateStr);
     const endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + 11);
+    endDate.setMonth(endDate.getMonth() + months);
+    endDate.setDate(endDate.getDate() - 1);
     return endDate.toISOString().split('T')[0];
   };
 
   // Generate agreement data matching LLA mail merge fields
   const generateAgreementData = (company) => {
-    const endDate = company.end_date || calculateEndDate(company.start_date);
+    const endDate = company.end_date || calculateEndDate(company.start_date, company.lock_in_months || 11);
     const securityDeposit = company.security_deposit || (company.total_seats * company.rate_per_seat);
 
     return {
-      // Merge fields from LLA template
       Day: getOrdinalDay(company.start_date),
-      Month__Year: getMonthYear(company.start_date),
+      Month_Year: getMonthYear(company.start_date),
       Companys_Name: company.company_name || "",
       PAN_No: company.signatory_pan || company.company_pan || "",
-      GSTIN: company.company_gstin || "",
+      GSTIN: company.company_gstin || "N/A",
       Address: company.company_address || "",
       Authorized_Signatory: company.signatory_name || "",
       Designation: company.signatory_designation || "Authorized Signatory",
       Space_Description: company.space_description || company.plan_name || "Workspace",
       Seats: company.total_seats || 1,
       Start_Date: formatDate(company.start_date),
-      End_date: formatDate(endDate),
+      End_Date: formatDate(endDate),
       Lock_in: company.lock_in_months || 11,
-      License_fee_: company.rate_per_seat || 0,
-      Security_: securityDeposit,
+      License_fee: company.rate_per_seat || 0,
+      Security: securityDeposit,
       Setup_charges: company.setup_charges || "Not applicable",
       for_Thryve: "Amit Mehta",
       Thryve_Designation: "Marketing Head"
@@ -104,72 +103,205 @@ export default function Agreement() {
 
   const generateAgreementHtml = (data) => {
     return `
-      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.8; font-size: 14px;">
-        <h2 style="text-align: center; margin-bottom: 30px; font-size: 18px;">LEAVE AND LICENSE AGREEMENT</h2>
+      <div style="font-family: 'Times New Roman', Times, serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.8; font-size: 13px; color: #000;">
+        <h2 style="text-align: center; margin-bottom: 30px; font-size: 16px; font-weight: bold;">LEAVE & LICENSE AGREEMENT</h2>
         
-        <p style="text-align: justify;">THIS LEAVE AND LICENSE AGREEMENT ("Agreement") is executed on this <strong>${data.Day}</strong> day of <strong>${data.Month__Year}</strong>, at Faridabad, Haryana,</p>
+        <p style="text-align: justify;">THIS LEAVE AND LICENSE AGREEMENT ("Agreement") is executed on this <strong>${data.Day}</strong> day of <strong>${data.Month_Year}</strong>, at Faridabad, Haryana,</p>
         
         <p style="margin-top: 20px;"><strong>BETWEEN</strong></p>
         
-        <p style="text-align: justify;"><strong>Thryve Coworking</strong>, (PAN AAYFT8213A & GSTIN 06AAYFT8213A1Z2) a business operating from: Plot No. 3, First Floor, Near Ajronda Metro Station, 18/1, Mathura Road, Faridabad, Haryana 121007, acting through its authorized representative, hereinafter referred to as the "<strong>Licensor</strong>" (which expression shall, unless it be repugnant to the context or meaning thereof, be deemed to mean and include its legal heirs, executors, administrators, permitted assigns, and successors)</p>
+        <p style="text-align: justify;"><strong>Thryve Coworking</strong>, (PAN AAYFT8213A & GSTIN 06AAYFT8213A1Z2) a business operating from: Plot No. 3, First Floor, Near Ajronda Metro Station, 18/1, Mathura Road, Faridabad, Haryana 121007, acting through its authorized representative, hereinafter referred to as the "<strong>Licensor</strong>", (which expression shall, unless repugnant to the context, include its successors, assigns, administrators, and representatives)</p>
         
         <p style="text-align: center; margin: 20px 0;"><strong>AND</strong></p>
         
-        <p style="text-align: justify;"><strong>M/s ${data.Companys_Name}</strong>, (PAN ${data.PAN_No} & GSTIN ${data.GSTIN}) having its Regd. office at: ${data.Address}, through its authorized signatory <strong>${data.Authorized_Signatory}</strong>, <strong>${data.Designation}</strong>, hereinafter referred to as the "<strong>Licensee</strong>" (which expression shall, unless it be repugnant to the context or meaning thereof, be deemed to mean and include its legal heirs, executors, administrators, permitted assigns, and successors)</p>
+        <p style="text-align: justify;"><strong>M/s ${data.Companys_Name}</strong>, (PAN ${data.PAN_No} & GSTIN ${data.GSTIN}) having its Regd. office at: ${data.Address}, through its authorized signatory <strong>${data.Authorized_Signatory}</strong>, hereinafter referred to as the "<strong>Licensee</strong>", (which expression shall, unless repugnant to the context, include its successors, permitted assigns, employees, and representatives)</p>
         
-        <p style="margin-top: 30px;">The Licensor and the Licensee are hereinafter individually referred to as a "Party" and collectively referred to as the "Parties."</p>
+        <p style="margin-top: 20px;">The Licensor and the Licensee are collectively referred to as the "Parties" and individually as a "Party."</p>
         
-        <h3 style="margin-top: 30px;">WHEREAS:</h3>
-        <p style="text-align: justify;">The Licensor is engaged in the business of providing coworking spaces and related services at the Premises situated at Plot No. 3, First Floor, Near Ajronda Metro Station, 18/1, Mathura Road, Faridabad, Haryana 121007 ("Premises").</p>
+        <h3 style="margin-top: 30px; font-size: 14px;">WHEREAS</h3>
+        <ol style="margin-left: 20px;">
+          <li style="text-align: justify;">The Licensor is operating a coworking facility known as "Thryve Coworking" at Plot No. 3, First Floor, Near Ajronda Metro Station, 18/1, Mathura Road, Faridabad 121007 ("hereinafter referred to as Premises").</li>
+          <li style="text-align: justify;">The Licensor is in lawful possession of the Premises and entitled to grant a license for the use of certain designated workspace(s), cabins, meeting rooms, and/or coworking desks.</li>
+          <li style="text-align: justify;">The Licensee has requested use of the Licensor's coworking facilities and services, and the Licensor has agreed to grant the Licensee a limited, non-exclusive, revocable license with rights to enter and strictly for business use on the terms and conditions set forth below:</li>
+        </ol>
         
-        <h3 style="margin-top: 30px;">1. LICENSED AREA & SERVICES</h3>
-        <p style="text-align: justify;">The Licensor grants to the Licensee a non-exclusive, non-transferable, revocable license for right to enter and use the following workspace(s) at the Premises:</p>
-        <ul style="margin-left: 20px;">
-          <li><strong>Space:</strong> ${data.Space_Description}</li>
-          <li><strong>Number of Seats:</strong> ${data.Seats}</li>
-          <li><strong>Meeting Room Access:</strong> As per usage/plan</li>
-          <li><strong>Common Areas:</strong> Reception, Lounge, Pantry, Washrooms, Hallways</li>
+        <p style="margin-top: 20px;"><strong>NOW, THEREFORE, THE PARTIES AGREE AS FOLLOWS:</strong></p>
+        
+        <h3 style="margin-top: 25px; font-size: 14px;">1. LICENSED AREA & SERVICES</h3>
+        <p style="text-align: justify;"><strong>1.1</strong> The Licensor grants to the Licensee a non-exclusive, non-transferable, revocable license for right to enter and use the following workspace(s) at the Premises:</p>
+        <ul style="margin-left: 30px;">
+          <li>${data.Space_Description}</li>
+          <li>Number of Seats: <strong>${data.Seats}</strong></li>
+          <li>Meeting Room Access: As per usage/plan</li>
+          <li>Common Areas: Reception, Lounge, Pantry, Washrooms, Hallways, and such other areas as designated by the Licensor.</li>
+        </ul>
+        <p style="text-align: justify;"><strong>1.2</strong> The License is limited to right to enter and use only, and no tenancy, lease, or rights of possession are created or transferred.</p>
+        <p style="text-align: justify;"><strong>1.3</strong> The following services are included (as applicable to the chosen plan):</p>
+        <ul style="margin-left: 30px;">
+          <li>High-speed Internet</li>
+          <li>Electricity & Air Conditioning during business hours</li>
+          <li>Housekeeping of common spaces</li>
+          <li>Power Backup</li>
+          <li>Front Desk Assistance</li>
+          <li>Access to Pantry Facilities</li>
+          <li>Access to Conference Rooms (subject to availability and booking rules)</li>
+          <li>CCTV Surveillance (excluding private cabins)</li>
+        </ul>
+        <p style="text-align: justify;"><strong>1.4</strong> The Licensor may modify or enhance services at its discretion.</p>
+        
+        <h3 style="margin-top: 25px; font-size: 14px;">2. TERM</h3>
+        <p style="text-align: justify;"><strong>2.1</strong> The term of this Agreement shall be for 11 months, commencing from <strong>${data.Start_Date}</strong> ("Start Date") until <strong>${data.End_Date}</strong> ("End Date"), unless terminated earlier. There will be a lock-in period of <strong>${data.Lock_in} months</strong> before which the Licensee will not terminate this Leave & License Deed.</p>
+        <p style="text-align: justify;"><strong>2.2</strong> Renewal shall be subject to discretion of the Licensor and a new Leave & License Deed will be executed.</p>
+        
+        <h3 style="margin-top: 25px; font-size: 14px;">3. LICENSE FEES & PAYMENTS</h3>
+        <p style="text-align: justify;"><strong>3.1</strong> The Licensee agrees to pay:</p>
+        <ul style="margin-left: 30px;">
+          <li>Monthly License Fee per seat/member: <strong>Rs. ${data.License_fee.toLocaleString('en-IN')}/-</strong></li>
+          <li>Security Deposit (interest-free): <strong>Rs. ${data.Security.toLocaleString('en-IN')}/-</strong></li>
+          <li>Setup Charges (if any): <strong>${typeof data.Setup_charges === 'number' ? `Rs. ${data.Setup_charges.toLocaleString('en-IN')}/-` : data.Setup_charges}</strong></li>
+          <li>GST/other applicable taxes/extra usage of facilities will be paid extra.</li>
+        </ul>
+        <p style="text-align: justify;"><strong>3.2</strong> The License Fee shall be payable in advance on or before the 5th day of each English calendar month.</p>
+        <p style="text-align: justify;"><strong>3.3</strong> Delay in payment beyond the due date attracts a penalty of Rs. 500/- per day apart from the outstanding dues until the full outstanding payment is made.</p>
+        <p style="text-align: justify;"><strong>3.4</strong> Non-payment for two consecutive months constitutes a material breach, allowing the Licensor to terminate the Agreement without further notice.</p>
+        
+        <h3 style="margin-top: 25px; font-size: 14px;">4. SECURITY DEPOSIT</h3>
+        <p style="text-align: justify;"><strong>4.1</strong> The Security Deposit shall be refunded within 30 working days from the date of vacating the Premises, after adjusting:</p>
+        <ul style="margin-left: 30px;">
+          <li>Pending dues</li>
+          <li>Damages (if any)</li>
+          <li>Loss of property or assets</li>
+          <li>Outstanding penalties</li>
+        </ul>
+        <p style="text-align: justify;"><strong>4.2</strong> The Security Deposit shall not be used by the Licensee towards monthly fees.</p>
+        
+        <h3 style="margin-top: 25px; font-size: 14px;">5. USE OF PREMISES</h3>
+        <p style="text-align: justify;"><strong>5.1</strong> The Premises shall be used only for lawful business activities. Any illegal, immoral, or hazardous activities are strictly prohibited.</p>
+        <p style="text-align: justify;"><strong>5.2</strong> The Licensee shall not:</p>
+        <ul style="margin-left: 30px;">
+          <li>Install permanent fixtures</li>
+          <li>Alter or damage the Premises</li>
+          <li>Store hazardous materials</li>
+          <li>Conduct activities causing nuisance, noise, or disturbance</li>
+          <li>Allow unauthorized persons to occupy the workspace</li>
+        </ul>
+        <p style="text-align: justify;"><strong>5.3</strong> The Licensee must maintain cleanliness and hygiene in its designated area.</p>
+        <p style="text-align: justify;"><strong>5.4</strong> Sub-licensing, assignment, or sharing of the workspace is strictly prohibited.</p>
+        
+        <h3 style="margin-top: 25px; font-size: 14px;">6. MEETING ROOM & FACILITY RULES</h3>
+        <p style="text-align: justify;"><strong>6.1</strong> Meeting room usage is subject to prior booking and availability.</p>
+        <p style="text-align: justify;"><strong>6.2</strong> Overstay beyond the reserved slot may attract overtime charges.</p>
+        <p style="text-align: justify;"><strong>6.3</strong> Common area usage shall be respectful and non-disruptive. Any events or visitors should be notified in advance and are subject to approval & charges at the discretion of the Licensor.</p>
+        <p style="text-align: justify;"><strong>6.4</strong> Pantry use is for light refreshments only; cooking/heating heavy food items is prohibited.</p>
+        
+        <h3 style="margin-top: 25px; font-size: 14px;">7. INTERNET, IT & ELECTRICAL USAGE</h3>
+        <p style="text-align: justify;"><strong>7.1</strong> The Licensee shall use the Licensor's internet responsibly and not engage in illegal downloads, hacking, or bandwidth abuse.</p>
+        <p style="text-align: justify;"><strong>7.2</strong> High electrical load equipment (servers, printers, etc.) requires prior approval.</p>
+        <p style="text-align: justify;"><strong>7.3</strong> The Licensor is not liable for internet downtime caused by third-party providers.</p>
+        
+        <h3 style="margin-top: 25px; font-size: 14px;">8. ACCESS & SECURITY</h3>
+        <p style="text-align: justify;"><strong>8.1</strong> Normal access hours: Monday to Saturday 9:00 AM to 9:00 PM. The Premises will remain closed on all Sundays and Govt. declared public holidays (as notified from time to time) unless otherwise permitted.</p>
+        <p style="text-align: justify;"><strong>8.2</strong> Licensee shall not tamper with CCTV, access control systems, or security devices.</p>
+        <p style="text-align: justify;"><strong>8.3</strong> Visitors must follow the Licensor's entry protocols.</p>
+        
+        <h3 style="margin-top: 25px; font-size: 14px;">9. DAMAGE & LOSS</h3>
+        <p style="text-align: justify;"><strong>9.1</strong> The Licensee shall be responsible for any damage caused by its employees, agents, or guests.</p>
+        <p style="text-align: justify;"><strong>9.2</strong> The Licensor is not responsible for theft, loss, or damage to personal belongings, laptops, or equipment brought by the Licensee.</p>
+        
+        <h3 style="margin-top: 25px; font-size: 14px;">10. TERMINATION</h3>
+        <p style="text-align: justify;"><strong>10.1</strong> Either Party may terminate this Agreement by giving 30 days prior written notice.</p>
+        <p style="text-align: justify;"><strong>10.2</strong> The Licensor may terminate this leave and license agreement immediately if there is:</p>
+        <ul style="margin-left: 30px;">
+          <li>Non-payment of license fee for two months</li>
+          <li>Any illegal activity, misconduct or nuisance by the Licensee or its employees</li>
+          <li>Any damage caused to property & person by the Licensee or its employees</li>
+          <li>Any Breach of Agreement terms by the Licensee or its employees</li>
+        </ul>
+        <p style="text-align: justify;"><strong>10.3</strong> On termination, the Licensee shall:</p>
+        <ul style="margin-left: 30px;">
+          <li>Vacate the workspace peacefully</li>
+          <li>Remove all personal belongings</li>
+          <li>Return access cards/keys</li>
+          <li>Clear all dues</li>
         </ul>
         
-        <h3 style="margin-top: 30px;">2. TERM</h3>
-        <p style="text-align: justify;">The term of this Agreement shall be for <strong>11 months</strong>, commencing from <strong>${data.Start_Date}</strong> until <strong>${data.End_date}</strong>, unless terminated earlier as per the terms herein.</p>
-        <p><strong>Lock-in period:</strong> ${data.Lock_in} months</p>
+        <h3 style="margin-top: 25px; font-size: 14px;">11. NO TENANCY / NO LEASE</h3>
+        <p style="text-align: justify;"><strong>11.1</strong> This Agreement creates no tenancy, lease, occupancy rights, or interest in the Premises.</p>
+        <p style="text-align: justify;"><strong>11.2</strong> The Licensee acknowledges that:</p>
+        <ul style="margin-left: 30px;">
+          <li>The Licensor retains full control over the Premises</li>
+          <li>The Licensee's right is purely permissive</li>
+          <li>This Agreement does not fall under the Rent Control Act</li>
+        </ul>
         
-        <h3 style="margin-top: 30px;">3. LICENSE FEES & PAYMENTS</h3>
-        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ddd;">Monthly License Fee (per seat)</td>
-            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;"><strong>Rs. ${data.License_fee_.toLocaleString('en-IN')}/-</strong></td>
-          </tr>
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ddd;">Security Deposit (interest-free, refundable)</td>
-            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;"><strong>Rs. ${data.Security_.toLocaleString('en-IN')}/-</strong></td>
-          </tr>
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ddd;">Setup Charges</td>
-            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;"><strong>${typeof data.Setup_charges === 'number' ? `Rs. ${data.Setup_charges.toLocaleString('en-IN')}/-` : data.Setup_charges}</strong></td>
-          </tr>
-        </table>
+        <h3 style="margin-top: 25px; font-size: 14px;">12. INDEMNITY</h3>
+        <p style="text-align: justify;"><strong>12.1</strong> The Licensee agrees to indemnify and hold harmless the Licensor from all:</p>
+        <ul style="margin-left: 30px;">
+          <li>Legal claims</li>
+          <li>Damages</li>
+          <li>Liabilities</li>
+          <li>Losses arising out of the Licensee's use of the Premises.</li>
+        </ul>
+        <p style="text-align: justify;"><strong>12.2</strong> The Licensee will be solely responsible for compliance with all applicable laws, payments of all statutory levies, dues, or liabilities including Goods & Service Tax (GST) arising from the use of the licensed premises. The Licensor will not be held responsible in any manner whatsoever for any such liabilities, defaults or non-compliances on the part of the Licensee.</p>
         
-        <div style="margin-top: 60px; page-break-inside: avoid;">
-          <h3>SIGNATURES</h3>
+        <h3 style="margin-top: 25px; font-size: 14px;">13. LIMITATION OF LIABILITY</h3>
+        <p style="text-align: justify;"><strong>13.1</strong> The Licensor shall not be responsible for:</p>
+        <ul style="margin-left: 30px;">
+          <li>Business losses</li>
+          <li>Data loss</li>
+          <li>Interruption of services due to external factors</li>
+          <li>Acts of God, electrical failures, or internet breakdowns</li>
+        </ul>
+        <p style="text-align: justify;"><strong>13.2</strong> The maximum liability of the Licensor shall not exceed the monthly license fee.</p>
+        
+        <h3 style="margin-top: 25px; font-size: 14px;">14. GOVERNING LAW & JURISDICTION</h3>
+        <p style="text-align: justify;"><strong>14.1</strong> This Agreement shall be governed by the laws of India.</p>
+        <p style="text-align: justify;"><strong>14.2</strong> Courts in Faridabad, Haryana shall have exclusive jurisdiction.</p>
+        
+        <h3 style="margin-top: 25px; font-size: 14px;">15. MISCELLANEOUS</h3>
+        <p style="text-align: justify;"><strong>15.1</strong> Any amendments must be in writing and signed by both Parties.</p>
+        <p style="text-align: justify;"><strong>15.2</strong> Notices shall be served via email and registered post.</p>
+        <p style="text-align: justify;"><strong>15.3</strong> If any clause is held invalid, the remaining clauses shall remain enforceable.</p>
+        
+        <h3 style="margin-top: 30px; font-size: 14px;">16. SIGNATURES</h3>
+        <p>IN WITNESS WHEREOF, the Parties hereto have executed this Agreement on the date and year first written above.</p>
+        
+        <div style="margin-top: 40px; page-break-inside: avoid;">
           <table style="width: 100%; margin-top: 30px;">
             <tr>
               <td style="width: 50%; vertical-align: top; padding-right: 30px;">
                 <p><strong>FOR THE LICENSOR</strong></p>
-                <p style="margin-top: 60px;">_______________________</p>
-                <p><strong>Thryve Coworking</strong></p>
+                <p>Thryve Coworking</p>
                 <p>Name: ${data.for_Thryve}</p>
                 <p>Designation: ${data.Thryve_Designation}</p>
+                <p>Signature: ________________</p>
                 <p>Date: ${data.Start_Date}</p>
               </td>
               <td style="width: 50%; vertical-align: top;">
                 <p><strong>FOR THE LICENSEE</strong></p>
-                <p style="margin-top: 60px;">_______________________</p>
-                <p><strong>${data.Companys_Name}</strong></p>
+                <p>Name of Company: ${data.Companys_Name}</p>
                 <p>Authorized Signatory: ${data.Authorized_Signatory}</p>
                 <p>Designation: ${data.Designation}</p>
+                <p>Signature: ________________</p>
                 <p>Date: ${data.Start_Date}</p>
+              </td>
+            </tr>
+          </table>
+        </div>
+        
+        <div style="margin-top: 50px;">
+          <p><strong>WITNESSES:</strong></p>
+          <table style="width: 100%; margin-top: 20px;">
+            <tr>
+              <td style="width: 50%; vertical-align: top;">
+                <p>1. Name: ________________</p>
+                <p>&nbsp;&nbsp;&nbsp;Address: ________________</p>
+                <p>&nbsp;&nbsp;&nbsp;Signature: ________________</p>
+              </td>
+              <td style="width: 50%; vertical-align: top;">
+                <p>2. Name: ________________</p>
+                <p>&nbsp;&nbsp;&nbsp;Address: ________________</p>
+                <p>&nbsp;&nbsp;&nbsp;Signature: ________________</p>
               </td>
             </tr>
           </table>
@@ -184,83 +316,287 @@ export default function Agreement() {
     try {
       const data = generateAgreementData(company);
       
+      // Helper to create a paragraph with specific formatting
+      const createPara = (text, options = {}) => new Paragraph({
+        children: [new TextRun({ text, ...options })],
+        spacing: { after: 120 },
+        alignment: options.center ? AlignmentType.CENTER : AlignmentType.JUSTIFIED
+      });
+
+      const createBullet = (text) => new Paragraph({
+        children: [new TextRun({ text: `• ${text}` })],
+        spacing: { after: 80 },
+        indent: { left: 720 }
+      });
+
+      const createNumbered = (num, text) => new Paragraph({
+        children: [
+          new TextRun({ text: `${num} `, bold: true }),
+          new TextRun({ text })
+        ],
+        spacing: { after: 120 },
+        alignment: AlignmentType.JUSTIFIED
+      });
+
+      const createHeading = (text) => new Paragraph({
+        children: [new TextRun({ text, bold: true })],
+        spacing: { before: 300, after: 150 }
+      });
+      
       const doc = new Document({
         sections: [{
-          properties: {},
+          properties: {
+            page: {
+              margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
+            }
+          },
           children: [
+            // Title
             new Paragraph({
-              text: "LEAVE AND LICENSE AGREEMENT",
-              heading: HeadingLevel.HEADING_1,
+              children: [new TextRun({ text: "LEAVE & LICENSE AGREEMENT", bold: true, size: 28 })],
               alignment: AlignmentType.CENTER,
               spacing: { after: 400 }
             }),
-            new Paragraph({ text: "" }),
+            
+            // Opening
             new Paragraph({
               children: [
                 new TextRun({ text: `THIS LEAVE AND LICENSE AGREEMENT ("Agreement") is executed on this ` }),
                 new TextRun({ text: data.Day, bold: true }),
                 new TextRun({ text: ` day of ` }),
-                new TextRun({ text: data.Month__Year, bold: true }),
+                new TextRun({ text: data.Month_Year, bold: true }),
                 new TextRun({ text: `, at Faridabad, Haryana,` }),
               ],
+              spacing: { after: 200 },
+              alignment: AlignmentType.JUSTIFIED
             }),
-            new Paragraph({ text: "" }),
-            new Paragraph({ children: [new TextRun({ text: "BETWEEN", bold: true })] }),
-            new Paragraph({ text: "" }),
+            
+            // BETWEEN
+            createPara("BETWEEN", { bold: true }),
+            
+            // Licensor
             new Paragraph({
               children: [
                 new TextRun({ text: "Thryve Coworking", bold: true }),
                 new TextRun({ text: `, (PAN AAYFT8213A & GSTIN 06AAYFT8213A1Z2) a business operating from: Plot No. 3, First Floor, Near Ajronda Metro Station, 18/1, Mathura Road, Faridabad, Haryana 121007, acting through its authorized representative, hereinafter referred to as the "` }),
                 new TextRun({ text: "Licensor", bold: true }),
-                new TextRun({ text: `"` }),
+                new TextRun({ text: `", (which expression shall, unless repugnant to the context, include its successors, assigns, administrators, and representatives)` }),
               ],
+              spacing: { after: 200 },
+              alignment: AlignmentType.JUSTIFIED
             }),
-            new Paragraph({ text: "" }),
-            new Paragraph({ children: [new TextRun({ text: "AND", bold: true })], alignment: AlignmentType.CENTER }),
-            new Paragraph({ text: "" }),
+            
+            // AND
+            new Paragraph({
+              children: [new TextRun({ text: "AND", bold: true })],
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 200, after: 200 }
+            }),
+            
+            // Licensee
             new Paragraph({
               children: [
                 new TextRun({ text: `M/s ${data.Companys_Name}`, bold: true }),
                 new TextRun({ text: `, (PAN ${data.PAN_No} & GSTIN ${data.GSTIN}) having its Regd. office at: ${data.Address}, through its authorized signatory ` }),
                 new TextRun({ text: data.Authorized_Signatory, bold: true }),
-                new TextRun({ text: `, ` }),
-                new TextRun({ text: data.Designation, bold: true }),
                 new TextRun({ text: `, hereinafter referred to as the "` }),
                 new TextRun({ text: "Licensee", bold: true }),
-                new TextRun({ text: `"` }),
+                new TextRun({ text: `", (which expression shall, unless repugnant to the context, include its successors, permitted assigns, employees, and representatives)` }),
               ],
+              spacing: { after: 200 },
+              alignment: AlignmentType.JUSTIFIED
             }),
-            new Paragraph({ text: "" }),
-            new Paragraph({ text: "1. LICENSED AREA & SERVICES", heading: HeadingLevel.HEADING_2 }),
-            new Paragraph({ text: `The Licensor grants to the Licensee a non-exclusive, non-transferable, revocable license for right to enter and use the following workspace(s) at the Premises:` }),
-            new Paragraph({ text: `• Space: ${data.Space_Description}` }),
-            new Paragraph({ text: `• Number of Seats: ${data.Seats}` }),
-            new Paragraph({ text: `• Meeting Room Access: As per usage/plan` }),
-            new Paragraph({ text: `• Common Areas: Reception, Lounge, Pantry, Washrooms, Hallways` }),
-            new Paragraph({ text: "" }),
-            new Paragraph({ text: "2. TERM", heading: HeadingLevel.HEADING_2 }),
-            new Paragraph({ text: `The term of this Agreement shall be for 11 months, commencing from ${data.Start_Date} until ${data.End_date}, unless terminated earlier.` }),
-            new Paragraph({ text: `Lock-in period: ${data.Lock_in} months` }),
-            new Paragraph({ text: "" }),
-            new Paragraph({ text: "3. LICENSE FEES & PAYMENTS", heading: HeadingLevel.HEADING_2 }),
-            new Paragraph({ text: `• Monthly License Fee (per seat): Rs. ${data.License_fee_.toLocaleString('en-IN')}/-` }),
-            new Paragraph({ text: `• Security Deposit (interest-free, refundable): Rs. ${data.Security_.toLocaleString('en-IN')}/-` }),
-            new Paragraph({ text: `• Setup Charges: ${typeof data.Setup_charges === 'number' ? `Rs. ${data.Setup_charges.toLocaleString('en-IN')}/-` : data.Setup_charges}` }),
-            new Paragraph({ text: "" }),
-            new Paragraph({ text: "" }),
-            new Paragraph({ text: "SIGNATURES", heading: HeadingLevel.HEADING_2 }),
-            new Paragraph({ text: "" }),
-            new Paragraph({ children: [new TextRun({ text: "FOR THE LICENSOR", bold: true })] }),
-            new Paragraph({ text: "Thryve Coworking" }),
-            new Paragraph({ text: `Name: ${data.for_Thryve}` }),
-            new Paragraph({ text: `Designation: ${data.Thryve_Designation}` }),
-            new Paragraph({ text: `Date: ${data.Start_Date}` }),
-            new Paragraph({ text: "" }),
-            new Paragraph({ children: [new TextRun({ text: "FOR THE LICENSEE", bold: true })] }),
-            new Paragraph({ text: data.Companys_Name }),
-            new Paragraph({ text: `Authorized Signatory: ${data.Authorized_Signatory}` }),
-            new Paragraph({ text: `Designation: ${data.Designation}` }),
-            new Paragraph({ text: `Date: ${data.Start_Date}` }),
+            
+            createPara(`The Licensor and the Licensee are collectively referred to as the "Parties" and individually as a "Party."`),
+            
+            // WHEREAS
+            createHeading("WHEREAS"),
+            createNumbered("1.", `The Licensor is operating a coworking facility known as "Thryve Coworking" at Plot No. 3, First Floor, Near Ajronda Metro Station, 18/1, Mathura Road, Faridabad 121007 ("hereinafter referred to as Premises").`),
+            createNumbered("2.", "The Licensor is in lawful possession of the Premises and entitled to grant a license for the use of certain designated workspace(s), cabins, meeting rooms, and/or coworking desks."),
+            createNumbered("3.", "The Licensee has requested use of the Licensor's coworking facilities and services, and the Licensor has agreed to grant the Licensee a limited, non-exclusive, revocable license with rights to enter and strictly for business use on the terms and conditions set forth below:"),
+            
+            createPara("NOW, THEREFORE, THE PARTIES AGREE AS FOLLOWS:", { bold: true }),
+            
+            // Section 1
+            createHeading("1. LICENSED AREA & SERVICES"),
+            createNumbered("1.1", "The Licensor grants to the Licensee a non-exclusive, non-transferable, revocable license for right to enter and use the following workspace(s) at the Premises:"),
+            createBullet(data.Space_Description),
+            createBullet(`Number of Seats: ${data.Seats}`),
+            createBullet("Meeting Room Access: As per usage/plan"),
+            createBullet("Common Areas: Reception, Lounge, Pantry, Washrooms, Hallways, and such other areas as designated by the Licensor."),
+            createNumbered("1.2", "The License is limited to right to enter and use only, and no tenancy, lease, or rights of possession are created or transferred."),
+            createNumbered("1.3", "The following services are included (as applicable to the chosen plan):"),
+            createBullet("High-speed Internet"),
+            createBullet("Electricity & Air Conditioning during business hours"),
+            createBullet("Housekeeping of common spaces"),
+            createBullet("Power Backup"),
+            createBullet("Front Desk Assistance"),
+            createBullet("Access to Pantry Facilities"),
+            createBullet("Access to Conference Rooms (subject to availability and booking rules)"),
+            createBullet("CCTV Surveillance (excluding private cabins)"),
+            createNumbered("1.4", "The Licensor may modify or enhance services at its discretion."),
+            
+            // Section 2
+            createHeading("2. TERM"),
+            new Paragraph({
+              children: [
+                new TextRun({ text: "2.1 ", bold: true }),
+                new TextRun({ text: `The term of this Agreement shall be for 11 months, commencing from ` }),
+                new TextRun({ text: data.Start_Date, bold: true }),
+                new TextRun({ text: ` ("Start Date") until ` }),
+                new TextRun({ text: data.End_Date, bold: true }),
+                new TextRun({ text: ` ("End Date"), unless terminated earlier. There will be a lock-in period of ` }),
+                new TextRun({ text: `${data.Lock_in} months`, bold: true }),
+                new TextRun({ text: ` before which the Licensee will not terminate this Leave & License Deed.` }),
+              ],
+              spacing: { after: 120 },
+              alignment: AlignmentType.JUSTIFIED
+            }),
+            createNumbered("2.2", "Renewal shall be subject to discretion of the Licensor and a new Leave & License Deed will be executed."),
+            
+            // Section 3
+            createHeading("3. LICENSE FEES & PAYMENTS"),
+            createNumbered("3.1", "The Licensee agrees to pay:"),
+            createBullet(`Monthly License Fee per seat/member: Rs. ${data.License_fee.toLocaleString('en-IN')}/-`),
+            createBullet(`Security Deposit (interest-free): Rs. ${data.Security.toLocaleString('en-IN')}/-`),
+            createBullet(`Setup Charges (if any): ${typeof data.Setup_charges === 'number' ? `Rs. ${data.Setup_charges.toLocaleString('en-IN')}/-` : data.Setup_charges}`),
+            createBullet("GST/other applicable taxes/extra usage of facilities will be paid extra."),
+            createNumbered("3.2", "The License Fee shall be payable in advance on or before the 5th day of each English calendar month."),
+            createNumbered("3.3", "Delay in payment beyond the due date attracts a penalty of Rs. 500/- per day apart from the outstanding dues until the full outstanding payment is made."),
+            createNumbered("3.4", "Non-payment for two consecutive months constitutes a material breach, allowing the Licensor to terminate the Agreement without further notice."),
+            
+            // Section 4
+            createHeading("4. SECURITY DEPOSIT"),
+            createNumbered("4.1", "The Security Deposit shall be refunded within 30 working days from the date of vacating the Premises, after adjusting:"),
+            createBullet("Pending dues"),
+            createBullet("Damages (if any)"),
+            createBullet("Loss of property or assets"),
+            createBullet("Outstanding penalties"),
+            createNumbered("4.2", "The Security Deposit shall not be used by the Licensee towards monthly fees."),
+            
+            // Section 5
+            createHeading("5. USE OF PREMISES"),
+            createNumbered("5.1", "The Premises shall be used only for lawful business activities. Any illegal, immoral, or hazardous activities are strictly prohibited."),
+            createNumbered("5.2", "The Licensee shall not:"),
+            createBullet("Install permanent fixtures"),
+            createBullet("Alter or damage the Premises"),
+            createBullet("Store hazardous materials"),
+            createBullet("Conduct activities causing nuisance, noise, or disturbance"),
+            createBullet("Allow unauthorized persons to occupy the workspace"),
+            createNumbered("5.3", "The Licensee must maintain cleanliness and hygiene in its designated area."),
+            createNumbered("5.4", "Sub-licensing, assignment, or sharing of the workspace is strictly prohibited."),
+            
+            // Section 6
+            createHeading("6. MEETING ROOM & FACILITY RULES"),
+            createNumbered("6.1", "Meeting room usage is subject to prior booking and availability."),
+            createNumbered("6.2", "Overstay beyond the reserved slot may attract overtime charges."),
+            createNumbered("6.3", "Common area usage shall be respectful and non-disruptive. Any events or visitors should be notified in advance and are subject to approval & charges at the discretion of the Licensor."),
+            createNumbered("6.4", "Pantry use is for light refreshments only; cooking/heating heavy food items is prohibited."),
+            
+            // Section 7
+            createHeading("7. INTERNET, IT & ELECTRICAL USAGE"),
+            createNumbered("7.1", "The Licensee shall use the Licensor's internet responsibly and not engage in illegal downloads, hacking, or bandwidth abuse."),
+            createNumbered("7.2", "High electrical load equipment (servers, printers, etc.) requires prior approval."),
+            createNumbered("7.3", "The Licensor is not liable for internet downtime caused by third-party providers."),
+            
+            // Section 8
+            createHeading("8. ACCESS & SECURITY"),
+            createNumbered("8.1", "Normal access hours: Monday to Saturday 9:00 AM to 9:00 PM. The Premises will remain closed on all Sundays and Govt. declared public holidays (as notified from time to time) unless otherwise permitted."),
+            createNumbered("8.2", "Licensee shall not tamper with CCTV, access control systems, or security devices."),
+            createNumbered("8.3", "Visitors must follow the Licensor's entry protocols."),
+            
+            // Section 9
+            createHeading("9. DAMAGE & LOSS"),
+            createNumbered("9.1", "The Licensee shall be responsible for any damage caused by its employees, agents, or guests."),
+            createNumbered("9.2", "The Licensor is not responsible for theft, loss, or damage to personal belongings, laptops, or equipment brought by the Licensee."),
+            
+            // Section 10
+            createHeading("10. TERMINATION"),
+            createNumbered("10.1", "Either Party may terminate this Agreement by giving 30 days prior written notice."),
+            createNumbered("10.2", "The Licensor may terminate this leave and license agreement immediately if there is:"),
+            createBullet("Non-payment of license fee for two months"),
+            createBullet("Any illegal activity, misconduct or nuisance by the Licensee or its employees"),
+            createBullet("Any damage caused to property & person by the Licensee or its employees"),
+            createBullet("Any Breach of Agreement terms by the Licensee or its employees"),
+            createNumbered("10.3", "On termination, the Licensee shall:"),
+            createBullet("Vacate the workspace peacefully"),
+            createBullet("Remove all personal belongings"),
+            createBullet("Return access cards/keys"),
+            createBullet("Clear all dues"),
+            
+            // Section 11
+            createHeading("11. NO TENANCY / NO LEASE"),
+            createNumbered("11.1", "This Agreement creates no tenancy, lease, occupancy rights, or interest in the Premises."),
+            createNumbered("11.2", "The Licensee acknowledges that:"),
+            createBullet("The Licensor retains full control over the Premises"),
+            createBullet("The Licensee's right is purely permissive"),
+            createBullet("This Agreement does not fall under the Rent Control Act"),
+            
+            // Section 12
+            createHeading("12. INDEMNITY"),
+            createNumbered("12.1", "The Licensee agrees to indemnify and hold harmless the Licensor from all:"),
+            createBullet("Legal claims"),
+            createBullet("Damages"),
+            createBullet("Liabilities"),
+            createBullet("Losses arising out of the Licensee's use of the Premises."),
+            createNumbered("12.2", "The Licensee will be solely responsible for compliance with all applicable laws, payments of all statutory levies, dues, or liabilities including Goods & Service Tax (GST) arising from the use of the licensed premises. The Licensor will not be held responsible in any manner whatsoever for any such liabilities, defaults or non-compliances on the part of the Licensee."),
+            
+            // Section 13
+            createHeading("13. LIMITATION OF LIABILITY"),
+            createNumbered("13.1", "The Licensor shall not be responsible for:"),
+            createBullet("Business losses"),
+            createBullet("Data loss"),
+            createBullet("Interruption of services due to external factors"),
+            createBullet("Acts of God, electrical failures, or internet breakdowns"),
+            createNumbered("13.2", "The maximum liability of the Licensor shall not exceed the monthly license fee."),
+            
+            // Section 14
+            createHeading("14. GOVERNING LAW & JURISDICTION"),
+            createNumbered("14.1", "This Agreement shall be governed by the laws of India."),
+            createNumbered("14.2", "Courts in Faridabad, Haryana shall have exclusive jurisdiction."),
+            
+            // Section 15
+            createHeading("15. MISCELLANEOUS"),
+            createNumbered("15.1", "Any amendments must be in writing and signed by both Parties."),
+            createNumbered("15.2", "Notices shall be served via email and registered post."),
+            createNumbered("15.3", "If any clause is held invalid, the remaining clauses shall remain enforceable."),
+            
+            // Section 16 - Signatures
+            createHeading("16. SIGNATURES"),
+            createPara("IN WITNESS WHEREOF, the Parties hereto have executed this Agreement on the date and year first written above."),
+            
+            new Paragraph({ text: "", spacing: { after: 300 } }),
+            
+            // Licensor signature block
+            createPara("FOR THE LICENSOR", { bold: true }),
+            createPara("Thryve Coworking"),
+            createPara(`Name: ${data.for_Thryve}`),
+            createPara(`Designation: ${data.Thryve_Designation}`),
+            createPara("Signature: ________________"),
+            createPara(`Date: ${data.Start_Date}`),
+            
+            new Paragraph({ text: "", spacing: { after: 300 } }),
+            
+            // Licensee signature block
+            createPara("FOR THE LICENSEE", { bold: true }),
+            createPara(`Name of Company: ${data.Companys_Name}`),
+            createPara(`Authorized Signatory: ${data.Authorized_Signatory}`),
+            createPara(`Designation: ${data.Designation}`),
+            createPara("Signature: ________________"),
+            createPara(`Date: ${data.Start_Date}`),
+            
+            new Paragraph({ text: "", spacing: { after: 400 } }),
+            
+            // Witnesses
+            createPara("WITNESSES:", { bold: true }),
+            new Paragraph({ text: "", spacing: { after: 200 } }),
+            createPara("1. Name: ________________"),
+            createPara("   Address: ________________"),
+            createPara("   Signature: ________________"),
+            new Paragraph({ text: "", spacing: { after: 200 } }),
+            createPara("2. Name: ________________"),
+            createPara("   Address: ________________"),
+            createPara("   Signature: ________________"),
           ],
         }],
       });
@@ -290,10 +626,10 @@ export default function Agreement() {
         <head>
           <title>Leave and License Agreement</title>
           <style>
-            body { font-family: Arial, sans-serif; }
+            body { font-family: 'Times New Roman', Times, serif; }
             @media print { 
-              body { margin: 15mm; }
-              @page { size: A4; margin: 15mm; }
+              body { margin: 20mm; }
+              @page { size: A4; margin: 20mm; }
             }
           </style>
         </head>
@@ -314,7 +650,7 @@ export default function Agreement() {
           Leave & License Agreement
         </h1>
         <p className="text-[#2E375B] mt-1">
-          Generate LLA documents for clients
+          Generate complete LLA documents for clients
         </p>
       </div>
 
@@ -384,7 +720,7 @@ export default function Agreement() {
                   <th className="text-left p-3 text-[#2E375B]">Signatory</th>
                   <th className="text-left p-3 text-[#2E375B]">Start Date</th>
                   <th className="text-left p-3 text-[#2E375B]">Seats</th>
-                  <th className="text-left p-3 text-[#2E375B]">Space</th>
+                  <th className="text-left p-3 text-[#2E375B]">Rate/Seat</th>
                   <th className="text-right p-3 text-[#2E375B]">Actions</th>
                 </tr>
               </thead>
@@ -402,7 +738,7 @@ export default function Agreement() {
                       <td className="p-3 text-[#2E375B]">{company.signatory_name || "-"}</td>
                       <td className="p-3 text-[#2E375B]">{formatDate(company.start_date)}</td>
                       <td className="p-3 text-[#2E375B]">{company.total_seats}</td>
-                      <td className="p-3 text-[#2E375B]">{company.space_description || company.plan_name || "-"}</td>
+                      <td className="p-3 text-[#2E375B]">₹{(company.rate_per_seat || 0).toLocaleString('en-IN')}</td>
                       <td className="p-3 text-right">
                         <div className="flex gap-2 justify-end">
                           <Button
