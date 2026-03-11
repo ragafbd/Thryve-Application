@@ -10,6 +10,24 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Member self-service portal for viewing invoices, bookings, and tickets**
 - **Public holiday management for booking restrictions**
 
+## Recent Updates (March 11, 2026)
+- **Excel Data Import**: New feature at `/admin/import` (hidden URL) to bulk import client data from Excel files
+  - Column mapping: Company Name, Authorized Signatory, Father's Name, Designation, PAN, GSTIN, Aadhar, Address, Space Description, Seats, Start/End Date, Lock-in, License Fee, Security, Setup Charges
+  - Validates company names, rejects duplicates
+  - Parses dates and numeric values correctly
+  - API: POST `/api/import/clients`
+- **LLA Generator**: New feature at `/admin/agreement` to generate Leave & License Agreements
+  - Select client from dropdown or table
+  - Preview agreement with all company details, terms, and fees
+  - Download as Word document (.docx)
+  - Print directly from browser
+  - Added to sidebar menu under Management
+- **Model Updates**: Added new fields to Company model:
+  - `signatory_father_name`, `signatory_designation`
+  - `space_description`
+  - `security_deposit`, `setup_charges`, `lock_in_months`
+  - `end_date`
+
 ## Recent Updates (March 10, 2026)
 - **Dashboard Cleanup**: Removed redundant quick action icon cards from dashboard (Members, Meeting Room Bookings, Support Tickets, Announcements, Create Invoice, Bulk Invoice). Dashboard now shows only analytics. Navigation is available via sidebar only to avoid duplicity.
 - **Sidebar Cleanup**: Removed "Clients (Legacy)" from ADMIN section. The new "Clients" page under MANAGEMENT is now the single source for client management.
