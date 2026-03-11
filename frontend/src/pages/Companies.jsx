@@ -1017,13 +1017,23 @@ export default function Companies() {
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Seat Number</Label>
-              <Input
-                value={memberForm.seat_number}
-                onChange={(e) => setMemberForm({ ...memberForm, seat_number: e.target.value })}
-                placeholder="e.g., A-12 or Cabin-3"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Date of Birth</Label>
+                <Input
+                  type="date"
+                  value={memberForm.date_of_birth}
+                  onChange={(e) => setMemberForm({ ...memberForm, date_of_birth: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Seat Number</Label>
+                <Input
+                  value={memberForm.seat_number}
+                  onChange={(e) => setMemberForm({ ...memberForm, seat_number: e.target.value })}
+                  placeholder="e.g., A-12 or Cabin-3"
+                />
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Checkbox
