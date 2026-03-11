@@ -275,6 +275,7 @@ class MemberUpdate(BaseModel):
     phone: Optional[str] = None
     aadhar_number: Optional[str] = None
     pan_number: Optional[str] = None
+    date_of_birth: Optional[str] = None  # Birthday field
     seat_number: Optional[str] = None
     is_primary_contact: Optional[bool] = None
     status: Optional[str] = None
