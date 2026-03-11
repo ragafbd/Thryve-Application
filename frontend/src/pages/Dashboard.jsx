@@ -53,14 +53,16 @@ export default function Dashboard() {
         // Check for overdue invoices first
         await axios.post(`${API}/invoices/check-overdue`);
         
-        const [statsRes, invoicesRes, mgmtStatsRes] = await Promise.all([
+        const [statsRes, invoicesRes, mgmtStatsRes, birthdaysRes] = await Promise.all([
           axios.get(`${API}/stats`),
           axios.get(`${API}/invoices`),
-          axios.get(`${API}/management/stats`)
+          axios.get(`${API}/management/stats`),
+          axios.get(`${API}/management/birthdays/upcoming?days=30`)
         ]);
         setInvoiceStats(statsRes.data);
         setRecentInvoices(invoicesRes.data.slice(0, 5));
         setManagementStats(mgmtStatsRes.data);
+        setUpcomingBirthdays(birthdaysRes.data);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
