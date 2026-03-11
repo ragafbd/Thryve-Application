@@ -33,6 +33,9 @@ export default function Dashboard() {
     paid_amount: 0
   });
   const [managementStats, setManagementStats] = useState({
+    total_companies: 0,
+    active_companies: 0,
+    total_seats: 0,
     total_members: 0,
     active_members: 0,
     todays_bookings: 0,
