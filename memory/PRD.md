@@ -11,6 +11,12 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Public holiday management for booking restrictions**
 
 ## Recent Updates (March 11, 2026)
+- **New Invoice Number Format**: Changed from `THR/YYYY/MM/XXXX` to `YY-YY/Mon/NNN/CompanyName`
+  - Example: `26-27/Apr/001/Acme Corp Pvt Ltd`
+  - YY-YY: Financial year (April to March), e.g., 26-27 for FY 2026-2027
+  - Mon: Month abbreviation (Apr, May, Jun, etc.)
+  - NNN: Sequential number, resets each financial year starting April
+  - CompanyName: Client company name for easy identification
 - **Excel Data Import**: New feature at `/admin/import` (hidden URL) to bulk import client data from Excel files
   - Column mapping: Company Name, Authorized Signatory, Father's Name, Designation, PAN, GSTIN, Aadhar, Address, Space Description, Seats, Start/End Date, Lock-in, License Fee, Security, Setup Charges
   - Validates company names, rejects duplicates
