@@ -291,10 +291,12 @@ export default function CreateInvoice() {
               {selectedClient && (
                 <div className="p-4 bg-[#FFD4B0] rounded-lg">
                   <p className="font-medium text-slate-900">{selectedClient.company_name}</p>
-                  <p className="text-sm text-slate-600 mt-1">{selectedClient.address}</p>
-                  <p className="text-xs font-mono text-[#2E375B] mt-2">
-                    GSTIN: {selectedClient.gstin}
-                  </p>
+                  <p className="text-sm text-slate-600 mt-1">{selectedClient.company_address}</p>
+                  {selectedClient.company_gstin && (
+                    <p className="text-xs font-mono text-[#2E375B] mt-2">
+                      GSTIN: {selectedClient.company_gstin}
+                    </p>
+                  )}
                 </div>
               )}
 
