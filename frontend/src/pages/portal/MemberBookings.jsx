@@ -48,6 +48,13 @@ export default function MemberBookings() {
   const minDateStr = today.toISOString().split('T')[0];
   const maxDateStr = maxDate.toISOString().split('T')[0];
 
+  // Ensure selectedDate is never in the past
+  useEffect(() => {
+    if (selectedDate < minDateStr) {
+      setSelectedDate(minDateStr);
+    }
+  }, [selectedDate, minDateStr]);
+
   const isBlockedDate = (dateStr) => {
     const date = new Date(dateStr);
     const isHoliday = publicHolidays.some(h => h.date === dateStr);
