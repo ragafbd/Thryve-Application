@@ -350,4 +350,4 @@ A secure, separate portal for coworking members to self-serve their needs.
 - **Test Member**: Create in admin panel first, then register at landing page (`/`)
 
 ---
-Last Updated: March 9, 2026
+Last Updated: March 11, 2026
