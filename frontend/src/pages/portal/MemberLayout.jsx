@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, FileText, CalendarDays, Ticket, Megaphone, 
-  Menu, X, LogOut, Key, UserCircle
+  Menu, X, LogOut, Key, UserCircle, Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,9 @@ import {
 import { cn } from "@/lib/utils";
 import { useMemberAuth } from "@/contexts/MemberAuthContext";
 import { toast } from "sonner";
+import axios from "axios";
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api/member`;
 
 const navItems = [
   { path: "/portal", icon: LayoutDashboard, label: "Dashboard", exact: true },
@@ -34,13 +37,150 @@ const navItems = [
 ];
 
 export default function MemberLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
   const [changingPassword, setChangingPassword] = useState(false);
+  const [newAnnouncementCount, setNewAnnouncementCount] = useState(0);
+  const [lastAnnouncementCheck, setLastAnnouncementCheck] = useState(null);
+  const [lastTicketStates, setLastTicketStates] = useState({});
   const location = useLocation();
   const navigate = useNavigate();
   const { member, logout, changePassword } = useMemberAuth();
+
+  // Notification sound
+  const playNotificationSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 600;
+      oscillator.type = 'sine';
+      gainNode.gain.value = 0.3;
+      
+      oscillator.start();
+      setTimeout(() => {
+        oscillator.stop();
+        audioContext.close();
+      }, 150);
+      
+      // Second tone
+      setTimeout(() => {
+        const ctx2 = new (window.AudioContext || window.webkitAudioContext)();
+        const osc2 = ctx2.createOscillator();
+        const gain2 = ctx2.createGain();
+        osc2.connect(gain2);
+        gain2.connect(ctx2.destination);
+        osc2.frequency.value = 800;
+        osc2.type = 'sine';
+        gain2.gain.value = 0.3;
+        osc2.start();
+        setTimeout(() => { osc2.stop(); ctx2.close(); }, 150);
+      }, 200);
+    } catch (e) {
+      console.log('Audio not supported');
+    }
+  };
+
+  // Poll for notifications every 1 minute
+  useEffect(() => {
+    const checkNotifications = async () => {
+      try {
+        // Check for new announcements
+        const annRes = await axios.get(`${API}/announcements`);
+        const announcements = annRes.data;
+        const activeCount = announcements.length;
+        
+        if (lastAnnouncementCheck !== null && activeCount > lastAnnouncementCheck) {
+          playNotificationSound();
+          const newAnn = announcements[0];
+          toast.info(
+            <div>
+              <p className="font-bold">📢 New Announcement</p>
+              <p className="text-sm">{newAnn?.title || 'Check announcements'}</p>
+            </div>,
+            {
+              duration: 8000,
+              action: {
+                label: "View",
+                onClick: () => navigate("/portal/announcements")
+              }
+            }
+          );
+        }
+        setNewAnnouncementCount(activeCount);
+        setLastAnnouncementCheck(activeCount);
+
+        // Check for resolved tickets
+        const ticketRes = await axios.get(`${API}/tickets`);
+        const tickets = ticketRes.data;
+        
+        tickets.forEach(ticket => {
+          const prevState = lastTicketStates[ticket.id];
+          if (prevState && prevState !== 'resolved' && ticket.status === 'resolved') {
+            playNotificationSound();
+            toast.success(
+              <div>
+                <p className="font-bold">✅ Ticket Resolved</p>
+                <p className="text-sm">"{ticket.subject}" has been resolved</p>
+              </div>,
+              {
+                duration: 8000,
+                action: {
+                  label: "View",
+                  onClick: () => navigate("/portal/tickets")
+                }
+              }
+            );
+          }
+        });
+        
+        // Update ticket states
+        const newStates = {};
+        tickets.forEach(t => { newStates[t.id] = t.status; });
+        setLastTicketStates(newStates);
+        
+      } catch (error) {
+        console.error('Notification check failed:', error);
+      }
+    };
+
+    // Initial check after 2 seconds (to let page load first)
+    const initialTimeout = setTimeout(checkNotifications, 2000);
+    
+    // Poll every 1 minute
+    const interval = setInterval(checkNotifications, 60000);
+
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(interval);
+    };
+  }, [lastAnnouncementCheck, lastTicketStates, navigate]);
+
+  // Close sidebar on mobile when route changes
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  }, [location.pathname]);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleLogout = () => {
     logout();
