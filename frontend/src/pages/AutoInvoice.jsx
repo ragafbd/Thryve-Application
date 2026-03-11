@@ -131,9 +131,9 @@ export default function AutoInvoice() {
     });
   };
 
-  // Calculate preview totals
-  const totalActiveMembers = members.length;
-  const totalMonthlyRevenue = members.reduce((sum, m) => sum + (m.final_rate || 0), 0);
+  // Calculate preview totals based on companies
+  const totalActiveCompanies = companies.length;
+  const totalMonthlyRevenue = companies.reduce((sum, c) => sum + (c.total_rate || 0), 0);
   const totalWithGst = totalMonthlyRevenue * 1.18;
 
   return (
