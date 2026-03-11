@@ -223,11 +223,43 @@ export default function Layout() {
 
   return (
     <div className="app-container">
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-[#2E375B] z-50 flex items-center px-4 gap-3">
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="text-white p-2 hover:bg-white/10 rounded-lg"
+          data-testid="mobile-menu-toggle"
+        >
+          {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+        <img 
+          src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/jqltfue2_Gemini_Generated_Image_xy33ixy33ixy33ix.png" 
+          alt="Thryve" 
+          className="h-8"
+        />
+        {newTicketCount > 0 && (
+          <div className="ml-auto flex items-center gap-2 text-white">
+            <Bell className="w-5 h-5 text-amber-400 animate-pulse" />
+            <span className="bg-red-500 text-xs font-bold px-2 py-0.5 rounded-full">{newTicketCount}</span>
+          </div>
+        )}
+      </div>
+
       {/* Sidebar */}
       <aside 
         className={cn(
-          "sidebar fixed left-0 top-0 z-40 flex flex-col",
-          !sidebarOpen && "sidebar-collapsed"
+          "sidebar fixed left-0 top-0 z-40 flex flex-col transition-transform duration-300",
+          "lg:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+          "pt-14 lg:pt-0" // Account for mobile header
         )}
         data-testid="sidebar"
       >
