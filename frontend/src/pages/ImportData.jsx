@@ -87,11 +87,9 @@ export default function ImportData() {
     setImportResult(null);
 
     try {
-      const token = localStorage.getItem("thryve_token");
       const response = await axios.post(
         `${API}/import/clients`,
-        { clients: previewData },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { clients: previewData }
       );
 
       setImportResult(response.data);
