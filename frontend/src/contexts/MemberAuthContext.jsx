@@ -5,43 +5,22 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api/member`;
 
 const MemberAuthContext = createContext(null);
 
-// Create a separate axios instance for member portal
-const memberAxios = axios.create();
-
 export function MemberAuthProvider({ children }) {
   const [member, setMember] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Update axios header when token changes
-  const setMemberToken = (token) => {
-    if (token) {
-      memberAxios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      // Also set on global axios for backward compatibility with existing API calls
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    } else {
-      delete memberAxios.defaults.headers.common["Authorization"];
-      delete axios.defaults.headers.common["Authorization"];
-    }
-  };
-
-  const fetchMemberProfile = async () => {
+  const fetchMemberProfile = async (token) => {
     try {
-      const token = localStorage.getItem("member_token");
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-      
-      setMemberToken(token);
-      const response = await memberAxios.get(`${API}/me`);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      const response = await axios.get(`${API}/me`);
       setMember(response.data);
+      return true;
     } catch (error) {
-      // Token invalid, clear it
+      // Token invalid, clear everything
       localStorage.removeItem("member_token");
-      setMemberToken(null);
+      delete axios.defaults.headers.common["Authorization"];
       setMember(null);
-    } finally {
-      setLoading(false);
+      return false;
     }
   };
 
@@ -49,14 +28,20 @@ export function MemberAuthProvider({ children }) {
     // Check for existing token on mount
     const token = localStorage.getItem("member_token");
     if (token) {
-      setMemberToken(token);
-      fetchMemberProfile();
+      fetchMemberProfile(token).finally(() => setLoading(false));
     } else {
+      // No stored credentials
+      localStorage.removeItem("member_token");
+      delete axios.defaults.headers.common["Authorization"];
       setLoading(false);
     }
   }, []);
 
   const login = async (email, password) => {
+    // IMPORTANT: Clear any existing auth headers before login attempt
+    delete axios.defaults.headers.common["Authorization"];
+    localStorage.removeItem("member_token");
+    
     try {
       const response = await axios.post(`${API}/login`, { email, password });
       const { access_token, member: memberData } = response.data;
@@ -66,32 +51,42 @@ export function MemberAuthProvider({ children }) {
       }
       
       localStorage.setItem("member_token", access_token);
-      setMemberToken(access_token);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
       setMember(memberData);
       
       return memberData;
     } catch (error) {
-      console.error('Member login error:', error);
+      // Make sure headers are cleared on error
+      delete axios.defaults.headers.common["Authorization"];
       throw error;
     }
   };
 
   const register = async (email, password) => {
+    // Clear headers for registration too
+    delete axios.defaults.headers.common["Authorization"];
     const response = await axios.post(`${API}/register`, { email, password });
     return response.data;
   };
 
   const logout = () => {
     localStorage.removeItem("member_token");
-    setMemberToken(null);
+    delete axios.defaults.headers.common["Authorization"];
     setMember(null);
   };
 
   const changePassword = async (currentPassword, newPassword) => {
-    await memberAxios.post(`${API}/change-password`, {
+    await axios.post(`${API}/change-password`, {
       current_password: currentPassword,
       new_password: newPassword
     });
+  };
+
+  const refreshProfile = async () => {
+    const token = localStorage.getItem("member_token");
+    if (token) {
+      await fetchMemberProfile(token);
+    }
   };
 
   const value = useMemo(() => ({
@@ -102,7 +97,7 @@ export function MemberAuthProvider({ children }) {
     logout,
     changePassword,
     isAuthenticated: !!member,
-    refreshProfile: fetchMemberProfile
+    refreshProfile
   }), [member, loading]);
 
   return (
