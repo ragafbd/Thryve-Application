@@ -69,7 +69,7 @@ export default function MemberLogin() {
     } catch (error) {
       toast.error(error.response?.data?.detail || "Registration failed");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
