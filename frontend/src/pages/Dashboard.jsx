@@ -94,7 +94,7 @@ export default function Dashboard() {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Member Stats */}
+        {/* Workspace Stats */}
         <Card className="border border-slate-200 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold text-slate-700 font-[Manrope] flex items-center gap-2">
@@ -105,15 +105,15 @@ export default function Dashboard() {
           <CardContent>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-3 bg-slate-50 rounded-lg">
-                <p className="text-2xl font-bold text-[#2E375B]">{managementStats.total_members}</p>
-                <p className="text-xs text-slate-500">Total Members</p>
+                <p className="text-2xl font-bold text-[#2E375B]">{managementStats.active_companies || 0}</p>
+                <p className="text-xs text-slate-500">Active Clients</p>
               </div>
               <div className="text-center p-3 bg-green-50 rounded-lg">
-                <p className="text-2xl font-bold text-green-600">{managementStats.active_members}</p>
-                <p className="text-xs text-slate-500">Active</p>
+                <p className="text-2xl font-bold text-green-600">{managementStats.total_seats || 0}</p>
+                <p className="text-xs text-slate-500">Total Seats</p>
               </div>
               <div className="text-center p-3 bg-[#FFA14A]/10 rounded-lg">
-                <p className="text-2xl font-bold text-[#FFA14A]">Rs. {(managementStats.monthly_revenue/1000).toFixed(0)}k</p>
+                <p className="text-2xl font-bold text-[#FFA14A]">₹{((managementStats.monthly_revenue || 0)/1000).toFixed(0)}k</p>
                 <p className="text-xs text-slate-500">Monthly</p>
               </div>
             </div>
