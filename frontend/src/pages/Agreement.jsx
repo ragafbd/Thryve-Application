@@ -103,20 +103,20 @@ export default function Agreement() {
 
   const generateAgreementHtml = (data) => {
     return `
-      <div style="font-family: 'Times New Roman', Times, serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.8; font-size: 13px; color: #000;">
-        <h2 style="text-align: center; margin-bottom: 30px; font-size: 16px; font-weight: bold;">LEAVE & LICENSE AGREEMENT</h2>
+      <div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; max-width: 210mm; margin: 0 auto; padding: 25mm 20mm; line-height: 1.6; font-size: 11pt; color: #000; background: white;">
+        <h2 style="text-align: center; margin-bottom: 24pt; font-size: 14pt; font-weight: bold; letter-spacing: 1px;">LEAVE & LICENSE AGREEMENT</h2>
         
-        <p style="text-align: justify;">THIS LEAVE AND LICENSE AGREEMENT ("Agreement") is executed on this <strong>${data.Day}</strong> day of <strong>${data.Month_Year}</strong>, at Faridabad, Haryana,</p>
+        <p style="text-align: justify; margin-bottom: 12pt;">THIS LEAVE AND LICENSE AGREEMENT ("Agreement") is executed on this <strong>${data.Day}</strong> day of <strong>${data.Month_Year}</strong>, at Faridabad, Haryana,</p>
         
-        <p style="margin-top: 20px;"><strong>BETWEEN</strong></p>
+        <p style="margin: 16pt 0 8pt 0;"><strong>BETWEEN</strong></p>
         
-        <p style="text-align: justify;"><strong>Thryve Coworking</strong>, (PAN AAYFT8213A & GSTIN 06AAYFT8213A1Z2) a business operating from: Plot No. 3, First Floor, Near Ajronda Metro Station, 18/1, Mathura Road, Faridabad, Haryana 121007, acting through its authorized representative, hereinafter referred to as the "<strong>Licensor</strong>", (which expression shall, unless repugnant to the context, include its successors, assigns, administrators, and representatives)</p>
+        <p style="text-align: justify; margin-bottom: 12pt;"><strong>Thryve Coworking</strong>, (PAN AAYFT8213A & GSTIN 06AAYFT8213A1Z2) a business operating from: Plot No. 3, First Floor, Near Ajronda Metro Station, 18/1, Mathura Road, Faridabad, Haryana 121007, acting through its authorized representative, hereinafter referred to as the "<strong>Licensor</strong>", (which expression shall, unless repugnant to the context, include its successors, assigns, administrators, and representatives)</p>
         
-        <p style="text-align: center; margin: 20px 0;"><strong>AND</strong></p>
+        <p style="text-align: center; margin: 16pt 0;"><strong>AND</strong></p>
         
-        <p style="text-align: justify;"><strong>M/s ${data.Companys_Name}</strong>, (PAN ${data.PAN_No} & GSTIN ${data.GSTIN}) having its Regd. office at: ${data.Address}, through its authorized signatory <strong>${data.Authorized_Signatory}</strong>, hereinafter referred to as the "<strong>Licensee</strong>", (which expression shall, unless repugnant to the context, include its successors, permitted assigns, employees, and representatives)</p>
+        <p style="text-align: justify; margin-bottom: 12pt;"><strong>M/s ${data.Companys_Name}</strong>, (PAN ${data.PAN_No} & GSTIN ${data.GSTIN}) having its Regd. office at: ${data.Address}, through its authorized signatory <strong>${data.Authorized_Signatory}</strong>, hereinafter referred to as the "<strong>Licensee</strong>", (which expression shall, unless repugnant to the context, include its successors, permitted assigns, employees, and representatives)</p>
         
-        <p style="margin-top: 20px;">The Licensor and the Licensee are collectively referred to as the "Parties" and individually as a "Party."</p>
+        <p style="margin: 16pt 0 12pt 0;">The Licensor and the Licensee are collectively referred to as the "Parties" and individually as a "Party."</p>
         
         <h3 style="margin-top: 30px; font-size: 14px;">WHEREAS</h3>
         <ol style="margin-left: 20px;">
