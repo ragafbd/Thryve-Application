@@ -17,6 +17,8 @@ import Announcements from "@/pages/Announcements";
 import PublicHolidays from "@/pages/PublicHolidays";
 import AutoInvoice from "@/pages/AutoInvoice";
 import ExportData from "@/pages/ExportData";
+import ImportData from "@/pages/ImportData";
+import Agreement from "@/pages/Agreement";
 
 // Member Portal imports
 import MemberLogin from "@/pages/portal/MemberLogin";
