@@ -547,6 +547,88 @@ async def delete_invoice(invoice_id: str):
         raise HTTPException(status_code=404, detail="Invoice not found")
     return {"message": "Invoice deleted successfully"}
 
+
+class InvoiceUpdate(BaseModel):
+    """Update invoice - everything except invoice_number and invoice_date"""
+    client_id: Optional[str] = None
+    due_date: Optional[str] = None
+    line_items: Optional[List[dict]] = None
+    notes: Optional[str] = None
+    status: Optional[str] = None
+
+
+@api_router.put("/invoices/{invoice_id}", response_model=Invoice)
+async def update_invoice(invoice_id: str, update_data: InvoiceUpdate):
+    # Get existing invoice
+    invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    update_fields = {}
+    
+    # Update client if provided
+    if update_data.client_id:
+        client = await db.clients.find_one({"id": update_data.client_id}, {"_id": 0})
+        if not client:
+            # Try companies collection
+            client = await db.companies.find_one({"id": update_data.client_id}, {"_id": 0})
+            if client:
+                # Map company fields to client format
+                client = {
+                    "id": client["id"],
+                    "name": client.get("signatory_name", ""),
+                    "company_name": client["company_name"],
+                    "address": client.get("company_address", ""),
+                    "gstin": client.get("company_gstin", ""),
+                    "email": client.get("signatory_email", ""),
+                    "phone": client.get("signatory_phone", "")
+                }
+        if not client:
+            raise HTTPException(status_code=404, detail="Client not found")
+        update_fields["client"] = client
+    
+    # Update due date
+    if update_data.due_date:
+        update_fields["due_date"] = update_data.due_date
+    
+    # Update notes
+    if update_data.notes is not None:
+        update_fields["notes"] = update_data.notes
+    
+    # Update status
+    if update_data.status:
+        update_fields["status"] = update_data.status
+    
+    # Update line items and recalculate totals
+    if update_data.line_items is not None:
+        calculated_items = [calculate_line_item(item) for item in update_data.line_items]
+        
+        subtotal = sum(item["amount"] for item in calculated_items)
+        total_cgst = sum(item["cgst"] for item in calculated_items)
+        total_sgst = sum(item["sgst"] for item in calculated_items)
+        total_tax = total_cgst + total_sgst
+        grand_total = subtotal + total_tax
+        
+        update_fields["line_items"] = calculated_items
+        update_fields["subtotal"] = round(subtotal, 2)
+        update_fields["total_cgst"] = round(total_cgst, 2)
+        update_fields["total_sgst"] = round(total_sgst, 2)
+        update_fields["total_tax"] = round(total_tax, 2)
+        update_fields["grand_total"] = round(grand_total, 2)
+    
+    # Add updated timestamp
+    update_fields["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    # Perform update
+    await db.invoices.update_one(
+        {"id": invoice_id},
+        {"$set": update_fields}
+    )
+    
+    # Return updated invoice
+    updated_invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    return updated_invoice
+
 # Number to words conversion for invoice
 def number_to_words(num):
     if num == 0:
