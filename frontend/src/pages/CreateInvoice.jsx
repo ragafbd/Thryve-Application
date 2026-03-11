@@ -77,6 +77,9 @@ export default function CreateInvoice() {
   const [notes, setNotes] = useState("");
   const [pendingCharges, setPendingCharges] = useState([]);
 
+  // Compute selectedClient from clients array
+  const selectedClient = clients.find(c => c.id === selectedClientId);
+
   // Auto-update due date when invoice date changes (invoice date + 4 days)
   useEffect(() => {
     const newDueDate = new Date(invoiceDate);
@@ -87,14 +90,16 @@ export default function CreateInvoice() {
   // Fetch pending meeting room charges when client is selected
   useEffect(() => {
     const fetchPendingCharges = async () => {
-      if (!selectedClientId) {
+      if (!selectedClientId || !selectedClient) {
         setPendingCharges([]);
+        // Remove auto-added meeting room items when no client selected
+        setLineItems(prev => prev.filter(item => !item.booking_id));
         return;
       }
       try {
         const response = await axios.get(`${API}/management/pending-charges`);
         const clientCharges = response.data.company_charges.find(
-          c => c.company_name === selectedClient?.company_name
+          c => c.company_name === selectedClient.company_name
         );
         if (clientCharges && clientCharges.bookings.length > 0) {
           setPendingCharges(clientCharges.bookings);
@@ -128,7 +133,7 @@ export default function CreateInvoice() {
       }
     };
     fetchPendingCharges();
-  }, [selectedClientId, selectedClient?.company_name]);
+  }, [selectedClientId, selectedClient]);
 
   useEffect(() => {
     const fetchData = async () => {
