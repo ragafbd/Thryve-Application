@@ -1236,8 +1236,9 @@ async def upload_excel_and_generate_invoices(file: UploadFile = File(...)):
                 if due_date:
                     due_date = str(due_date).strip()[:10]
                 
-                # Generate invoice number
-                invoice_number = await generate_invoice_number()
+                # Generate invoice number with company name
+                company_name = client_data.get("company_name", "")
+                invoice_number = await generate_invoice_number(company_name)
                 
                 # Create invoice
                 invoice_obj = Invoice(
