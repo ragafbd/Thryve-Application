@@ -440,17 +440,42 @@ export default function Bookings() {
                       <tr key={booking.id} className="border-b hover:bg-slate-50">
                         <td className="p-3 font-medium text-[#2E375B]">{booking.room_name}</td>
                         <td className="p-3 text-[#2E375B]">{booking.start_time} - {booking.end_time}</td>
-                        <td className="p-3 text-[#2E375B]">{booking.company_name || "-"}</td>
-                        <td className="p-3 text-[#2E375B]">{booking.member_name}</td>
+                        <td className="p-3 text-[#2E375B]">
+                          {booking.is_guest ? (
+                            <span className="text-amber-600">{booking.guest_company || "Walk-in Guest"}</span>
+                          ) : (
+                            booking.company_name || "-"
+                          )}
+                        </td>
+                        <td className="p-3 text-[#2E375B]">
+                          {booking.is_guest ? (
+                            <div>
+                              <span className="font-medium">{booking.guest_name}</span>
+                              <span className="text-xs text-slate-500 block">{booking.guest_phone}</span>
+                            </div>
+                          ) : (
+                            booking.member_name
+                          )}
+                        </td>
                         <td className="p-3 text-[#2E375B]">{booking.purpose || "-"}</td>
                         <td className="p-3">
-                          <Badge className={
-                            booking.status === 'confirmed' 
-                              ? "bg-green-100 text-green-700" 
-                              : "bg-amber-100 text-amber-700"
-                          }>
-                            {booking.status}
-                          </Badge>
+                          {booking.is_guest ? (
+                            <Badge className={
+                              booking.payment_status === 'paid' 
+                                ? "bg-green-100 text-green-700" 
+                                : "bg-amber-100 text-amber-700"
+                            }>
+                              Guest - {booking.payment_status === 'paid' ? `₹${booking.payment_amount} Paid` : 'Pending'}
+                            </Badge>
+                          ) : (
+                            <Badge className={
+                              booking.status === 'confirmed' 
+                                ? "bg-green-100 text-green-700" 
+                                : "bg-amber-100 text-amber-700"
+                            }>
+                              {booking.status}
+                            </Badge>
+                          )}
                         </td>
                       </tr>
                     ))}
