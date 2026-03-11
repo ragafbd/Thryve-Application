@@ -56,11 +56,12 @@ export default function Dashboard() {
         await axios.post(`${API}/invoices/check-overdue`).catch(() => {});
         
         // Fetch all data independently to prevent one failure from blocking others
-        const [statsRes, invoicesRes, mgmtStatsRes, birthdaysRes] = await Promise.all([
+        const [statsRes, invoicesRes, mgmtStatsRes, birthdaysRes, chargesRes] = await Promise.all([
           axios.get(`${API}/stats`).catch(e => { console.error("Stats error:", e); return { data: null, error: e }; }),
           axios.get(`${API}/invoices`).catch(e => { console.error("Invoices error:", e); return { data: [], error: e }; }),
           axios.get(`${API}/management/stats`).catch(e => { console.error("Management stats error:", e); return { data: null, error: e }; }),
-          axios.get(`${API}/management/birthdays/upcoming?days=30`).catch(e => { console.error("Birthdays error:", e); return { data: [], error: e }; })
+          axios.get(`${API}/management/birthdays/upcoming?days=30`).catch(e => { console.error("Birthdays error:", e); return { data: [], error: e }; }),
+          axios.get(`${API}/management/pending-charges`).catch(e => { console.error("Pending charges error:", e); return { data: null, error: e }; })
         ]);
         
         console.log("Dashboard: Management stats response:", mgmtStatsRes.data);
@@ -69,6 +70,7 @@ export default function Dashboard() {
         if (invoicesRes.data && !invoicesRes.error) setRecentInvoices(invoicesRes.data.slice(0, 5));
         if (mgmtStatsRes.data && !mgmtStatsRes.error) setManagementStats(mgmtStatsRes.data);
         if (birthdaysRes.data && !birthdaysRes.error) setUpcomingBirthdays(birthdaysRes.data);
+        if (chargesRes.data && !chargesRes.error) setPendingCharges(chargesRes.data);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
