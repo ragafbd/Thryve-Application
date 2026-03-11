@@ -636,10 +636,15 @@ export default function Agreement() {
         <head>
           <title>Leave and License Agreement</title>
           <style>
-            body { font-family: 'Times New Roman', Times, serif; }
+            body { 
+              font-family: Calibri, 'Segoe UI', Arial, sans-serif; 
+              font-size: 11pt;
+              line-height: 1.5;
+              color: #000;
+            }
             @media print { 
-              body { margin: 20mm; }
-              @page { size: A4; margin: 20mm; }
+              body { margin: 20mm 15mm; }
+              @page { size: A4; margin: 20mm 15mm; }
             }
           </style>
         </head>
