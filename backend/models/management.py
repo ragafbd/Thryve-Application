@@ -236,6 +236,7 @@ class Member(BaseModel):
     phone: str
     aadhar_number: str = ""
     pan_number: str = ""
+    date_of_birth: Optional[str] = None  # Birthday field for member
     
     # Seat Assignment
     seat_number: Optional[str] = None
