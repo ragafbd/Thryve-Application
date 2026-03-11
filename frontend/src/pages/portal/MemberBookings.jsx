@@ -437,13 +437,25 @@ export default function MemberBookings() {
               <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
                 {slots.map((slot, idx) => {
                   const isSelected = selectedSlots.includes(slot.start_time);
+                  
+                  // Check if this slot is in the past (for today's date)
+                  const todayStr = new Date().toISOString().split('T')[0];
+                  const isToday = selectedDate === todayStr;
+                  const now = new Date();
+                  const [slotHour, slotMin] = slot.start_time.split(':').map(Number);
+                  const slotTime = new Date();
+                  slotTime.setHours(slotHour, slotMin, 0, 0);
+                  const isPastSlot = isToday && slotTime <= now;
+                  
                   return (
                     <button
                       key={idx}
-                      onClick={() => handleSlotClick(slot)}
-                      disabled={!slot.is_available}
+                      onClick={() => !isPastSlot && handleSlotClick(slot)}
+                      disabled={!slot.is_available || isPastSlot}
                       className={`p-2 rounded-lg text-xs font-medium transition-all ${
-                        isSelected
+                        isPastSlot
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : isSelected
                           ? "bg-[#2E375B] text-white ring-2 ring-[#FFA14A]"
                           : slot.is_available
                           ? "bg-[#2E375B]/10 text-[#2E375B] hover:bg-[#2E375B]/20 cursor-pointer"
