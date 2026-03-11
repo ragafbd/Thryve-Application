@@ -890,6 +890,61 @@ async def get_upcoming_birthdays(days: int = 30):
     
     return upcoming_birthdays
 
+# ==================== PENDING MEETING ROOM CHARGES ====================
+
+@router.get("/pending-charges")
+async def get_pending_meeting_charges():
+    """Get all pending meeting room charges grouped by company"""
+    # Get bookings with billable_amount > 0 and payment_status = pending
+    pending_bookings = await db.bookings.find(
+        {
+            "billable_amount": {"$gt": 0},
+            "payment_status": {"$in": ["pending", None]},
+            "status": {"$ne": "cancelled"}
+        },
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Group by company
+    company_charges = {}
+    guest_charges = []
+    
+    for booking in pending_bookings:
+        if booking.get("is_guest"):
+            guest_charges.append({
+                "booking_id": booking.get("id"),
+                "guest_name": booking.get("guest_name"),
+                "guest_company": booking.get("guest_company"),
+                "date": booking.get("date"),
+                "room_name": booking.get("room_name"),
+                "amount": booking.get("billable_amount", 0),
+                "payment_status": booking.get("payment_status", "pending")
+            })
+        else:
+            company_id = booking.get("company_id")
+            if company_id:
+                if company_id not in company_charges:
+                    company_charges[company_id] = {
+                        "company_id": company_id,
+                        "company_name": booking.get("company_name", ""),
+                        "bookings": [],
+                        "total_amount": 0
+                    }
+                company_charges[company_id]["bookings"].append({
+                    "booking_id": booking.get("id"),
+                    "member_name": booking.get("member_name"),
+                    "date": booking.get("date"),
+                    "room_name": booking.get("room_name"),
+                    "amount": booking.get("billable_amount", 0)
+                })
+                company_charges[company_id]["total_amount"] += booking.get("billable_amount", 0)
+    
+    return {
+        "company_charges": list(company_charges.values()),
+        "guest_charges": guest_charges,
+        "total_pending": sum(c["total_amount"] for c in company_charges.values()) + sum(g["amount"] for g in guest_charges)
+    }
+
 # ==================== SEED DEFAULT DATA ====================
 
 async def seed_default_data(database=None):
