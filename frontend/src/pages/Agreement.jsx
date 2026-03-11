@@ -36,7 +36,7 @@ export default function Agreement() {
 
   const fetchCompanies = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("thryve_token");
       const response = await axios.get(`${API}/companies`, {
         headers: { Authorization: `Bearer ${token}` }
       });
