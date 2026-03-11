@@ -126,7 +126,7 @@ export default function Layout() {
   useEffect(() => {
     const checkForNewTickets = async () => {
       try {
-        const response = await axios.get(`${API}/tickets`);
+        const response = await axios.get(`${API}/management/tickets`);
         const tickets = response.data;
         
         // Count open/pending tickets
