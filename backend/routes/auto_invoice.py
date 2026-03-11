@@ -427,8 +427,9 @@ async def generate_auto_invoices(
                 result.failed += 1
                 continue
             
-            # Generate invoice number
-            invoice_number = await generate_invoice_number()
+            # Generate invoice number with company name
+            company_name = member.get("company_name", member.get("name", ""))
+            invoice_number = await generate_invoice_number(company_name)
             
             # Calculate amounts
             rate = member.get("final_rate", 0)
