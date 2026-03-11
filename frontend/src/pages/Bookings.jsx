@@ -371,20 +371,40 @@ export default function Bookings() {
                     const booking = getBookingForSlot(slot);
                     const isBooked = !slot.is_available || booking;
                     
+                    // Check if this slot is in the past (for today's date)
+                    const isToday = selectedDate === getLocalDateString(new Date());
+                    const now = new Date();
+                    const [slotHour, slotMin] = slot.start_time.split(':').map(Number);
+                    const slotTime = new Date();
+                    slotTime.setHours(slotHour, slotMin, 0, 0);
+                    const isPastSlot = isToday && slotTime <= now;
+                    
                     return (
                       <div
                         key={idx}
                         className={`p-3 rounded-lg border text-center ${
-                          isBooked
+                          isPastSlot
+                            ? "bg-gray-100 border-gray-200 opacity-50"
+                            : isBooked
                             ? "bg-red-50 border-red-200"
                             : "bg-green-50 border-green-200 cursor-pointer hover:bg-green-100"
                         }`}
-                        onClick={() => !isBooked && openBookingDialog(slot)}
+                        onClick={() => !isBooked && !isPastSlot && openBookingDialog(slot)}
                       >
-                        <p className={`font-medium ${isBooked ? "text-red-700" : "text-green-700"}`}>
+                        <p className={`font-medium ${
+                          isPastSlot 
+                            ? "text-gray-500" 
+                            : isBooked 
+                            ? "text-red-700" 
+                            : "text-green-700"
+                        }`}>
                           {slot.start_time} - {slot.end_time}
                         </p>
-                        {isBooked ? (
+                        {isPastSlot ? (
+                          <div className="mt-1">
+                            <Badge className="bg-gray-200 text-gray-600 text-xs">Past</Badge>
+                          </div>
+                        ) : isBooked ? (
                           <div className="mt-1">
                             <Badge className="bg-red-100 text-red-700 text-xs">Booked</Badge>
                             {booking && (
