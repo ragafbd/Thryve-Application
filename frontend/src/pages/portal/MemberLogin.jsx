@@ -60,7 +60,7 @@ export default function MemberLogin() {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     try {
       const result = await register(registerData.email, registerData.password);
       toast.success(result.message);
