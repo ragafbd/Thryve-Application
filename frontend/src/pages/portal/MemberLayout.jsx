@@ -325,24 +325,26 @@ export default function MemberLayout() {
           "lg:ml-64"
         )}
       >
-        {/* Top Bar - Matching Admin */}
-        <header className="sticky top-0 z-30 bg-white border-b border-[#2E375B]/10 shadow-sm">
+        {/* Top Bar - Hidden on mobile */}
+        <header className="sticky top-0 z-20 bg-white border-b border-[#2E375B]/10 shadow-sm hidden lg:block">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="text-[#2E375B] hover:bg-[#2E375B]/10"
-              >
-                {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </Button>
               <div>
                 <h2 className="text-lg font-semibold text-[#2E375B] font-[Manrope]">Member Portal</h2>
               </div>
             </div>
             
             <div className="flex items-center gap-4">
+              {/* Notification indicator */}
+              {newAnnouncementCount > 0 && (
+                <button
+                  onClick={() => navigate("/portal/announcements")}
+                  className="flex items-center gap-2 text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full hover:bg-amber-100 transition-colors"
+                >
+                  <Bell className="w-4 h-4 animate-pulse" />
+                  <span className="text-sm font-medium">{newAnnouncementCount} announcement{newAnnouncementCount > 1 ? 's' : ''}</span>
+                </button>
+              )}
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
