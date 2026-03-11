@@ -263,24 +263,33 @@ export default function MemberBookings() {
   };
 
   const canCancelBooking = (booking) => {
-    const bookingDate = new Date(booking.date);
-    const todayDate = new Date();
-    todayDate.setHours(0, 0, 0, 0);
-    const diffDays = Math.ceil((bookingDate - todayDate) / (1000 * 60 * 60 * 24));
-    return diffDays >= MIN_CANCEL_DAYS;
+    // 48-hour cancellation policy - can always cancel, but charges may apply
+    return true;
   };
 
   const handleCancelBooking = async (booking) => {
-    if (!canCancelBooking(booking)) {
-      toast.error(`Bookings can only be cancelled ${MIN_CANCEL_DAYS} or more days before the event`);
-      return;
+    const bookingDate = new Date(booking.date);
+    const bookingTime = booking.start_time || "09:00";
+    const [hour, min] = bookingTime.split(':').map(Number);
+    bookingDate.setHours(hour, min, 0, 0);
+    
+    const now = new Date();
+    const hoursUntil = (bookingDate - now) / (1000 * 60 * 60);
+    
+    let confirmMessage = "Are you sure you want to cancel this booking?";
+    if (hoursUntil < 48) {
+      confirmMessage = "This is a late cancellation (less than 48 hours). Charges will still apply. Continue?";
     }
     
-    if (!window.confirm("Are you sure you want to cancel this booking?")) return;
+    if (!window.confirm(confirmMessage)) return;
     
     try {
-      await axios.delete(`${API}/bookings/${booking.id}`);
-      toast.success("Booking cancelled");
+      const response = await axios.delete(`${API}/bookings/${booking.id}`);
+      if (response.data.charges_apply) {
+        toast.warning("Booking cancelled. Late cancellation charges apply.");
+      } else {
+        toast.success("Booking cancelled successfully. No charges.");
+      }
       fetchBookings();
       fetchAvailability();
       refreshProfile();
