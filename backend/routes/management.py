@@ -741,25 +741,31 @@ async def get_management_stats():
     current_month = now.strftime('%Y-%m')
     today = now.strftime('%Y-%m-%d')
     
-    # Member counts
+    # Company counts (primary entity)
+    total_companies = await db.companies.count_documents({})
+    active_companies = await db.companies.count_documents({"status": "active"})
+    
+    # Calculate total seats and revenue from companies
+    companies = await db.companies.find({"status": "active"}, {"total_seats": 1, "total_rate": 1, "rate_per_seat": 1}).to_list(1000)
+    total_seats = sum(c.get("total_seats", 0) for c in companies)
+    monthly_revenue = sum(c.get("total_rate", 0) or (c.get("total_seats", 0) * c.get("rate_per_seat", 0)) for c in companies)
+    
+    # Member counts (individual users under companies)
     total_members = await db.members.count_documents({})
     active_members = await db.members.count_documents({"status": "active"})
     
-    # Plan distribution
+    # Plan distribution from companies
     plan_distribution = {}
-    async for member in db.members.find({"status": "active"}, {"plan_name": 1}):
-        plan = member.get("plan_name", "Unknown")
-        plan_distribution[plan] = plan_distribution.get(plan, 0) + 1
+    async for company in db.companies.find({"status": "active"}, {"plan_name": 1, "total_seats": 1}):
+        plan = company.get("plan_name", "Unknown")
+        seats = company.get("total_seats", 1)
+        plan_distribution[plan] = plan_distribution.get(plan, 0) + seats
     
     # Today's bookings
     todays_bookings = await db.bookings.count_documents({
         "date": today,
         "status": {"$ne": "cancelled"}
     })
-    
-    # This month's revenue from members
-    members = await db.members.find({"status": "active"}, {"final_rate": 1}).to_list(1000)
-    monthly_revenue = sum(m.get("final_rate", 0) for m in members)
     
     # Open tickets
     open_tickets = await db.tickets.count_documents({"status": {"$in": ["open", "in_progress"]}})
@@ -768,6 +774,9 @@ async def get_management_stats():
     active_announcements = await db.announcements.count_documents({"is_active": True})
     
     return {
+        "total_companies": total_companies,
+        "active_companies": active_companies,
+        "total_seats": total_seats,
         "total_members": total_members,
         "active_members": active_members,
         "plan_distribution": plan_distribution,
