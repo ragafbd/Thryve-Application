@@ -14,7 +14,7 @@ export default function ImportData() {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
 
-  // Column mapping from Excel to database fields
+  // Column mapping from Excel to database fields (based on actual Excel file)
   const columnMapping = {
     "Company's Name": "company_name",
     "Authorized Signatory": "signatory_name",
@@ -24,18 +24,14 @@ export default function ImportData() {
     "GSTIN": "company_gstin",
     "Aadhar": "signatory_aadhar",
     "Address": "company_address",
-    "Space": "space_type",
-    "Description": "space_description",
+    "Space Description": "space_description",
     "Seats": "total_seats",
     "Start Date": "start_date",
     "End date": "end_date",
     "Lock in": "lock_in_months",
     "License fee": "rate_per_seat",
     "Security": "security_deposit",
-    "Setup charges for Thryve": "setup_charges",
-    "Client Company Name": "company_name",
-    "Client Address": "company_address",
-    "Client GSTIN": "company_gstin",
+    "Setup charges": "setup_charges",
   };
 
   const handleFileSelect = async (e) => {
@@ -52,14 +48,14 @@ export default function ImportData() {
 
     try {
       const data = await selectedFile.arrayBuffer();
-      const workbook = XLSX.read(data);
+      const workbook = XLSX.read(data, { cellDates: true }); // Parse dates properly
       const sheetName = workbook.SheetNames[0]; // Sheet 1
       const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "", raw: false });
 
       // Map Excel columns to database fields
       const mappedData = jsonData
-        .filter(row => row["Company's Name"] || row["Client Company Name"]) // Filter rows with company name
+        .filter(row => row["Company's Name"]) // Filter rows with company name
         .map((row, index) => {
           const mapped = { _rowNum: index + 2 }; // Excel row number (1-indexed + header)
           
@@ -68,17 +64,6 @@ export default function ImportData() {
               mapped[dbField] = row[excelCol];
             }
           });
-
-          // Use Client Company Name if Company's Name is empty
-          if (!mapped.company_name && row["Client Company Name"]) {
-            mapped.company_name = row["Client Company Name"];
-          }
-          if (!mapped.company_address && row["Client Address"]) {
-            mapped.company_address = row["Client Address"];
-          }
-          if (!mapped.company_gstin && row["Client GSTIN"]) {
-            mapped.company_gstin = row["Client GSTIN"];
-          }
 
           return mapped;
         })
@@ -102,9 +87,12 @@ export default function ImportData() {
     setImportResult(null);
 
     try {
-      const response = await axios.post(`${API}/import/clients`, {
-        clients: previewData
-      });
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${API}/import/clients`,
+        { clients: previewData },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       setImportResult(response.data);
       toast.success(`Successfully imported ${response.data.success_count} clients`);
@@ -125,21 +113,20 @@ export default function ImportData() {
       {
         "Company's Name": "Example Company Pvt Ltd",
         "Authorized Signatory": "John Doe",
-        "Signatory's Father's Name": "Robert Doe",
+        "Signatory's Father's Name": "S/o Sh. Robert Doe",
         "Designation": "Director",
         "PAN No.": "ABCDE1234F",
         "GSTIN": "06ABCDE1234F1Z5",
         "Aadhar": "123456789012",
         "Address": "123, Business Park, City",
-        "Space": "Open",
-        "Description": "Open Desk",
-        "Seats": 5,
-        "Start Date": "2024-01-01",
-        "End date": "2024-12-31",
-        "Lock in": 6,
+        "Space Description": "Six Seater Cabin",
+        "Seats": 6,
+        "Start Date": "2026-01-01",
+        "End date": "2026-11-30",
+        "Lock in": 11,
         "License fee": 5000,
-        "Security": 25000,
-        "Setup charges for Thryve": 5000
+        "Security": 30000,
+        "Setup charges": "Not applicable"
       }
     ];
 
@@ -170,7 +157,7 @@ export default function ImportData() {
           Import Client Data
         </h1>
         <p className="text-[#2E375B] mt-1">
-          Upload Excel file to bulk import client data
+          One-time bulk import of client data from Excel
         </p>
       </div>
 
@@ -202,6 +189,7 @@ export default function ImportData() {
                 onChange={handleFileSelect}
                 className="hidden"
                 id="excel-upload"
+                data-testid="excel-upload-input"
               />
               <label htmlFor="excel-upload" className="cursor-pointer">
                 <FileSpreadsheet className="w-12 h-12 mx-auto text-[#2E375B]/40 mb-4" />
@@ -229,6 +217,7 @@ export default function ImportData() {
                 onClick={handleImport}
                 disabled={importing}
                 className="bg-[#2E375B] hover:bg-[#232B47]"
+                data-testid="import-all-btn"
               >
                 {importing ? "Importing..." : "Import All"}
               </Button>
@@ -245,6 +234,7 @@ export default function ImportData() {
                     <th className="text-left p-2 text-[#2E375B]">GSTIN</th>
                     <th className="text-left p-2 text-[#2E375B]">Seats</th>
                     <th className="text-left p-2 text-[#2E375B]">Rate</th>
+                    <th className="text-left p-2 text-[#2E375B]">Space</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -256,6 +246,7 @@ export default function ImportData() {
                       <td className="p-2 text-[#2E375B]">{row.company_gstin || "-"}</td>
                       <td className="p-2 text-[#2E375B]">{row.total_seats || "-"}</td>
                       <td className="p-2 text-[#2E375B]">{row.rate_per_seat ? `₹${row.rate_per_seat}` : "-"}</td>
+                      <td className="p-2 text-[#2E375B]">{row.space_description || "-"}</td>
                     </tr>
                   ))}
                 </tbody>
