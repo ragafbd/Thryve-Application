@@ -263,7 +263,7 @@ export default function CreateInvoice() {
                     <Button
                       variant="link"
                       className="text-[#2E375B]"
-                      onClick={() => navigate("/clients")}
+                      onClick={() => navigate("/admin/companies")}
                     >
                       Add a client first
                     </Button>
