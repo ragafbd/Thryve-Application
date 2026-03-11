@@ -373,7 +373,7 @@ async def generate_auto_invoices(
     background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user)
 ):
-    """Generate invoices for all active members for a billing month"""
+    """Generate invoices for all active companies for a billing month"""
     check_permission(current_user, "all")
     
     # Parse billing month
@@ -383,20 +383,20 @@ async def generate_auto_invoices(
     except:
         raise HTTPException(status_code=400, detail="Invalid billing_month format. Use YYYY-MM")
     
-    # Get active members
+    # Get active companies instead of members
     query = {"status": "active"}
-    if request.include_members:
+    if request.include_members:  # This is now include_companies
         query["id"] = {"$in": request.include_members}
     
-    members = await db.members.find(query, {"_id": 0}).to_list(1000)
+    companies = await db.companies.find(query, {"_id": 0}).to_list(1000)
     
-    if not members:
-        raise HTTPException(status_code=404, detail="No active members found")
+    if not companies:
+        raise HTTPException(status_code=404, detail="No active companies found")
     
     # Initialize result
     result = AutoInvoiceResult(
         billing_month=request.billing_month,
-        total_invoices=len(members),
+        total_invoices=len(companies),
         created_by=current_user.get("id")
     )
     
