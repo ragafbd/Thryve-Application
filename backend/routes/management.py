@@ -829,6 +829,67 @@ async def get_management_stats():
         "active_announcements": active_announcements
     }
 
+# ==================== UPCOMING BIRTHDAYS ====================
+
+@router.get("/birthdays/upcoming")
+async def get_upcoming_birthdays(days: int = 30):
+    """Get members with upcoming birthdays in the next N days"""
+    now = datetime.now()
+    current_year = now.year
+    current_month = now.month
+    current_day = now.day
+    
+    # Get all active members with date_of_birth
+    members = await db.members.find(
+        {"status": "active", "date_of_birth": {"$ne": None, "$exists": True}},
+        {"_id": 0, "id": 1, "name": 1, "email": 1, "phone": 1, "company_name": 1, "date_of_birth": 1}
+    ).to_list(1000)
+    
+    upcoming_birthdays = []
+    
+    for member in members:
+        dob_str = member.get("date_of_birth")
+        if not dob_str:
+            continue
+        
+        try:
+            # Parse date of birth
+            dob = datetime.fromisoformat(dob_str.replace('Z', '+00:00')).replace(tzinfo=None)
+            
+            # Calculate this year's birthday
+            this_year_birthday = dob.replace(year=current_year)
+            
+            # If birthday already passed this year, check next year's
+            if this_year_birthday.date() < now.date():
+                this_year_birthday = dob.replace(year=current_year + 1)
+            
+            # Calculate days until birthday
+            days_until = (this_year_birthday.date() - now.date()).days
+            
+            if 0 <= days_until <= days:
+                # Calculate age they will turn
+                age = this_year_birthday.year - dob.year
+                
+                upcoming_birthdays.append({
+                    "id": member.get("id"),
+                    "name": member.get("name"),
+                    "email": member.get("email"),
+                    "phone": member.get("phone"),
+                    "company_name": member.get("company_name"),
+                    "date_of_birth": dob_str,
+                    "birthday_date": this_year_birthday.strftime("%Y-%m-%d"),
+                    "days_until": days_until,
+                    "turning_age": age,
+                    "is_today": days_until == 0
+                })
+        except (ValueError, AttributeError):
+            continue
+    
+    # Sort by days until birthday (closest first)
+    upcoming_birthdays.sort(key=lambda x: x["days_until"])
+    
+    return upcoming_birthdays
+
 # ==================== SEED DEFAULT DATA ====================
 
 async def seed_default_data(database=None):
