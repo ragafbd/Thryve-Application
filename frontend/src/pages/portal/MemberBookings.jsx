@@ -329,21 +329,24 @@ export default function MemberBookings() {
               size="icon" 
               onClick={() => changeDate(-1)}
               disabled={selectedDate <= minDateStr}
-              className="text-[#2E375B] hover:bg-[#2E375B]/10"
+              className="text-[#2E375B] hover:bg-[#2E375B]/10 disabled:opacity-30"
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
             
-            <span className="text-lg font-semibold text-[#2E375B]">
-              {formatDate(selectedDate)}
-            </span>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-[#2E375B]" />
+              <span className="text-lg font-semibold text-[#2E375B]">
+                {formatDate(selectedDate)}
+              </span>
+            </div>
             
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => changeDate(1)}
               disabled={selectedDate >= maxDateStr}
-              className="text-[#2E375B] hover:bg-[#2E375B]/10"
+              className="text-[#2E375B] hover:bg-[#2E375B]/10 disabled:opacity-30"
             >
               <ChevronRight className="w-5 h-5" />
             </Button>
