@@ -153,8 +153,6 @@ export default function CreateInvoice() {
     fetchData();
   }, []);
 
-  const selectedClient = clients.find(c => c.id === selectedClientId);
-
   const handleServiceTypeChange = (index, value) => {
     const service = SERVICE_TYPES.find(s => s.value === value);
     const newItems = [...lineItems];
