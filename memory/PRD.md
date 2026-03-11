@@ -21,6 +21,14 @@ Build an automatic invoice generator and comprehensive management system for Thr
   - Description now auto-populates from Service Type dropdown selection
   - Service types: Monthly Plan, Day Pass, Security Deposit, Setup Charges, Meeting Room
   - Cleaner UI with less manual input
+- **Setup Charges GST**: Setup Charges now have GST applicable (18%)
+- **Member Birthdays**: Added birthday tracking for members
+  - New `date_of_birth` field in Add Member dialog
+  - API: GET `/api/management/birthdays/upcoming?days=30`
+- **Dashboard Upcoming Birthdays**: Added "Upcoming Birthdays" section on admin dashboard
+  - Shows members with birthdays in the next 30 days
+  - Displays member name, company, birthday date, and days until birthday
+  - Highlights "Today!" for same-day birthdays
 - **New Invoice Number Format**: Changed from `THR/YYYY/MM/XXXX` to `YY-YY/Mon/NNN/CompanyName`
   - Example: `26-27/Apr/001/Acme Corp Pvt Ltd`
   - YY-YY: Financial year (April to March), e.g., 26-27 for FY 2026-2027
