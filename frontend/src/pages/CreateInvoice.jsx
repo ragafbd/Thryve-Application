@@ -39,7 +39,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const SERVICE_TYPES = [
   { value: "monthly_rental", label: "Monthly Plan", taxable: true, hsn: "997212", unit: "Month" },
   { value: "security_deposit", label: "Refundable Security Deposit", taxable: false, hsn: "", unit: "Units" },
-  { value: "setup_charges", label: "Setup Charges", taxable: false, hsn: "", unit: "Units" },
+  { value: "setup_charges", label: "Setup Charges", taxable: true, hsn: "997212", unit: "Units" },
   { value: "day_pass", label: "Day Pass", taxable: true, hsn: "997212", unit: "Day" },
   { value: "meeting_room", label: "Meeting Room Charges", taxable: true, hsn: "997212", unit: "Hour" },
 ];
