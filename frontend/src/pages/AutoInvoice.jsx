@@ -145,7 +145,7 @@ export default function AutoInvoice() {
             Auto Invoice Generation
           </h1>
           <p className="text-[#2E375B]/60 mt-1">
-            Generate monthly invoices with PDFs for all active members
+            Generate monthly invoices with PDFs for all active companies
           </p>
         </div>
       </div>
