@@ -250,20 +250,29 @@ export default function MemberLayout() {
             const isActive = item.exact 
               ? location.pathname === item.path
               : location.pathname.startsWith(item.path) && location.pathname !== "/portal";
+            const isAnnouncements = item.path === "/portal/announcements";
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
                 data-testid={`member-nav-${item.label.toLowerCase().replace(/\s/g, '-')}`}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200",
+                  "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 relative",
                   isActive 
                     ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
                     : "text-white/70 hover:bg-white/10 hover:text-white"
                 )}
+                onClick={() => {
+                  if (isAnnouncements) setNewAnnouncementCount(0);
+                }}
               >
                 <item.icon className="w-5 h-5" strokeWidth={1.5} />
                 <span className="text-sm">{item.label}</span>
+                {isAnnouncements && newAnnouncementCount > 0 && (
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center animate-pulse">
+                    {newAnnouncementCount}
+                  </span>
+                )}
               </NavLink>
             );
           })}
