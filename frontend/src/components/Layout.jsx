@@ -66,13 +66,124 @@ const settingsNavItems = [
 ];
 
 export default function Layout() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Default closed on mobile
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
   const [changingPassword, setChangingPassword] = useState(false);
+  const [newTicketCount, setNewTicketCount] = useState(0);
+  const [lastTicketCheck, setLastTicketCheck] = useState(null);
+  const audioRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout, isAdmin } = useAuth();
+
+  // Notification sound (using a simple beep)
+  const playNotificationSound = () => {
+    try {
+      // Create audio context for notification sound
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800; // Hz
+      oscillator.type = 'sine';
+      gainNode.gain.value = 0.3;
+      
+      oscillator.start();
+      setTimeout(() => {
+        oscillator.stop();
+        audioContext.close();
+      }, 200);
+      
+      // Play a second beep
+      setTimeout(() => {
+        const audioContext2 = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator2 = audioContext2.createOscillator();
+        const gainNode2 = audioContext2.createGain();
+        
+        oscillator2.connect(gainNode2);
+        gainNode2.connect(audioContext2.destination);
+        
+        oscillator2.frequency.value = 1000;
+        oscillator2.type = 'sine';
+        gainNode2.gain.value = 0.3;
+        
+        oscillator2.start();
+        setTimeout(() => {
+          oscillator2.stop();
+          audioContext2.close();
+        }, 200);
+      }, 250);
+    } catch (e) {
+      console.log('Audio notification not supported');
+    }
+  };
+
+  // Poll for new tickets every 1 minute
+  useEffect(() => {
+    const checkForNewTickets = async () => {
+      try {
+        const response = await axios.get(`${API}/tickets`);
+        const tickets = response.data;
+        
+        // Count open/pending tickets
+        const openTickets = tickets.filter(t => t.status === 'open' || t.status === 'pending').length;
+        
+        // Check if there are new tickets since last check
+        if (lastTicketCheck !== null && openTickets > lastTicketCheck) {
+          // New ticket(s) received!
+          playNotificationSound();
+          toast.info(`🎫 New support ticket received!`, {
+            duration: 5000,
+            action: {
+              label: "View",
+              onClick: () => navigate("/admin/tickets")
+            }
+          });
+        }
+        
+        setNewTicketCount(openTickets);
+        setLastTicketCheck(openTickets);
+      } catch (error) {
+        console.error('Failed to check tickets:', error);
+      }
+    };
+
+    // Initial check
+    checkForNewTickets();
+
+    // Poll every 1 minute (60000ms)
+    const interval = setInterval(checkForNewTickets, 60000);
+
+    return () => clearInterval(interval);
+  }, [lastTicketCheck, navigate]);
+
+  // Close sidebar on mobile when route changes
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  }, [location.pathname]);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+    
+    // Set initial state
+    handleResize();
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleLogout = () => {
     logout();
