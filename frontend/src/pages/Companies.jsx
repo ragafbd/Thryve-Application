@@ -771,6 +771,23 @@ export default function Companies() {
                     maxLength={10}
                   />
                 </div>
+                {/* Only show checkbox when creating new company, not editing */}
+                {!editingCompany && (
+                  <div className="md:col-span-2 flex items-center space-x-2 pt-2">
+                    <Checkbox
+                      id="signatory-is-member"
+                      checked={signatoryIsMember}
+                      onCheckedChange={(checked) => setSignatoryIsMember(checked)}
+                      data-testid="signatory-is-member-checkbox"
+                    />
+                    <Label 
+                      htmlFor="signatory-is-member" 
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      Signatory is also a member (auto-add to members list)
+                    </Label>
+                  </div>
+                )}
               </div>
             </div>
 
