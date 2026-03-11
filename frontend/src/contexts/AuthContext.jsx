@@ -5,24 +5,9 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const AuthContext = createContext(null);
 
-// Create a separate axios instance for admin
-const adminAxios = axios.create();
-
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Update axios default header when token changes
-  const setAuthToken = (token) => {
-    if (token) {
-      adminAxios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      // Also set on global axios for backward compatibility
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      delete adminAxios.defaults.headers.common['Authorization'];
-      delete axios.defaults.headers.common['Authorization'];
-    }
-  };
 
   useEffect(() => {
     // Check for stored token on mount
@@ -32,31 +17,44 @@ export function AuthProvider({ children }) {
     if (token && storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setAuthToken(token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         // Verify token is still valid
-        adminAxios.get(`${API}/auth/me`)
+        axios.get(`${API}/auth/me`)
           .then(res => {
             setUser(res.data);
             localStorage.setItem('thryve_user', JSON.stringify(res.data));
           })
           .catch(() => {
-            // Token invalid, clear storage
-            logout();
+            // Token invalid, clear everything
+            localStorage.removeItem('thryve_token');
+            localStorage.removeItem('thryve_user');
+            delete axios.defaults.headers.common['Authorization'];
+            setUser(null);
           })
           .finally(() => setLoading(false));
       } catch (e) {
-        // Invalid JSON in storage
-        logout();
+        // Invalid JSON in storage, clear everything
+        localStorage.removeItem('thryve_token');
+        localStorage.removeItem('thryve_user');
+        delete axios.defaults.headers.common['Authorization'];
         setLoading(false);
       }
     } else {
+      // No stored credentials
+      localStorage.removeItem('thryve_token');
+      localStorage.removeItem('thryve_user');
+      delete axios.defaults.headers.common['Authorization'];
       setLoading(false);
     }
   }, []);
 
   const login = async (email, password) => {
+    // IMPORTANT: Clear any existing auth headers before login attempt
+    delete axios.defaults.headers.common['Authorization'];
+    localStorage.removeItem('thryve_token');
+    localStorage.removeItem('thryve_user');
+    
     try {
       const response = await axios.post(`${API}/auth/login`, { email, password });
       const { access_token, user: userData } = response.data;
@@ -70,12 +68,13 @@ export function AuthProvider({ children }) {
       localStorage.setItem('thryve_user', JSON.stringify(userData));
       
       // Set auth header
-      setAuthToken(access_token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       
       setUser(userData);
       return userData;
     } catch (error) {
-      console.error('Login error:', error);
+      // Make sure headers are cleared on error
+      delete axios.defaults.headers.common['Authorization'];
       throw error;
     }
   };
@@ -83,7 +82,7 @@ export function AuthProvider({ children }) {
   const logout = () => {
     localStorage.removeItem('thryve_token');
     localStorage.removeItem('thryve_user');
-    setAuthToken(null);
+    delete axios.defaults.headers.common['Authorization'];
     setUser(null);
   };
 
