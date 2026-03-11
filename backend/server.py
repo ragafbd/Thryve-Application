@@ -103,7 +103,13 @@ class UserResponse(BaseModel):
 
 # Auth Helper Functions
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        result = pwd_context.verify(plain_password, hashed_password)
+        print(f"[DEBUG] verify_password: plain='{plain_password}', hash='{hashed_password[:20]}...', result={result}")
+        return result
+    except Exception as e:
+        print(f"[DEBUG] verify_password ERROR: {e}")
+        return False
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
