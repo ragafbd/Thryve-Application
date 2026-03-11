@@ -410,41 +410,41 @@ async def generate_auto_invoices(
                    "July", "August", "September", "October", "November", "December"]
     month_name = month_names[month - 1]
     
-    for member in members:
+    for company in companies:
         try:
-            # Check if invoice already exists for this member and month
+            # Check if invoice already exists for this company and month
             existing = await db.invoices.find_one({
-                "client.id": member["id"],
+                "client.id": company["id"],
                 "billing_month": request.billing_month
             })
             
             if existing:
                 result.errors.append({
-                    "member_id": member["id"],
-                    "member_name": member["name"],
+                    "company_id": company["id"],
+                    "company_name": company["company_name"],
                     "error": f"Invoice already exists for {request.billing_month}"
                 })
                 result.failed += 1
                 continue
             
             # Generate invoice number with company name
-            company_name = member.get("company_name", member.get("name", ""))
+            company_name = company.get("company_name", "")
             invoice_number = await generate_invoice_number(company_name)
             
-            # Calculate amounts
-            rate = member.get("final_rate", 0)
+            # Calculate amounts - use total_rate from company
+            rate = company.get("total_rate", 0)
             cgst = round(rate * (GST_RATE / 2) / 100, 2)
             sgst = round(rate * (GST_RATE / 2) / 100, 2)
             total = rate + cgst + sgst
             
             # Create line item
             line_item = {
-                "description": f"{member.get('plan_name', 'Workspace')} - {month_name} {year}",
-                "service_type": "workspace",
-                "quantity": 1,
-                "rate": rate,
+                "description": f"{company.get('plan_name', 'Workspace')} - {month_name} {year}",
+                "service_type": "monthly_rental",
+                "quantity": company.get("total_seats", 1),
+                "rate": company.get("rate_per_seat", rate),
                 "is_taxable": True,
-                "hsn_sac": "998311",
+                "hsn_sac": "997212",
                 "unit": "month",
                 "is_prorated": False,
                 "prorate_days": 0,
@@ -455,15 +455,15 @@ async def generate_auto_invoices(
                 "total": total
             }
             
-            # Create client object from member
+            # Create client object from company
             client_data = {
-                "id": member["id"],
-                "name": member["name"],
-                "email": member["email"],
-                "company_name": member.get("company_name", ""),
-                "company_address": member.get("company_address", ""),
-                "gstin": member.get("gstin", ""),
-                "phone": member.get("phone", "")
+                "id": company["id"],
+                "name": company.get("signatory_name", company["company_name"]),
+                "email": company.get("signatory_email", ""),
+                "company_name": company["company_name"],
+                "address": company.get("company_address", ""),
+                "gstin": company.get("company_gstin", ""),
+                "phone": company.get("signatory_phone", "")
             }
             
             # Create invoice
@@ -495,7 +495,7 @@ async def generate_auto_invoices(
             # Store PDF reference
             invoice["pdf_generated"] = True
             invoice["pdf_data"] = pdf_base64
-            invoice["pdf_filename"] = f"{invoice_number.replace('/', '_')}_{member['name'].replace(' ', '_')}.pdf"
+            invoice["pdf_filename"] = f"{invoice_number.replace('/', '_')}_{company_name.replace(' ', '_')}.pdf"
             
             # Save invoice
             await db.invoices.insert_one(invoice)
@@ -506,16 +506,16 @@ async def generate_auto_invoices(
             result.invoices.append({
                 "invoice_id": invoice_id,
                 "invoice_number": invoice_number,
-                "member_id": member["id"],
-                "member_name": member["name"],
+                "company_id": company["id"],
+                "company_name": company_name,
                 "amount": total,
                 "pdf_filename": invoice["pdf_filename"]
             })
             
         except Exception as e:
             result.errors.append({
-                "member_id": member.get("id", "unknown"),
-                "member_name": member.get("name", "unknown"),
+                "company_id": company.get("id", "unknown"),
+                "company_name": company.get("company_name", "unknown"),
                 "error": str(e)
             })
             result.failed += 1
