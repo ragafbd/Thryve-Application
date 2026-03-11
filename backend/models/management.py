@@ -281,6 +281,18 @@ class MemberUpdate(BaseModel):
     status: Optional[str] = None
     notes: Optional[str] = None
 
+class CompanyMemberCreate(BaseModel):
+    """Simple model for adding a member to an existing company"""
+    name: str
+    email: str
+    phone: str
+    aadhar_number: Optional[str] = ""
+    pan_number: Optional[str] = ""
+    date_of_birth: Optional[str] = None  # Birthday field
+    seat_number: Optional[str] = None
+    is_primary_contact: bool = False
+    notes: Optional[str] = ""
+
 class CompanyTerminate(BaseModel):
     """Terminate a company subscription"""
     end_date: str  # Last working day
