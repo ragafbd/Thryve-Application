@@ -159,8 +159,8 @@ export default function AutoInvoice() {
                 <Users className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-[#2E375B]/60">Active Members</p>
-                <p className="text-2xl font-bold text-[#2E375B]">{totalActiveMembers}</p>
+                <p className="text-sm text-[#2E375B]/60">Active Companies</p>
+                <p className="text-2xl font-bold text-[#2E375B]">{totalActiveCompanies}</p>
               </div>
             </div>
           </CardContent>
@@ -203,7 +203,7 @@ export default function AutoInvoice() {
             Generate Monthly Invoices
           </CardTitle>
           <CardDescription>
-            Generate invoices and PDFs for all active members for a specific month
+            Generate invoices and PDFs for all active companies for a specific month
           </CardDescription>
         </CardHeader>
         <CardContent>
