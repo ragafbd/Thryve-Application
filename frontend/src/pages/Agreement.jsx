@@ -339,21 +339,31 @@ export default function Agreement() {
       });
 
       const createHeading = (text) => new Paragraph({
-        children: [new TextRun({ text, bold: true })],
-        spacing: { before: 300, after: 150 }
+        children: [new TextRun({ text, bold: true, font: "Calibri", size: 22 })],
+        spacing: { before: 240, after: 120 }
       });
       
       const doc = new Document({
+        styles: {
+          default: {
+            document: {
+              run: {
+                font: "Calibri",
+                size: 22 // 11pt
+              }
+            }
+          }
+        },
         sections: [{
           properties: {
             page: {
-              margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
+              margin: { top: 1440, right: 1080, bottom: 1440, left: 1080 } // 1 inch top/bottom, 0.75 inch sides
             }
           },
           children: [
             // Title
             new Paragraph({
-              children: [new TextRun({ text: "LEAVE & LICENSE AGREEMENT", bold: true, size: 28 })],
+              children: [new TextRun({ text: "LEAVE & LICENSE AGREEMENT", bold: true, font: "Calibri", size: 28 })],
               alignment: AlignmentType.CENTER,
               spacing: { after: 400 }
             }),
