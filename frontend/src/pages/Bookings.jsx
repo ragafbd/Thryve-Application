@@ -464,7 +464,7 @@ export default function Bookings() {
 
       {/* Booking Dialog */}
       <Dialog open={bookingDialogOpen} onOpenChange={setBookingDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-[#2E375B]">Book Meeting Room</DialogTitle>
           </DialogHeader>
@@ -475,33 +475,174 @@ export default function Bookings() {
               <p className="text-sm text-[#2E375B]"><strong>Time:</strong> {selectedSlot?.start_time} - {selectedSlot?.end_time}</p>
             </div>
             
-            <div className="space-y-2">
-              <Label className="text-[#2E375B]">Select Member *</Label>
-              <Select 
-                value={bookingForm.member_id} 
-                onValueChange={(value) => setBookingForm({...bookingForm, member_id: value})}
+            {/* Booking Type Toggle */}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={bookingType === "member" ? "default" : "outline"}
+                className={bookingType === "member" ? "bg-[#2E375B] flex-1" : "flex-1"}
+                onClick={() => setBookingType("member")}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a member" />
-                </SelectTrigger>
-                <SelectContent>
-                  {members.map(member => (
-                    <SelectItem key={member.id} value={member.id}>
-                      {member.name} ({member.company_name || 'No Company'})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <Users className="w-4 h-4 mr-2" />
+                Member
+              </Button>
+              <Button
+                type="button"
+                variant={bookingType === "guest" ? "default" : "outline"}
+                className={bookingType === "guest" ? "bg-[#FFA14A] text-[#2E375B] hover:bg-[#FFA14A]/90 flex-1" : "flex-1"}
+                onClick={() => setBookingType("guest")}
+              >
+                <Building2 className="w-4 h-4 mr-2" />
+                Guest (Walk-in)
+              </Button>
             </div>
-            
-            <div className="space-y-2">
-              <Label className="text-[#2E375B]">Purpose (Optional)</Label>
-              <Input
-                value={bookingForm.purpose}
-                onChange={(e) => setBookingForm({...bookingForm, purpose: e.target.value})}
-                placeholder="Meeting purpose"
-              />
-            </div>
+
+            {bookingType === "member" ? (
+              /* Member Booking Form */
+              <>
+                <div className="space-y-2">
+                  <Label className="text-[#2E375B]">Select Member *</Label>
+                  <Select 
+                    value={bookingForm.member_id} 
+                    onValueChange={(value) => setBookingForm({...bookingForm, member_id: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a member" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {members.map(member => (
+                        <SelectItem key={member.id} value={member.id}>
+                          {member.name} ({member.company_name || 'No Company'})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="text-[#2E375B]">Purpose (Optional)</Label>
+                  <Input
+                    value={bookingForm.purpose}
+                    onChange={(e) => setBookingForm({...bookingForm, purpose: e.target.value})}
+                    placeholder="Meeting purpose"
+                  />
+                </div>
+              </>
+            ) : (
+              /* Guest Booking Form with KYC */
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label className="text-[#2E375B]">Guest Name *</Label>
+                    <Input
+                      value={guestForm.guest_name}
+                      onChange={(e) => setGuestForm({...guestForm, guest_name: e.target.value})}
+                      placeholder="Full name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[#2E375B]">Phone *</Label>
+                    <Input
+                      value={guestForm.guest_phone}
+                      onChange={(e) => setGuestForm({...guestForm, guest_phone: e.target.value})}
+                      placeholder="Mobile number"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label className="text-[#2E375B]">Email</Label>
+                    <Input
+                      type="email"
+                      value={guestForm.guest_email}
+                      onChange={(e) => setGuestForm({...guestForm, guest_email: e.target.value})}
+                      placeholder="Email address"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[#2E375B]">Company</Label>
+                    <Input
+                      value={guestForm.guest_company}
+                      onChange={(e) => setGuestForm({...guestForm, guest_company: e.target.value})}
+                      placeholder="Company name"
+                    />
+                  </div>
+                </div>
+
+                {/* KYC Section */}
+                <div className="border-t pt-3 mt-3">
+                  <p className="text-sm font-medium text-[#2E375B] mb-2">KYC Details</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label className="text-[#2E375B]">ID Type *</Label>
+                      <Select 
+                        value={guestForm.guest_id_type} 
+                        onValueChange={(value) => setGuestForm({...guestForm, guest_id_type: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="aadhar">Aadhar Card</SelectItem>
+                          <SelectItem value="pan">PAN Card</SelectItem>
+                          <SelectItem value="driving_license">Driving License</SelectItem>
+                          <SelectItem value="passport">Passport</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[#2E375B]">ID Number *</Label>
+                      <Input
+                        value={guestForm.guest_id_number}
+                        onChange={(e) => setGuestForm({...guestForm, guest_id_number: e.target.value})}
+                        placeholder="ID number"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Section */}
+                <div className="border-t pt-3 mt-3">
+                  <p className="text-sm font-medium text-[#2E375B] mb-2">Payment</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label className="text-[#2E375B]">Amount (₹)</Label>
+                      <Input
+                        type="number"
+                        value={guestForm.payment_amount}
+                        onChange={(e) => setGuestForm({...guestForm, payment_amount: parseInt(e.target.value) || 0})}
+                        placeholder="500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[#2E375B]">Status</Label>
+                      <Select 
+                        value={guestForm.payment_status} 
+                        onValueChange={(value) => setGuestForm({...guestForm, payment_status: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="paid">Paid</SelectItem>
+                          <SelectItem value="pending">Pending</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[#2E375B]">Purpose</Label>
+                  <Input
+                    value={guestForm.purpose}
+                    onChange={(e) => setGuestForm({...guestForm, purpose: e.target.value})}
+                    placeholder="Meeting purpose"
+                  />
+                </div>
+              </>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setBookingDialogOpen(false)}>
