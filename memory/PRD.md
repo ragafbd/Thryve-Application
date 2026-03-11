@@ -11,6 +11,16 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Public holiday management for booking restrictions**
 
 ## Recent Updates (March 11, 2026)
+- **Invoice Editing Feature**: Added ability to edit invoices after creation
+  - Edit button on invoice view page opens edit dialog
+  - Can modify: client, due date, line items, notes
+  - Line items can be added/removed/modified
+  - Totals (subtotal, CGST, SGST, grand total) automatically recalculate
+  - API: PUT `/api/invoices/{invoice_id}`
+- **Create Invoice Description Auto-Populate**: Removed separate description input field
+  - Description now auto-populates from Service Type dropdown selection
+  - Service types: Monthly Plan, Day Pass, Security Deposit, Setup Charges, Meeting Room
+  - Cleaner UI with less manual input
 - **New Invoice Number Format**: Changed from `THR/YYYY/MM/XXXX` to `YY-YY/Mon/NNN/CompanyName`
   - Example: `26-27/Apr/001/Acme Corp Pvt Ltd`
   - YY-YY: Financial year (April to March), e.g., 26-27 for FY 2026-2027
