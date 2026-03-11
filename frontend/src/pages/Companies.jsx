@@ -250,8 +250,30 @@ export default function Companies() {
         await axios.put(`${API}/companies/${editingCompany.id}`, payload);
         toast.success("Company updated successfully");
       } else {
-        await axios.post(`${API}/companies`, payload);
+        // Create company
+        const companyResponse = await axios.post(`${API}/companies`, payload);
+        const newCompany = companyResponse.data;
         toast.success("Company created successfully");
+        
+        // If signatory is also a member, create member record automatically
+        if (signatoryIsMember && companyForm.signatory_name && companyForm.signatory_email) {
+          try {
+            await axios.post(`${API}/companies/${newCompany.id}/members`, {
+              company_id: newCompany.id,
+              name: companyForm.signatory_name,
+              email: companyForm.signatory_email,
+              phone: companyForm.signatory_phone || "",
+              aadhar_number: companyForm.signatory_aadhar || "",
+              pan_number: companyForm.signatory_pan || "",
+              is_primary_contact: true,
+              notes: "Auto-added as authorized signatory"
+            });
+            toast.success("Signatory added as member");
+          } catch (memberError) {
+            console.error("Failed to add signatory as member:", memberError);
+            toast.warning("Company created, but failed to add signatory as member");
+          }
+        }
       }
       setCompanyDialogOpen(false);
       resetCompanyForm();
