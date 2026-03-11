@@ -161,18 +161,26 @@ class CompanyUpdate(BaseModel):
     company_email: Optional[str] = None
     company_website: Optional[str] = None
     signatory_name: Optional[str] = None
+    signatory_father_name: Optional[str] = None  # NEW
+    signatory_designation: Optional[str] = None  # NEW
     signatory_aadhar: Optional[str] = None
     signatory_pan: Optional[str] = None
     signatory_phone: Optional[str] = None
     signatory_email: Optional[str] = None
     plan_type_id: Optional[str] = None
+    space_description: Optional[str] = None  # NEW
     total_seats: Optional[int] = None
     rate_per_seat: Optional[float] = None
     discount_percent: Optional[float] = None
     meeting_room_credits: Optional[int] = None
+    security_deposit: Optional[float] = None  # NEW
+    setup_charges: Optional[str] = None  # NEW
+    lock_in_months: Optional[int] = None  # NEW
     isp_provider: Optional[str] = None
     bandwidth_speed: Optional[str] = None
     isp_account_id: Optional[str] = None
+    start_date: Optional[str] = None  # NEW
+    end_date: Optional[str] = None  # NEW
     status: Optional[str] = None
     notes: Optional[str] = None
 
