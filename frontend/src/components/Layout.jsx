@@ -413,9 +413,9 @@ export default function Layout() {
       {/* Main Content */}
       <main 
         className={cn(
-          "main-content min-h-screen bg-[#F8FAFC]",
-          "pt-14 lg:pt-0", // Account for mobile header
-          "lg:ml-[220px]" // Sidebar width on desktop
+          "min-h-screen bg-[#F8FAFC] p-4 lg:p-6",
+          "pt-[70px] lg:pt-0", // Account for mobile header
+          "lg:ml-[220px]" // Sidebar width on desktop only
         )}
       >
         {/* Top Bar - Hidden on mobile (we have mobile header) */}
