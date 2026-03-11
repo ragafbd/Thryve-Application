@@ -1274,6 +1274,11 @@ from routes.companies import router as companies_router, init_router as init_com
 init_companies_router(db, get_current_user, check_permission)
 app.include_router(companies_router)
 
+# Include import routes (for one-time bulk data import)
+from routes.import_data import router as import_router, init_router as init_import_router
+init_import_router(db, get_current_user, check_permission)
+app.include_router(import_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
