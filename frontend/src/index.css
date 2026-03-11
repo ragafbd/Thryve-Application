@@ -99,6 +99,50 @@ h1, h2, h3, h4, h5, h6 {
     animation: fadeIn 0.5s ease-out forwards;
 }
 
+/* Sidebar styles */
+.sidebar {
+    width: 220px;
+    height: 100vh;
+    background: #2E375B;
+}
+
+/* Main content - responsive */
+.main-content {
+    min-height: 100vh;
+    padding: 1rem;
+}
+
+@media (min-width: 1024px) {
+    .main-content {
+        margin-left: 220px;
+        padding: 1.5rem;
+    }
+}
+
+/* Mobile-friendly tables */
+@media (max-width: 768px) {
+    .responsive-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .responsive-table table {
+        min-width: 600px;
+    }
+}
+
+/* Mobile-friendly cards */
+@media (max-width: 640px) {
+    .mobile-stack {
+        flex-direction: column;
+    }
+    
+    .mobile-full {
+        width: 100%;
+    }
+}
+
 /* Print styles */
 @media print {
     .no-print {
