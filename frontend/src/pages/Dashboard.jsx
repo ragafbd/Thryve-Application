@@ -45,6 +45,7 @@ export default function Dashboard() {
   });
   const [recentInvoices, setRecentInvoices] = useState([]);
   const [upcomingBirthdays, setUpcomingBirthdays] = useState([]);
+  const [pendingCharges, setPendingCharges] = useState({ company_charges: [], guest_charges: [], total_pending: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
