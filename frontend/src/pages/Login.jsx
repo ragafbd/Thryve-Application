@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,14 +7,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { LogIn, Eye, EyeOff, Shield, Users } from "lucide-react";
+import axios from "axios";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Clear any stale admin tokens when login page loads
+  useEffect(() => {
+    // If user is already logged in, redirect to admin
+    if (user) {
+      navigate("/admin");
+      return;
+    }
+    
+    // Clear stale admin tokens to prevent "invalid email/password" errors
+    localStorage.removeItem('thryve_token');
+    localStorage.removeItem('thryve_user');
+    delete axios.defaults.headers.common['Authorization'];
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
