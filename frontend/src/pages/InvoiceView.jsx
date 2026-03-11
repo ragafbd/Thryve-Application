@@ -278,6 +278,15 @@ export default function InvoiceView() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={openEditDialog}
+            className="border-[#2E375B] text-[#2E375B] hover:bg-[#2E375B]/10"
+            data-testid="edit-invoice-btn"
+          >
+            <Edit className="w-4 h-4 mr-2" />
+            Edit
+          </Button>
           {invoice.status !== 'paid' && (
             <Button
               onClick={handleMarkAsPaid}
