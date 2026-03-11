@@ -212,6 +212,64 @@ export default function Dashboard() {
         </Card>
       </div>
 
+      {/* Upcoming Birthdays */}
+      {upcomingBirthdays.length > 0 && (
+        <Card className="border border-slate-200 shadow-sm bg-gradient-to-r from-pink-50 to-purple-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold text-slate-700 font-[Manrope] flex items-center gap-2">
+              <Cake className="w-5 h-5 text-pink-500" />
+              Upcoming Birthdays ({upcomingBirthdays.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {upcomingBirthdays.slice(0, 5).map((member) => (
+                <div 
+                  key={member.id} 
+                  className={`flex items-center justify-between p-3 rounded-lg ${
+                    member.is_today ? 'bg-gradient-to-r from-pink-100 to-purple-100 border border-pink-200' : 'bg-white/80'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {member.is_today ? (
+                      <div className="w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center">
+                        <Gift className="w-5 h-5 text-white" />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                        <Cake className="w-5 h-5 text-purple-500" />
+                      </div>
+                    )}
+                    <div>
+                      <p className={`font-medium ${member.is_today ? 'text-pink-700' : 'text-slate-800'}`}>
+                        {member.name}
+                        {member.is_today && (
+                          <Badge className="ml-2 bg-pink-500 text-white text-xs">Today!</Badge>
+                        )}
+                      </p>
+                      <p className="text-sm text-slate-500">{member.company_name}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-slate-700">
+                      {new Date(member.birthday_date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {member.is_today ? `Turning ${member.turning_age}` : `In ${member.days_until} days`}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {upcomingBirthdays.length > 5 && (
+                <p className="text-center text-sm text-slate-500 pt-2">
+                  +{upcomingBirthdays.length - 5} more birthdays this month
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Recent Invoices */}
       <Card className="border border-slate-200 shadow-sm">
         <CardHeader className="border-b border-slate-100">
