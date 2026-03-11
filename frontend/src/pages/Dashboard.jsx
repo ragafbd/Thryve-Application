@@ -51,18 +51,20 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         // Check for overdue invoices first
-        await axios.post(`${API}/invoices/check-overdue`);
+        await axios.post(`${API}/invoices/check-overdue`).catch(() => {});
         
+        // Fetch all data independently to prevent one failure from blocking others
         const [statsRes, invoicesRes, mgmtStatsRes, birthdaysRes] = await Promise.all([
-          axios.get(`${API}/stats`),
-          axios.get(`${API}/invoices`),
-          axios.get(`${API}/management/stats`),
-          axios.get(`${API}/management/birthdays/upcoming?days=30`)
+          axios.get(`${API}/stats`).catch(e => ({ data: null, error: e })),
+          axios.get(`${API}/invoices`).catch(e => ({ data: [], error: e })),
+          axios.get(`${API}/management/stats`).catch(e => ({ data: null, error: e })),
+          axios.get(`${API}/management/birthdays/upcoming?days=30`).catch(e => ({ data: [], error: e }))
         ]);
-        setInvoiceStats(statsRes.data);
-        setRecentInvoices(invoicesRes.data.slice(0, 5));
-        setManagementStats(mgmtStatsRes.data);
-        setUpcomingBirthdays(birthdaysRes.data);
+        
+        if (statsRes.data && !statsRes.error) setInvoiceStats(statsRes.data);
+        if (invoicesRes.data && !invoicesRes.error) setRecentInvoices(invoicesRes.data.slice(0, 5));
+        if (mgmtStatsRes.data && !mgmtStatsRes.error) setManagementStats(mgmtStatsRes.data);
+        if (birthdaysRes.data && !birthdaysRes.error) setUpcomingBirthdays(birthdaysRes.data);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
