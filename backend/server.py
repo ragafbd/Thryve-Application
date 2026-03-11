@@ -203,30 +203,66 @@ class Invoice(BaseModel):
     company: dict = Field(default_factory=lambda: COMPANY_DETAILS)
 
 # Helper function to generate invoice number
-async def generate_invoice_number():
-    # Get the highest invoice number to generate sequential number
-    year = datetime.now().year
-    month = datetime.now().month
-    prefix = f"THR/{year}/{month:02d}/"
+# New format: FY/Month/Seq/CompanyName (e.g., 26-27/Apr/001/Acme Corp)
+async def generate_invoice_number(company_name: str = ""):
+    """
+    Generate invoice number in format: YY-YY/Mon/NNN/CompanyName
+    - YY-YY: Financial year (April to March), e.g., 26-27
+    - Mon: Month abbreviation (Apr, May, etc.)
+    - NNN: Sequential number, resets each financial year
+    - CompanyName: Client company name for easy identification
+    """
+    now = datetime.now()
     
-    # Find the highest number for this month
+    # Determine financial year (April to March)
+    # If current month is Jan-Mar, we're in the previous calendar year's FY
+    if now.month >= 4:  # April onwards
+        fy_start_year = now.year
+        fy_end_year = now.year + 1
+    else:  # Jan-Mar
+        fy_start_year = now.year - 1
+        fy_end_year = now.year
+    
+    # Format: 26-27 for FY 2026-2027
+    fy_prefix = f"{fy_start_year % 100:02d}-{fy_end_year % 100:02d}"
+    
+    # Month abbreviation
+    month_abbr = now.strftime("%b")  # Apr, May, Jun, etc.
+    
+    # Find the highest sequence number for this financial year
+    # Financial year runs from April to March
+    fy_start_date = f"{fy_start_year}-04-01"
+    fy_end_date = f"{fy_end_year}-03-31"
+    
+    # Query for invoices in this financial year using the new format
+    fy_pattern = f"^{fy_prefix}/"
     latest = await db.invoices.find_one(
-        {"invoice_number": {"$regex": f"^{prefix}"}},
+        {"invoice_number": {"$regex": fy_pattern}},
         {"invoice_number": 1},
-        sort=[("invoice_number", -1)]
+        sort=[("created_at", -1), ("invoice_number", -1)]
     )
     
     if latest:
-        # Extract the number part and increment
+        # Extract the sequence number (third part after splitting by /)
         try:
-            last_num = int(latest["invoice_number"].split("/")[-1])
-            next_num = last_num + 1
+            parts = latest["invoice_number"].split("/")
+            if len(parts) >= 3:
+                last_num = int(parts[2])
+                next_num = last_num + 1
+            else:
+                next_num = 1
         except:
             next_num = 1
     else:
         next_num = 1
     
-    return f"{prefix}{next_num:04d}"
+    # Clean company name for invoice number (remove special chars, limit length)
+    clean_company = company_name.strip()
+    if len(clean_company) > 30:
+        clean_company = clean_company[:30].strip()
+    
+    # Format: 26-27/Apr/001/Company Name
+    return f"{fy_prefix}/{month_abbr}/{next_num:03d}/{clean_company}"
 
 # ==================== AUTH ROUTES ====================
 
