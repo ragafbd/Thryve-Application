@@ -223,10 +223,10 @@ export default function MemberLogin() {
                   <Button
                     type="submit"
                     className="w-full bg-[#FFA14A] hover:bg-[#e8893a] text-white"
-                    disabled={loading}
+                    disabled={submitting}
                     data-testid="member-register-submit"
                   >
-                    {loading ? "Creating account..." : "Create Account"}
+                    {submitting ? "Creating account..." : "Create Account"}
                   </Button>
                 </form>
               </TabsContent>
