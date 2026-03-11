@@ -60,6 +60,23 @@ export default function InvoiceView() {
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [clients, setClients] = useState([]);
+  const [editForm, setEditForm] = useState({
+    client_id: "",
+    due_date: "",
+    notes: "",
+    line_items: []
+  });
+
+  const serviceTypes = [
+    { value: "workspace", label: "Workspace/Cabin Rent" },
+    { value: "meeting_room", label: "Meeting Room" },
+    { value: "deposit", label: "Security Deposit" },
+    { value: "setup", label: "Setup Charges" },
+    { value: "other", label: "Other Services" }
+  ];
 
   const fetchInvoice = async () => {
     try {
@@ -67,15 +84,90 @@ export default function InvoiceView() {
       setInvoice(response.data);
     } catch (error) {
       toast.error("Invoice not found");
-      navigate("/invoices");
+      navigate("/admin/invoices");
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchClients = async () => {
+    try {
+      const response = await axios.get(`${API}/companies`);
+      setClients(response.data);
+    } catch (error) {
+      console.error("Failed to fetch clients:", error);
+    }
+  };
+
   useEffect(() => {
     fetchInvoice();
-  }, [id, navigate]);
+    fetchClients();
+  }, [id]);
+
+  const openEditDialog = () => {
+    if (invoice) {
+      setEditForm({
+        client_id: invoice.client?.id || "",
+        due_date: invoice.due_date || "",
+        notes: invoice.notes || "",
+        line_items: invoice.line_items?.map(item => ({
+          description: item.description || "",
+          service_type: item.service_type || "workspace",
+          quantity: item.quantity || 1,
+          rate: item.rate || 0,
+          is_taxable: item.is_taxable !== false
+        })) || []
+      });
+      setEditDialogOpen(true);
+    }
+  };
+
+  const handleAddLineItem = () => {
+    setEditForm({
+      ...editForm,
+      line_items: [
+        ...editForm.line_items,
+        { description: "", service_type: "workspace", quantity: 1, rate: 0, is_taxable: true }
+      ]
+    });
+  };
+
+  const handleRemoveLineItem = (index) => {
+    setEditForm({
+      ...editForm,
+      line_items: editForm.line_items.filter((_, i) => i !== index)
+    });
+  };
+
+  const handleLineItemChange = (index, field, value) => {
+    const updated = [...editForm.line_items];
+    updated[index] = { ...updated[index], [field]: value };
+    setEditForm({ ...editForm, line_items: updated });
+  };
+
+  const handleSaveEdit = async () => {
+    if (editForm.line_items.length === 0) {
+      toast.error("Please add at least one line item");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await axios.put(`${API}/invoices/${id}`, {
+        client_id: editForm.client_id || undefined,
+        due_date: editForm.due_date || undefined,
+        notes: editForm.notes,
+        line_items: editForm.line_items
+      });
+      toast.success("Invoice updated successfully");
+      setEditDialogOpen(false);
+      fetchInvoice(); // Refresh
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to update invoice");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
