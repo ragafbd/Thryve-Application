@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { LogIn, Eye, EyeOff, Shield, Users } from "lucide-react";
+import { LogIn, Eye, EyeOff, Shield, Users, RefreshCw } from "lucide-react";
+import axios from "axios";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -16,12 +17,27 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // Clear stale tokens on page load
+  useEffect(() => {
+    localStorage.removeItem('thryve_token');
+    localStorage.removeItem('thryve_user');
+    delete axios.defaults.headers.common['Authorization'];
+  }, []);
+
   // Redirect if already logged in
   useEffect(() => {
     if (!loading && user) {
       navigate("/admin");
     }
   }, [user, loading, navigate]);
+
+  const handleClearCache = () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    delete axios.defaults.headers.common['Authorization'];
+    toast.success("Cache cleared! Please try logging in again.");
+    window.location.reload();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,6 +46,11 @@ export default function Login() {
       toast.error("Please enter email and password");
       return;
     }
+
+    // Clear any stale tokens before attempting login
+    localStorage.removeItem('thryve_token');
+    localStorage.removeItem('thryve_user');
+    delete axios.defaults.headers.common['Authorization'];
 
     setSubmitting(true);
     try {
