@@ -251,6 +251,21 @@ export default function MemberLogin() {
                 </form>
               </TabsContent>
             </Tabs>
+            
+            {/* Troubleshooting section */}
+            <div className="mt-4 pt-4 border-t border-slate-200">
+              <p className="text-xs text-slate-500 text-center mb-2">Having trouble logging in?</p>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="w-full text-slate-500 hover:text-slate-700"
+                onClick={handleClearCache}
+              >
+                <RefreshCw className="w-3 h-3 mr-2" />
+                Clear Cache & Retry
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
