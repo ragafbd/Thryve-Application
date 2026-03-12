@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Building2, Mail, Lock, Eye, EyeOff, UserPlus, LogIn, Shield } from "lucide-react";
+import { Building2, Mail, Lock, Eye, EyeOff, UserPlus, LogIn, Shield, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useMemberAuth } from "@/contexts/MemberAuthContext";
+import axios from "axios";
 
 export default function MemberLogin() {
   const navigate = useNavigate();
@@ -19,6 +20,13 @@ export default function MemberLogin() {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [registerData, setRegisterData] = useState({ email: "", password: "", confirmPassword: "" });
 
+  // Clear stale tokens on page load (before auth check)
+  useEffect(() => {
+    // Clear any stale member tokens that might cause issues
+    localStorage.removeItem("member_token");
+    delete axios.defaults.headers.common["Authorization"];
+  }, []);
+
   // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && member) {
@@ -26,12 +34,24 @@ export default function MemberLogin() {
     }
   }, [member, authLoading, navigate]);
 
+  const handleClearCache = () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    delete axios.defaults.headers.common["Authorization"];
+    toast.success("Cache cleared! Please try logging in again.");
+    window.location.reload();
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!loginData.email || !loginData.password) {
       toast.error("Please fill in all fields");
       return;
     }
+
+    // Clear any stale tokens before attempting login
+    localStorage.removeItem("member_token");
+    delete axios.defaults.headers.common["Authorization"];
 
     setSubmitting(true);
     try {
