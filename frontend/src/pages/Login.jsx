@@ -157,6 +157,21 @@ export default function Login() {
                   </>
                 )}
               </Button>
+              
+              {/* Troubleshooting section */}
+              <div className="mt-4 pt-4 border-t border-slate-600">
+                <p className="text-xs text-slate-400 text-center mb-2">Having trouble logging in?</p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-slate-400 hover:text-slate-200 hover:bg-slate-700"
+                  onClick={handleClearCache}
+                >
+                  <RefreshCw className="w-3 h-3 mr-2" />
+                  Clear Cache & Retry
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
