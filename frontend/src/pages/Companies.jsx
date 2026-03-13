@@ -1034,6 +1034,19 @@ export default function Companies() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label>Lock-in Period (months)</Label>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    value={companyForm.lock_in_months}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      setCompanyForm({ ...companyForm, lock_in_months: val });
+                    }}
+                    placeholder="11"
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label>Start Date *</Label>
                   <Input
                     type="date"
