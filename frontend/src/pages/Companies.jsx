@@ -97,6 +97,7 @@ export default function Companies() {
   // Member dialog
   const [memberDialogOpen, setMemberDialogOpen] = useState(false);
   const [selectedCompanyForMember, setSelectedCompanyForMember] = useState(null);
+  const [editingMember, setEditingMember] = useState(null);
   const [memberForm, setMemberForm] = useState({
     name: "",
     email: "",
@@ -108,6 +109,11 @@ export default function Companies() {
     is_primary_contact: false,
     notes: ""
   });
+  
+  // Primary contact conflict dialog
+  const [primaryConflictDialogOpen, setPrimaryConflictDialogOpen] = useState(false);
+  const [existingPrimaryMember, setExistingPrimaryMember] = useState(null);
+  const [pendingMemberAction, setPendingMemberAction] = useState(null); // 'add' or 'edit'
   
   // Delete dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
