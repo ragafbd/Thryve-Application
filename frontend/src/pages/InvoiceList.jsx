@@ -143,13 +143,6 @@ export default function InvoiceList() {
               <p className="text-slate-500">
                 {searchQuery || statusFilter !== "all" ? "No invoices found matching your filters" : "No invoices yet"}
               </p>
-              {!searchQuery && statusFilter === "all" && (
-                <Link to="create-invoice">
-                  <Button className="mt-4 bg-[#2E375B] hover:bg-[#232B47]">
-                    Create Your First Invoice
-                  </Button>
-                </Link>
-              )}
             </div>
           ) : (
             <div className="overflow-x-auto">
