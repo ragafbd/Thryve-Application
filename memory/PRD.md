@@ -11,6 +11,15 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Public holiday management for booking restrictions**
 
 ## Recent Updates (March 13, 2026)
+- **Create Invoice Form Improvements**: Enhanced line item auto-population and input behavior
+  - **Auto-populate Quantity (Seats)**: Pre-filled from client's `total_seats` when client is selected
+  - **Auto-populate Rate**: Pre-filled from client's `rate_per_seat` when client is selected
+  - **Fixed Rate Input Bug**: Rate field no longer defaults to 0, typing "500" shows "500" not "0500"
+  - **Clean Numeric Input**: Text inputs with numeric pattern, no increment/decrement arrows
+  - **Description Auto-populated**: Uses client's `plan_name` for description
+  - **Line Item Consistency**: New line items also auto-populate from client data
+  - **Proper Validation**: Validates quantity and rate are valid numbers before saving
+
 - **Primary Member Validation & Edit Feature**: Complete member management enhancement
   - **Primary Contact Constraint**: Only one primary member allowed per company
   - **Conflict Handling**: When adding/editing a member as primary while one exists:
