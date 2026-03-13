@@ -403,7 +403,7 @@ async def add_member_to_company(
 async def update_member(
     company_id: str,
     member_id: str,
-    member_data: MemberUpdate,
+    member_data: CompanyMemberUpdate,
     current_user: dict = Depends(get_current_user)
 ):
     """Update a member's details"""
@@ -413,7 +413,44 @@ async def update_member(
     if not member:
         raise HTTPException(status_code=404, detail="Member not found in this company")
     
-    update_dict = {k: v for k, v in member_data.model_dump().items() if v is not None}
+    update_dict = {k: v for k, v in member_data.model_dump().items() if v is not None and k != "replace_primary"}
+    
+    # Check if email is being changed and already exists
+    if "email" in update_dict and update_dict["email"] != member["email"]:
+        existing = await db.members.find_one({"email": update_dict["email"]})
+        if existing:
+            raise HTTPException(status_code=400, detail="Member with this email already exists")
+    
+    # Check primary contact constraint when setting is_primary_contact to True
+    if update_dict.get("is_primary_contact") == True and not member.get("is_primary_contact"):
+        existing_primary = await db.members.find_one({
+            "company_id": company_id, 
+            "is_primary_contact": True,
+            "status": "active",
+            "id": {"$ne": member_id}  # Exclude current member
+        }, {"_id": 0})
+        
+        if existing_primary:
+            if not member_data.replace_primary:
+                # Return conflict response with existing primary info
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "message": "There is already a Primary Contact for this company.",
+                        "existing_primary": {
+                            "id": existing_primary["id"],
+                            "name": existing_primary["name"],
+                            "email": existing_primary["email"]
+                        },
+                        "options": ["skip", "replace"]
+                    }
+                )
+            else:
+                # Replace primary contact - remove primary status from existing
+                await db.members.update_one(
+                    {"id": existing_primary["id"]},
+                    {"$set": {"is_primary_contact": False}}
+                )
     
     if update_dict:
         await db.members.update_one({"id": member_id}, {"$set": update_dict})
