@@ -332,6 +332,36 @@ async def add_member_to_company(
             detail=f"Company has {company['total_seats']} seats, all occupied. Increase seats first."
         )
     
+    # Check primary contact constraint
+    if member_data.is_primary_contact:
+        existing_primary = await db.members.find_one({
+            "company_id": company_id, 
+            "is_primary_contact": True,
+            "status": "active"
+        }, {"_id": 0})
+        
+        if existing_primary:
+            if not member_data.replace_primary:
+                # Return conflict response with existing primary info
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "message": "There is already a Primary Contact for this company.",
+                        "existing_primary": {
+                            "id": existing_primary["id"],
+                            "name": existing_primary["name"],
+                            "email": existing_primary["email"]
+                        },
+                        "options": ["skip", "replace"]
+                    }
+                )
+            else:
+                # Replace primary contact - remove primary status from existing
+                await db.members.update_one(
+                    {"id": existing_primary["id"]},
+                    {"$set": {"is_primary_contact": False}}
+                )
+    
     # Create member with company reference
     member = Member(
         company_id=company_id,
