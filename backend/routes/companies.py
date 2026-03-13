@@ -73,7 +73,48 @@ async def get_company(company_id: str, current_user: dict = Depends(get_current_
     members = await db.members.find({"company_id": company_id}, {"_id": 0}).to_list(100)
     company["members"] = members
     
+    # Ensure credits fields are present (for backward compatibility)
+    if "total_credits" not in company:
+        company["total_credits"] = company.get("total_seats", 0) * company.get("meeting_room_credits", 0)
+    if "remaining_credits" not in company:
+        company["remaining_credits"] = company["total_credits"] - company.get("credits_used", 0)
+    
     return company
+
+
+@router.get("/{company_id}/credits")
+async def get_company_credits(company_id: str, current_user: dict = Depends(get_current_user)):
+    """Get meeting room credits information for a company"""
+    check_permission(current_user, "view_invoice")
+    
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    # Calculate credits if not already stored
+    total_seats = company.get("total_seats", 0)
+    credits_per_seat = company.get("meeting_room_credits", 0)
+    total_credits = company.get("total_credits", total_seats * credits_per_seat)
+    credits_used = company.get("credits_used", 0)
+    remaining_credits = company.get("remaining_credits", total_credits - credits_used)
+    
+    # Get recent bookings that used credits
+    recent_bookings = await db.bookings.find(
+        {"company_id": company_id, "credits_used": {"$gt": 0}},
+        {"_id": 0, "id": 1, "member_name": 1, "date": 1, "room_name": 1, "credits_used": 1}
+    ).sort("created_at", -1).limit(10).to_list(10)
+    
+    return {
+        "company_id": company_id,
+        "company_name": company.get("company_name"),
+        "total_seats": total_seats,
+        "credits_per_seat": credits_per_seat,
+        "total_credits": total_credits,
+        "credits_used": credits_used,
+        "remaining_credits": remaining_credits,
+        "credits_reset_date": company.get("credits_reset_date"),
+        "recent_bookings": recent_bookings
+    }
 
 
 @router.post("")
