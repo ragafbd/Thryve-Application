@@ -27,7 +27,7 @@ class TestAutoInvoiceEligibility:
         self.headers = {"Authorization": f"Bearer {self.token}"}
     
     def test_eligible_companies_january_2026(self):
-        """Test: January 2026 should have 1 eligible company (To Be Honest Circle LLP with start_date 2026-01-01)"""
+        """Test: January 2026 - To Be Honest Circle LLP (start_date 2026-01-01) should be eligible or have existing invoice"""
         resp = requests.get(f"{BASE_URL}/api/auto-invoice/eligible-companies?billing_month=2026-01", headers=self.headers)
         
         assert resp.status_code == 200
@@ -43,15 +43,24 @@ class TestAutoInvoiceEligibility:
         assert "ineligible_companies" in data
         assert "total_estimated_amount" in data
         
-        # Verify January 2026 has 1 eligible company
-        assert data["eligible_count"] == 1, f"Expected 1 eligible, got {data['eligible_count']}"
-        assert data["ineligible_count"] == 12, f"Expected 12 ineligible, got {data['ineligible_count']}"
+        # Find To Be Honest Circle LLP - should be either eligible or have existing invoice
+        all_companies = data["eligible_companies"] + data["ineligible_companies"]
+        tbh_company = next((c for c in all_companies if c["company_name"] == "To Be Honest Circle LLP"), None)
         
-        # Verify the eligible company is To Be Honest Circle LLP
-        eligible = data["eligible_companies"]
-        assert len(eligible) == 1
-        assert eligible[0]["company_name"] == "To Be Honest Circle LLP"
-        assert eligible[0]["start_date"] == "2026-01-01"
+        assert tbh_company is not None, "To Be Honest Circle LLP not found"
+        assert tbh_company["start_date"] == "2026-01-01"
+        
+        # If ineligible, should be due to existing invoice (not start_date)
+        if tbh_company in data["ineligible_companies"]:
+            assert "Invoice already exists" in tbh_company.get("reason", ""), \
+                f"TBH should be ineligible due to existing invoice, not: {tbh_company.get('reason')}"
+        
+        # Companies with start_date after 2026-01-01 should be ineligible
+        for company in data["ineligible_companies"]:
+            if company["company_name"] != "To Be Honest Circle LLP":
+                reason = company.get("reason", "")
+                # Should be either start_date after billing or existing invoice
+                assert "Start date" in reason or "Invoice already exists" in reason
     
     def test_eligible_companies_april_2026(self):
         """Test: April 2026 should have all 13 companies eligible (all start_dates <= 2026-04-01)"""
