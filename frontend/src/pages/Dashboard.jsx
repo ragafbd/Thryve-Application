@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { 
   FileText, IndianRupee, ArrowRight, Clock, CheckCircle, 
-  AlertTriangle, Building2, CreditCard, Cake, Gift, Video
+  AlertTriangle, Building2, CreditCard, Video
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
