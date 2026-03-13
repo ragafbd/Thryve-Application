@@ -323,14 +323,22 @@ def generate_pdf_content(invoice: dict) -> bytes:
     subtotal = invoice.get('subtotal', 0)
     total_cgst = invoice.get('total_cgst', 0)
     total_sgst = invoice.get('total_sgst', 0)
+    round_off = invoice.get('round_off_adjustment', 0)
     grand_total = invoice.get('grand_total', 0)
     
     totals_data = [
         ["", "", "", "Subtotal:", f"₹{subtotal:,.2f}"],
         ["", "", "", f"CGST ({GST_RATE//2}%):", f"₹{total_cgst:,.2f}"],
         ["", "", "", f"SGST ({GST_RATE//2}%):", f"₹{total_sgst:,.2f}"],
-        ["", "", "", "Grand Total:", f"₹{grand_total:,.2f}"],
     ]
+    
+    # Add round-off row if non-zero
+    if round_off != 0:
+        round_off_str = f"+₹{round_off:,.2f}" if round_off >= 0 else f"-₹{abs(round_off):,.2f}"
+        totals_data.append(["", "", "", "Round-Off Adj.:", round_off_str])
+    
+    # Grand total is always whole rupee
+    totals_data.append(["", "", "", "Grand Total:", f"₹{int(grand_total):,}"])
     
     totals_table = Table(totals_data, colWidths=[30, 220, 60, 120, 100])
     totals_table.setStyle(TableStyle([
@@ -346,7 +354,7 @@ def generate_pdf_content(invoice: dict) -> bytes:
     elements.append(totals_table)
     elements.append(Spacer(1, 10))
     
-    # Amount in words
+    # Amount in words (always whole rupee)
     amount_words = number_to_words(int(grand_total))
     elements.append(Paragraph(f"<b>Amount in Words:</b> {amount_words}", styles['Normal']))
     elements.append(Spacer(1, 20))
