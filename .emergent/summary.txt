@@ -1,165 +1,172 @@
 <analysis>**original_problem_statement**: The user wants to build a comprehensive coworking space management application, Thryve Coworking.
 
 **Latest User Requests Handled in this Session**:
-1.  **Excel Data Import**: Bulk-populate client data from an Excel file.
-2.  **Leave and License Agreement (LLA) Generation**: Generate a printable LLA populated with client data, matching a provided Word template.
-3.  **New Invoice Format**: Implement the invoice format .
-4.  **Signatory as Member**: Add a checkbox on the client creation form to automatically create a member record for the signatory.
-5.  **Differentiate Login Pages**: Make the admin login page visually distinct from the member login page.
-6.  **Guest Meeting Room Bookings**: Allow admins to book meeting rooms for non-clients (guests) with KYC details.
-7.  **LLA Formatting**: Update the LLA generator to use Calibri font and proper A4 page formatting.
-8.  **Notifications**: Implement audio/badge notifications for new admin tickets and for new member announcements/resolved tickets.
-9.  **Mobile Responsiveness**: Improve the layout of both admin and member portals for mobile devices.
-10. **Invoice Editing**: Add the ability for admins to edit an invoice after it has been created.
-11. **Bug Fixes**: Address issues where the invoice creation page showed no clients, the Add Client page went blank, and the admin sidebar was not always visible.
+1.  **Enhanced Birthday Feature**: Implement a detailed Upcoming Birthdays feature with a sidebar widget and a dedicated page.
+2.  **Meeting Room Credits System**: Add a credit system for companies based on their allocated seats, track usage, and display balances in both admin and member portals.
+3.  **Auto-Invoice Enhancements**:
+    *   Validate invoice generation against a client's .
+    *   Automatically set the invoice  to 4 days after the issue date.
+    *   Initially implemented a complex preview UI for eligible/ineligible companies, but then simplified it back to basic validation based on user feedback.
+    *   Bundle all pending meeting room charges into a single line item during auto-generation.
+4.  **UI/UX Fixes & Changes**:
+    *   Removed Create Invoice buttons from the main invoice list page to restrict creation to its dedicated page.
+    *   Revised the birthday widget's styling and placement multiple times based on specific user instructions.
+    *   Renamed the birthday widget to Upcoming Birthdays and then back to Birthdays to fit on a single line.
+5.  **Primary Member Management**:
+    *   Enforce a rule that only one Primary Member can exist per company.
+    *   Implement a conflict resolution modal (Skip/Replace) when creating or editing a member to be primary.
+    *   Add the ability to edit member details.
+6.  **Create Invoice Form Improvements**:
+    *   Auto-populate seat quantity and rate from client data.
+    *   Fix a bug where the rate input field prepended a 0.
+    *   Enforce a strict line item order (Monthly Plan > Security Deposit > Others > Meeting Rooms).
+    *   Automatically disable GST for Refundable Security Deposit line items.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application (React, FastAPI, MongoDB) with separate, mobile-responsive portals for admins and members. The database is populated with 14 clients from an Excel import.
-
-**Key Features Implemented**:
-*   **Admin Panel**: Manages clients (companies), members, meeting room bookings (for members and guests), announcements, and invoices. Features include an LLA generator, data export, and a dashboard with key metrics.
-*   **Member Portal**: Allows members to log in, view their profile, see announcements, and book meeting rooms.
-*   **Notifications**: Both admin and member portals have a polling system (1-min interval) that provides audio and visual (badge) notifications for relevant events (new tickets, announcements).
-*   **Data Model**: A company-centric model where clients are the primary entity, and members belong to them.
+A comprehensive full-stack coworking management application with React, FastAPI, and MongoDB. It has separate portals for admins and members. Key features include client/member management (with primary contact logic), a meeting room booking system with a company-wide credit system, and a robust invoicing module (manual creation, auto-generation with start-date validation, and item ordering rules). The UI has been actively refined based on user feedback, particularly for the Upcoming Birthdays feature and the Auto-Invoice page. The critical login issue from the previous session has been put on hold by the user.
 
 **Last working item**:
--   **Last item agent was working**: Implementing the ability for admins to edit created invoices. The agent created the backend  endpoint and added the Edit button and dialog UI to the  page.
+-   **Last item agent was working**: The user asked for confirmation that the auto-invoicing logic correctly calculates meeting room charges *after* deducting the company's free allocated minutes (credits). The agent had started investigating the relevant backend code in  to verify this logic.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: both (The backend API requires  testing, and the frontend flow needs verification via the ).
+-   **Which testing method agent to use?**: backend testing agent (to create a test script that verifies the booking and credit deduction logic).
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Complete Invoice Editing Feature (P0)**:
-    -   **Description**: The feature to allow full editing of an invoice (except for number and date) is partially implemented. The backend endpoint and frontend UI exist but have not been tested end-to-end.
+-   **Issue 1: Verify Meeting Room Credit Deduction Logic (P0)**:
+    -   **Description**: The agent needs to confirm that when a member books a meeting room, the system first uses the company's available credits, and only charges for the minutes that exceed the credit balance. This logic is critical for correct invoicing.
     -   **Next debug checklist**:
-        1.  Navigate to an existing invoice view page.
-        2.  Click the Edit button and verify the dialog opens with correct data.
-        3.  Modify line items, due date, or notes and save.
-        4.  Confirm the backend updates the database and the frontend UI reflects the changes.
-    -   **Why fix this issue and what will be achieved with the fix?**: This will provide critical flexibility for admins to correct invoice errors without reissuing them.
+        1.  Examine the  function in .
+        2.  Trace how  from the  collection is used when a booking is made.
+        3.  Verify that the  on a booking is only set for minutes exceeding the available credits.
+        4.  Create a test case (manual or via script) where a member makes a booking that partially uses credits and partially incurs a charge.
+    -   **Why fix this issue and what will be achieved with the fix?**: This ensures accurate billing and that clients are not incorrectly charged for meeting room usage that should be covered by their plan.
     -   **Status**: IN PROGRESS
--   **Issue 2: Recurring Booking Date Issue (P1)**:
-    -   **Description**: A recurring bug where the booking page shows a past date. A fix was attempted in a previous session but was never confirmed by the user.
-    -   **Next debug checklist**:
-        1.  Ask the user to verify if the booking calendar now shows the correct current date.
-        2.  If the issue persists, re-investigate date/timezone handling in , potentially using a library like  for robustness.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical usability bug that prevents correct booking.
-    -   **Status**: USER VERIFICATION PENDING
-    -   **Is recurring issue?**: Y
--   **Issue 3: Recurring Login Failures (P2)**:
-    -   **Description**: The initial handoff mentioned recurring login instability. While a login-related bug was fixed this session (dashboard data not showing), the potential underlying instability was never investigated.
-    -   **Next debug checklist**:
-        1.  If the user reports login issues again, add detailed logging to  to trace token storage and API responses.
-        2.  Verify  consistency between backend environments.
-    -   **Why fix this issue and what will be achieved with the fix?**: Ensures reliable access to the application for all users.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: Y
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: backend
 
 **In progress Task List**:
--   **Task 1: Complete and Test Invoice Editing (P0)**:
-    -   **Where to resume**: Resume at testing the newly created Edit Invoice feature in . Create a test invoice, view it, click Edit, modify the details in the dialog, save, and verify the changes persist.
-    -   **What will be achieved with this?**: A fully functional invoice editing system.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: both
+-   There are no other in-progress tasks. The current focus is solely on resolving the pending issue above.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   **P1**: Integrate **Resend** for email notifications (invoices, announcements). This will require an API key from the user.
+    -   **P1**: Integrate **Resend** for email notifications (invoices, announcements).
     -   **P2**: Add a Send All button to email all generated monthly invoices.
 -   **Future Tasks**:
-    -   Implement a full, email-based Forgot Password flow (user deferred this).
+    -   Implement a full, email-based Forgot Password flow.
     -   Enhance the support ticket system with admin replies and status tracking.
     -   Develop an analytics and reporting dashboard.
+    -   Add notifications for when a company's meeting room credits are low.
+    -   Provide an option for companies to purchase extra credits.
 
 **Completed work in this session**
--   **Excel Data Import**: Successfully imported 14 clients into the database.
--   **LLA Generator**: Implemented the page with full text from the user's Word doc and applied Calibri/A4 formatting.
--   **Invoice Format**: Updated backend logic to use the new  format.
--   **Signatory is Member**: Added a checkbox in the Add Client form to auto-create a member.
--   **UI/UX Overhaul**:
-    -   Redesigned the Admin Login page with a distinct dark theme.
-    -   Made both Admin and Member portals mobile-responsive with a collapsible sidebar.
-    -   Implemented audio/badge notifications for new tickets (admin) and announcements (member).
--   **Guest Bookings**: Implemented a feature for admins to book meeting rooms for non-clients with KYC fields.
--   **Critical Bug Fixes**:
-    -   Resolved an issue where the  page failed to load clients by updating it to use the correct  endpoint.
-    -   Fixed the admin dashboard to show correct stats from the  collection.
-    -   Ensured the admin sidebar is persistently visible on desktop layouts.
+-   **Birthday Feature**: Implemented a dedicated Upcoming Birthdays page () and a corresponding sidebar widget with a notification badge. The initial implementation on the dashboard was removed per user request.
+-   **Meeting Room Credits**: Implemented a company-wide credit system.
+    -   Updated the  model to store  and .
+    -   Modified booking logic to deduct from company credits.
+    -   Added UI elements in the admin (Client Details) and member (Dashboard) portals to display credit balance.
+-   **Auto-Invoice Logic**: Enhanced the auto-generation process.
+    -   Added validation to prevent generating invoices for a period before a client's start date.
+    -   Set the due date automatically to 4 days after the invoice issue date.
+    -   Updated the backend to bundle all pending meeting room charges into a single line item.
+    -   Simplified the UI to remove a complex preview step, per user feedback.
+-   **Primary Member Management**: Implemented logic to enforce a single primary contact per company, including an edit-conflict resolution modal and a member editing feature.
+-   **Create Invoice Form**: Significantly improved the form.
+    -   Auto-populated quantity and rate from client data.
+    -   Fixed an input bug that caused leading zeros in the rate field.
+    -   Enforced a strict item order (Monthly Plan > Security Deposit > Meeting Rooms).
+    -   Disabled the GST checkbox for Refundable Security Deposit items.
+-   **UI Cleanup**: Removed Create Invoice buttons from the main  page to streamline the UI, per user request.
+
+**Earlier issues found/mentioned but not fixed**
+-   **Issue 1: Recurring Login Failures**: This was a critical issue from the previous fork. However, the user explicitly instructed the agent: Do not do anything for the login system. Work on this is paused until further notice.
+-   **Issue 2: Lost Client Data**: This was another issue from the previous fork. The user instructed: Do not reimport the 14 client records. The agent later performed a data migration on existing company records, so the data appears to be present. This issue can be considered closed per the user's directive.
+
+**Known issue recurrence from previous fork**
+-   **Issue recurrence in previous fork**: Recurring Login Failures
+-   **Recurrence count**: High
+-   **Status**: BLOCKED (User requested to halt all work on this issue).
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Frontend**: React, Tailwind CSS, Shadcn/UI, Axios, , . Polling for notifications using  and .
--   **Backend**: FastAPI, MongoDB (using ), Pydantic.
--   **Architecture**: Modular full-stack application with a company-centric data model. RESTful APIs for all operations.
+-   **Frontend**: React, Tailwind CSS, Shadcn/UI, Axios. Heavy use of  and  for managing complex form state and asynchronous data fetching.
+-   **Backend**: FastAPI, MongoDB (using ), Pydantic. Business logic was heavily modified to support new rules for invoicing and member management.
+-   **Data Migration**: A one-time Python script was used to update existing  in the database with the new  and  fields.
 
 **key DB schema**
--   **companies**: Extended with numerous fields for LLA generation. This is the central collection for client data.
--   **bookings**: Extended to support guest bookings with optional KYC and payment details.
--   **invoices**: The schema is unchanged, but a new API endpoint allows for updating documents.
+-   **companies**: Added , , .
+-   **members**:  field is now actively used for validation.
+-   **bookings**:  is now calculated based on company credits.  is stored with each booking.
 
 **All files of reference**
--   **/app/frontend/src/pages/InvoiceView.jsx**: Recently modified to add invoice editing functionality.
--   **/app/frontend/src/pages/Bookings.jsx**: Modified to support guest bookings.
--   **/app/frontend/src/pages/Agreement.jsx**: Modified to contain the full LLA text and styling.
--   **/app/frontend/src/components/Layout.jsx**: Core admin layout, updated for notifications and mobile responsiveness.
--   **/app/frontend/src/pages/portal/MemberLayout.jsx**: Core member layout, updated for notifications and mobile responsiveness.
--   **/app/backend/server.py**: Updated with a  endpoint for editing invoices.
--   **/app/backend/routes/management.py**: Updated with logic for company stats and guest bookings.
--   **/app/backend/models/management.py**: Updated to reflect schema changes for bookings and stats.
+-   **/app/backend/routes/auto_invoice.py**: Heavily modified to implement start date validation, 4-day due dates, and bundling of meeting room charges.
+-   **/app/backend/routes/companies.py**: Updated to handle member editing and primary contact validation logic.
+-   **/app/backend/routes/member_portal.py**: Updated to integrate the company-wide credit system into the booking process.
+-   **/app/backend/models/management.py**: Updated , , and  Pydantic models.
+-   **/app/frontend/src/pages/CreateInvoice.jsx**: Significantly refactored to handle auto-population of fields, item sorting, and GST rules.
+-   **/app/frontend/src/pages/Companies.jsx**: Modified to add member editing functionality and the primary contact conflict resolution modal.
+-   **/app/frontend/src/pages/UpcomingBirthdays.jsx**: New file created for the dedicated birthdays page.
+-   **/app/frontend/src/components/Layout.jsx**: Modified to add, restyle, and reposition the birthday widget in the sidebar.
+-   **/app/frontend/src/pages/AutoInvoice.jsx**: UI was first made complex and then simplified back down per user feedback.
+-   **/app/frontend/src/pages/portal/MemberDashboard.jsx**: Updated to display the company's meeting room credit balance.
+-   **/app/frontend/src/pages/InvoiceList.jsx**: Modified to remove create buttons.
+-   **/app/frontend/src/pages/Dashboard.jsx**: Modified to remove the old birthday component.
 
 **key api endpoints**
--   : **NEW**, for updating an existing invoice.
--   : Updated to handle both member and guest bookings.
--   : Updated to provide statistics based on the  collection.
--   : The correct endpoint for polling ticket status.
--   : The primary endpoint for fetching client data, now used across the app.
+-   : Updated to handle primary contact conflict.
+-   : Updated to handle primary contact conflict during edits.
+-   : Logic updated to filter companies by , set , and bundle meeting room charges.
+-   : Booking creation logic now interacts with the company's credit balance.
+-   : New endpoint for members to see their company's credit status.
 
 **Critical Info for New Agent**
--   The immediate priority is to **complete and test the invoice editing feature**. The UI and backend endpoint are in place but unverified.
--   The user has confirmed the database is populated with 14 clients. Use this data for testing the LLA generator, invoice creation/editing, and other client-related features.
--   Be aware of the two recurring issues from the previous fork (Booking Date and Login Failures). Although fixes have been attempted or related bugs resolved, they may resurface and require a deeper investigation if reported again.
+-   **User Prioritizes Simplicity**: The user rejected an over-engineered UI for the auto-invoice feature, preferring a simpler interface. Avoid adding complex UI elements like previews unless specifically requested. Validate logic on the backend and show results post-action.
+-   **User is Specific About UI/UX**: The user provided very specific feedback on the birthday widget's text, styling, and placement, leading to multiple revisions. Pay close attention to visual details and be prepared to iterate.
+-   **Login & Data Import Issues are ON HOLD**: Do not work on the recurring login bug or the client data import unless the user explicitly asks for it. They have specifically instructed the agent to ignore these problems for now.
+-   **Backend Validation is Key**: Most of the recent features rely on robust backend logic (e.g., primary member uniqueness, invoice date validation, credit deduction). Ensure the backend correctly enforces all business rules.
 
 **documents and test reports created in this job**
--   /app/test_reports/iteration_7.json
--   /app/memory/PRD.md
+-   /app/test_reports/iteration_9.json
+-   /app/test_reports/iteration_10.json
+-   /app/test_reports/iteration_11.json
+-   /app/test_reports/iteration_12.json
+-   /app/memory/PRD.md (updated with each major feature completion)
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. **User**: Can I edit an invoice after it is created? - **Agent started implementing this.**
-9.  **User**: I can't create an invoice (no clients) and the Add Client screen is blank. The admin sidebar should always be visible. - **Fixed.**
-8.  **User**: Can members also get audio/popup notifications? - **Implemented.**
-7.  **User**: The LLA should use Calibri font and be formatted for an A4 page. Add guest booking for meeting rooms. - **Implemented.**
-6.  **User**: The LLA generator should incorporate the complete matter from the Word file I uploaded. - **Fixed.**
-5.  **User**: Admin login is failing and the imported data isn't visible. - **Fixed (was a dashboard stats issue).**
-4.  **User**: Will there be an audio notification for new tickets? (And make app mobile friendly). - **Implemented.**
-3.  **User**: Let's leave the Forgot Password feature for now. - **Acknowledged.**
-2.  **User**: What if the authorized signatory is also a member? - **Implemented Signatory is also a member checkbox.**
-1.  **User**: The new invoice format should be  starting from April 2026. - **Implemented.**
+10. **User**: Confirmed if meeting room charges deduct allowed minutes. **(IN PROGRESS)**
+9.  **User**: Specified that auto-generated meeting room charges should be bundled into a single line item. **(RESOLVED)**
+8.  **User**: Requested enhancements for the Create Invoice and Auto-Gen logic (item order, GST rule, meeting room charges). **(RESOLVED)**
+7.  **User**: Requested improvements to the Create Invoice form (auto-populate seats/rate, fix input bug). **(RESOLVED)**
+6.  **User**: Requested Primary Member validation and member editing functionality. **(RESOLVED)**
+5.  **User**: Requested to remove Create Invoice buttons from the invoice list page. **(RESOLVED)**
+4.  **User**: Asked why the Invoices page shows an empty state, then clarified they had deleted the invoices manually. **(RESOLVED)**
+3.  **User**: Stated the auto-invoice UI was unnecessarily complicated and requested simplification. **(RESOLVED)**
+2.  **User**: Requested a feature to enhance auto-invoice generation with start-date and due-date logic. **(RESOLVED)**
+1.  **User**: Requested the Meeting Room Credits system. **(RESOLVED)**
 
 **Project Health Check:**
 -   **Broken**:
-    -   The invoice editing feature is mid-implementation and not functional yet.
+    -   Login System (Known issue, but work is **on hold** per user request).
 -   **Mocked**:
     -   Email Integration (Resend).
-    -   Email-based Forgot Password flow.
 
 **3rd Party Integrations**
--   **Resend**: Planned for email integration, not yet implemented. Requires a user-provided API key.
--   **xlsx, docxtemplater, pizzip**: Installed and used for the data import and document generation features.
+-   **xlsx, docxtemplater, pizzip**: Used for data import and document generation.
+-   **bcrypt**: Used for password hashing.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (for Excel Import & LLA generator).
+-   **Testing agent used after significant changes**: YES (Used after implementing Birthday feature, Credits system, and Primary Member logic).
+-   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: []
--   **Known regressions**: None in this session; several critical user-reported bugs were fixed.
+-   **Known regressions**: None in this session. The previous regression of lost data was not addressed per user instructions.
 
 **Credentials to test flow:**
 -   **Admin**:  / 
 -   **Member**:  / 
 
 **What agent forgot to execute**
--   The agent did not explicitly re-verify the recurring Booking Date issue with the user after the initial fix.
--   The agent was interrupted while implementing the invoice editing feature, which is the immediate next step.</analysis>
+-   The agent has successfully addressed all user requests from this session. The only pending item is the user's latest query, which is the current Last working item.</analysis>
