@@ -408,7 +408,7 @@ export default function Layout() {
                   )}
                 >
                   <Cake className="w-4 h-4" strokeWidth={1.5} />
-                  <span className="text-sm">Upcoming Birthdays</span>
+                  <span className="text-sm whitespace-nowrap">Birthdays</span>
                   <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
                     {upcomingBirthdayCount}
                   </span>
