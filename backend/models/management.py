@@ -133,8 +133,12 @@ class Company(BaseModel):
     setup_charges: str = ""  # NEW: For LLA (can be "Not applicable")
     lock_in_months: int = 11  # NEW: For LLA (default 11 months)
     
-    # Meeting Room Credits (per seat)
-    meeting_room_credits: int = 0  # Credits per seat in minutes (allocated_minutes_per_seat)
+    # Meeting Room Credits (CREDIT-BASED SYSTEM)
+    # 1 Credit = Rs. 50
+    # Credits per seat = 30 credits/month
+    # Conference Room: 20 credits/hour (1-hour slots only)
+    # Meeting Room: 5 credits/30-min slot
+    meeting_room_credits: int = 30  # Credits per seat per month (default 30)
     total_credits: int = 0  # Total credits = total_seats × meeting_room_credits
     credits_used: int = 0  # Total credits used by all members
     remaining_credits: int = 0  # Total credits - credits_used
