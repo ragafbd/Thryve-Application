@@ -129,7 +129,7 @@ export default function CreateInvoice() {
       if (!selectedClientId || !selectedClient) {
         setPendingCharges([]);
         // Remove auto-added meeting room items when no client selected
-        setLineItems(prev => prev.filter(item => !item.booking_id));
+        setLineItems(prev => sortLineItems(prev.filter(item => !item.booking_id)));
         return;
       }
       try {
@@ -139,7 +139,7 @@ export default function CreateInvoice() {
         );
         if (clientCharges && clientCharges.bookings.length > 0) {
           setPendingCharges(clientCharges.bookings);
-          // Auto-add meeting room charges as line items
+          // Auto-add meeting room charges as line items (always last due to order: 99)
           const meetingRoomItems = clientCharges.bookings.map(booking => ({
             description: `Meeting Room - ${booking.room_name} (${booking.date})`,
             service_type: "meeting_room",
@@ -153,16 +153,16 @@ export default function CreateInvoice() {
             prorate_total_days: 30,
             booking_id: booking.booking_id // Track which booking this is for
           }));
-          // Add to existing line items
+          // Add to existing line items and sort
           setLineItems(prev => {
             // Remove any existing meeting room items that are auto-added
             const nonMeetingItems = prev.filter(item => !item.booking_id);
-            return [...nonMeetingItems, ...meetingRoomItems];
+            return sortLineItems([...nonMeetingItems, ...meetingRoomItems]);
           });
         } else {
           setPendingCharges([]);
-          // Remove auto-added meeting room items
-          setLineItems(prev => prev.filter(item => !item.booking_id));
+          // Remove auto-added meeting room items and re-sort
+          setLineItems(prev => sortLineItems(prev.filter(item => !item.booking_id)));
         }
       } catch (error) {
         console.error("Failed to fetch pending charges");
