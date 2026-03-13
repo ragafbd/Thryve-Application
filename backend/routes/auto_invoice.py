@@ -393,24 +393,68 @@ async def generate_auto_invoices(
     if not companies:
         raise HTTPException(status_code=404, detail="No active companies found")
     
+    # Filter companies based on start_date
+    # Only include companies whose start_date is on or before the invoice issue date
+    eligible_companies = []
+    skipped_companies = []
+    
+    for company in companies:
+        start_date_str = company.get("start_date")
+        if start_date_str:
+            try:
+                # Parse start_date (expecting YYYY-MM-DD format)
+                start_date = datetime.strptime(start_date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                
+                # Check if start_date is after the billing period start
+                if start_date > billing_date:
+                    skipped_companies.append({
+                        "company_id": company["id"],
+                        "company_name": company["company_name"],
+                        "start_date": start_date_str,
+                        "reason": f"Start date ({start_date_str}) is after billing period ({request.billing_month})"
+                    })
+                    continue
+            except ValueError:
+                # If date parsing fails, include the company anyway
+                pass
+        
+        eligible_companies.append(company)
+    
+    if not eligible_companies:
+        return {
+            "message": "No companies eligible for invoice generation",
+            "result": {
+                "billing_month": request.billing_month,
+                "total_invoices": 0,
+                "successful": 0,
+                "failed": 0,
+                "total_amount": 0,
+                "invoices": [],
+                "errors": [],
+                "skipped_companies": skipped_companies
+            }
+        }
+    
     # Initialize result
     result = AutoInvoiceResult(
         billing_month=request.billing_month,
-        total_invoices=len(companies),
+        total_invoices=len(eligible_companies),
         created_by=current_user.get("id")
     )
     
     # Calculate dates
     invoice_date = billing_date.isoformat()
-    # Due date: 15th of the billing month
-    due_date = datetime(year, month, 15, tzinfo=timezone.utc).isoformat()
+    
+    # Due date: 4 days after invoice issue date
+    due_date_obj = billing_date + timedelta(days=4)
+    due_date = due_date_obj.isoformat()
     
     # Month name for description
     month_names = ["January", "February", "March", "April", "May", "June",
                    "July", "August", "September", "October", "November", "December"]
     month_name = month_names[month - 1]
     
-    for company in companies:
+    for company in eligible_companies:
         try:
             # Check if invoice already exists for this company and month
             existing = await db.invoices.find_one({
@@ -520,12 +564,16 @@ async def generate_auto_invoices(
             })
             result.failed += 1
     
+    # Add skipped companies to the result
+    result_dict = result.model_dump()
+    result_dict["skipped_companies"] = skipped_companies
+    
     # Save generation result
-    await db.auto_invoice_runs.insert_one(result.model_dump())
+    await db.auto_invoice_runs.insert_one(result_dict)
     
     return {
-        "message": f"Generated {result.successful} invoices successfully",
-        "result": result.model_dump()
+        "message": f"Generated {result.successful} invoices successfully" + (f" ({len(skipped_companies)} companies skipped due to start date)" if skipped_companies else ""),
+        "result": result_dict
     }
 
 
