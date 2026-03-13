@@ -19,6 +19,7 @@ import AutoInvoice from "@/pages/AutoInvoice";
 import ExportData from "@/pages/ExportData";
 import ImportData from "@/pages/ImportData";
 import Agreement from "@/pages/Agreement";
+import UpcomingBirthdays from "@/pages/UpcomingBirthdays";
 
 // Member Portal imports
 import MemberLogin from "@/pages/portal/MemberLogin";
