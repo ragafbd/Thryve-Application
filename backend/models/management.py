@@ -294,6 +294,21 @@ class CompanyMemberCreate(BaseModel):
     seat_number: Optional[str] = None
     is_primary_contact: bool = False
     notes: Optional[str] = ""
+    replace_primary: bool = False  # Flag to replace existing primary contact
+
+
+class CompanyMemberUpdate(BaseModel):
+    """Update member details within a company"""
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    aadhar_number: Optional[str] = None
+    pan_number: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    seat_number: Optional[str] = None
+    is_primary_contact: Optional[bool] = None
+    notes: Optional[str] = None
+    replace_primary: bool = False  # Flag to replace existing primary contact
 
 class CompanyTerminate(BaseModel):
     """Terminate a company subscription"""
