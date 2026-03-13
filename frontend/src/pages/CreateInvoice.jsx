@@ -87,6 +87,27 @@ export default function CreateInvoice() {
     setDueDate(newDueDate);
   }, [invoiceDate]);
 
+  // Auto-populate line item with client data when client is selected
+  useEffect(() => {
+    if (selectedClient) {
+      // Auto-populate the first line item with client's seat quantity and rate
+      setLineItems(prev => {
+        const newItems = [...prev];
+        // Only update the first non-meeting-room item (manual items)
+        const firstManualItemIndex = newItems.findIndex(item => !item.booking_id);
+        if (firstManualItemIndex !== -1 && newItems[firstManualItemIndex].service_type === 'monthly_rental') {
+          newItems[firstManualItemIndex] = {
+            ...newItems[firstManualItemIndex],
+            quantity: selectedClient.total_seats || "",
+            rate: selectedClient.rate_per_seat || "",
+            description: selectedClient.plan_name ? `${selectedClient.plan_name}` : "Monthly Plan"
+          };
+        }
+        return newItems;
+      });
+    }
+  }, [selectedClient]);
+
   // Fetch pending meeting room charges when client is selected
   useEffect(() => {
     const fetchPendingCharges = async () => {
