@@ -401,7 +401,7 @@ export default function Layout() {
                   to="birthdays"
                   data-testid="nav-birthdays-widget"
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 relative",
+                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200",
                     location.pathname === "/admin/birthdays"
                       ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
                       : "text-white/70 hover:bg-white/10 hover:text-white"
@@ -409,7 +409,7 @@ export default function Layout() {
                 >
                   <Cake className="w-4 h-4" strokeWidth={1.5} />
                   <span className="text-sm">Upcoming Birthdays</span>
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                  <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
                     {upcomingBirthdayCount}
                   </span>
                 </NavLink>
