@@ -231,12 +231,55 @@ export default function CreateInvoice() {
         const numValue = parseFloat(value);
         newItems[index] = { ...newItems[index], [field]: isNaN(numValue) ? '' : numValue };
       }
+    } else if (field === 'is_prorated' && value === true) {
+      // Auto-calculate prorate days when enabling prorate
+      const invoiceDateObj = invoiceDate ? new Date(invoiceDate) : new Date();
+      const dayOfMonth = invoiceDateObj.getDate();
+      const year = invoiceDateObj.getFullYear();
+      const month = invoiceDateObj.getMonth();
+      // Get total days in the current month
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      // Calculate days to charge: from issue date to end of month (inclusive)
+      const daysToCharge = daysInMonth - dayOfMonth + 1;
+      
+      newItems[index] = { 
+        ...newItems[index], 
+        [field]: value,
+        prorate_days: daysToCharge,
+        prorate_total_days: daysInMonth
+      };
     } else {
       newItems[index] = { ...newItems[index], [field]: value };
     }
     
     setLineItems(newItems);
   };
+
+  // Recalculate prorate days when invoice date changes
+  useEffect(() => {
+    if (invoiceDate) {
+      const invoiceDateObj = new Date(invoiceDate);
+      const dayOfMonth = invoiceDateObj.getDate();
+      const year = invoiceDateObj.getFullYear();
+      const month = invoiceDateObj.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const daysToCharge = daysInMonth - dayOfMonth + 1;
+      
+      // Update all prorated line items with new calculations
+      setLineItems(prevItems => 
+        prevItems.map(item => {
+          if (item.is_prorated) {
+            return {
+              ...item,
+              prorate_days: daysToCharge,
+              prorate_total_days: daysInMonth
+            };
+          }
+          return item;
+        })
+      );
+    }
+  }, [invoiceDate]);
 
   const addLineItem = () => {
     // Create new line item - populate with client data if available
