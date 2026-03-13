@@ -910,7 +910,20 @@ async def get_upcoming_birthdays(days: int = 30):
 
 @router.get("/pending-charges")
 async def get_pending_meeting_charges():
-    """Get all pending meeting room charges grouped by company - RECALCULATES at invoice time"""
+    """Get all pending meeting room charges grouped by company - CREDIT-BASED SYSTEM
+    
+    Credit System:
+    - 1 Credit = Rs. 50
+    - Credits per seat per month = 30
+    - Conference Room: 20 credits/hour
+    - Meeting Room: 5 credits/30-min slot
+    
+    Billing Logic:
+    - If credits_used <= credits_allocated: No charge
+    - If credits_used > credits_allocated: Charge for excess credits at Rs. 50/credit
+    """
+    CREDIT_VALUE = 50  # Rs. 50 per credit
+    CREDITS_PER_SEAT = 30  # Default credits per seat per month
     
     # Get all active companies
     companies = await db.companies.find({"status": "active"}, {"_id": 0}).to_list(1000)
@@ -922,10 +935,10 @@ async def get_pending_meeting_charges():
         company_id = company.get("id")
         company_name = company.get("company_name")
         
-        # Get TOTAL allowed credits for this company
+        # Get TOTAL allocated credits for this company
         total_seats = company.get("total_seats", 0)
-        credits_per_seat = company.get("meeting_room_credits", 0)
-        total_allowed_credits = company.get("total_credits", total_seats * credits_per_seat)
+        credits_per_seat = company.get("meeting_room_credits", CREDITS_PER_SEAT)
+        total_allocated_credits = company.get("total_credits", total_seats * credits_per_seat)
         
         # Get ALL confirmed bookings for this company that haven't been invoiced
         bookings = await db.bookings.find({
@@ -940,45 +953,43 @@ async def get_pending_meeting_charges():
         if not bookings:
             continue
         
-        # Calculate TOTAL usage minutes
-        total_usage_minutes = sum(b.get("duration_minutes", 0) for b in bookings)
+        # Calculate TOTAL credits used from all bookings
+        total_credits_used = 0
+        for b in bookings:
+            # Use credits_required if available (new system), otherwise calculate
+            if b.get("credits_required"):
+                total_credits_used += b.get("credits_required", 0)
+            else:
+                # Legacy: Convert from minutes to credits
+                # Meeting Room: 5 credits per 30 min = 10 credits/hour
+                # Conference Room: 20 credits per hour
+                duration = b.get("duration_minutes", 0)
+                room_name = b.get("room_name", "").upper()
+                if "CR" in room_name:  # Conference Room
+                    credits = (duration / 60) * 20
+                else:  # Meeting Room
+                    credits = (duration / 30) * 5
+                total_credits_used += int(credits)
         
-        # Calculate billable minutes (usage - allowed credits)
-        if total_usage_minutes <= total_allowed_credits:
-            # No charge - all usage is covered by credits
-            billable_minutes = 0
+        # Calculate billable credits (excess over allocated)
+        if total_credits_used <= total_allocated_credits:
+            # No charge - all usage is covered by allocated credits
+            billable_credits = 0
             billable_amount = 0
         else:
-            # Charge for excess minutes
-            billable_minutes = total_usage_minutes - total_allowed_credits
-            
-            # Calculate average hourly rate from bookings (or use default)
-            total_duration = sum(b.get("duration_minutes", 0) for b in bookings)
-            # Get room rates for accurate calculation
-            rooms = await db.meeting_rooms.find({}, {"_id": 0}).to_list(100)
-            room_rates = {r.get("id"): r.get("hourly_rate", 500) for r in rooms}
-            room_rates.update({r.get("name"): r.get("hourly_rate", 500) for r in rooms})
-            
-            # Calculate weighted average rate based on actual room usage
-            weighted_rate = 0
-            for b in bookings:
-                room_id = b.get("room_id")
-                room_name = b.get("room_name")
-                duration = b.get("duration_minutes", 0)
-                rate = room_rates.get(room_id, room_rates.get(room_name, 500))
-                weighted_rate += (duration / total_duration) * rate if total_duration > 0 else rate
-            
-            # Calculate billable amount
-            billable_amount = round((billable_minutes / 60) * weighted_rate, 2)
+            # Charge for excess credits
+            billable_credits = total_credits_used - total_allocated_credits
+            billable_amount = billable_credits * CREDIT_VALUE  # Rs. 50 per credit
         
-        # Only add to charges if there's something to bill
-        if billable_amount > 0:
+        # Only add to charges if there are excess credits to bill
+        if billable_credits > 0:
             company_charges.append({
                 "company_id": company_id,
                 "company_name": company_name,
-                "total_usage_minutes": total_usage_minutes,
-                "allowed_credits": total_allowed_credits,
-                "billable_minutes": billable_minutes,
+                "total_allocated_credits": total_allocated_credits,
+                "total_credits_used": total_credits_used,
+                "billable_credits": billable_credits,
+                "credit_value": CREDIT_VALUE,
                 "total_amount": billable_amount,
                 "booking_count": len(bookings),
                 "bookings": [{
@@ -987,11 +998,12 @@ async def get_pending_meeting_charges():
                     "date": b.get("date"),
                     "room_name": b.get("room_name"),
                     "duration_minutes": b.get("duration_minutes", 0),
+                    "credits_required": b.get("credits_required", 0),
                     "amount": 0  # Individual amounts not used - bundled
                 } for b in bookings]
             })
     
-    # Handle guest bookings separately (no credit system)
+    # Handle guest bookings separately (no credit system - direct billing)
     guest_bookings = await db.bookings.find({
         "is_guest": True,
         "billable_amount": {"$gt": 0},
@@ -1013,7 +1025,8 @@ async def get_pending_meeting_charges():
     return {
         "company_charges": company_charges,
         "guest_charges": guest_charges,
-        "total_pending": sum(c["total_amount"] for c in company_charges) + sum(g["amount"] for g in guest_charges)
+        "total_pending": sum(c["total_amount"] for c in company_charges) + sum(g["amount"] for g in guest_charges),
+        "credit_value": CREDIT_VALUE
     }
 
 # ==================== SEED DEFAULT DATA ====================
