@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FileText, Play, Download, CheckCircle, XCircle, AlertCircle, Calendar, Users, IndianRupee } from "lucide-react";
+import { FileText, Play, Download, CheckCircle, XCircle, AlertCircle, Calendar, Users, IndianRupee, Eye, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +31,9 @@ export default function AutoInvoice() {
   const [runs, setRuns] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [previewData, setPreviewData] = useState(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const [resultDialogOpen, setResultDialogOpen] = useState(false);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [lastResult, setLastResult] = useState(null);
   
   // Form state
