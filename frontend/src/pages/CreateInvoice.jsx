@@ -129,7 +129,7 @@ export default function CreateInvoice() {
       if (!selectedClientId || !selectedClient) {
         setPendingCharges([]);
         // Remove auto-added meeting room items when no client selected
-        setLineItems(prev => sortLineItems(prev.filter(item => !item.booking_id)));
+        setLineItems(prev => sortLineItems(prev.filter(item => !item.is_bundled_meeting_room)));
         return;
       }
       try {
@@ -137,32 +137,43 @@ export default function CreateInvoice() {
         const clientCharges = response.data.company_charges.find(
           c => c.company_name === selectedClient.company_name
         );
-        if (clientCharges && clientCharges.bookings.length > 0) {
+        
+        if (clientCharges && clientCharges.bookings.length > 0 && clientCharges.total_amount > 0) {
           setPendingCharges(clientCharges.bookings);
-          // Auto-add meeting room charges as line items (always last due to order: 99)
-          const meetingRoomItems = clientCharges.bookings.map(booking => ({
-            description: `Meeting Room - ${booking.room_name} (${booking.date})`,
+          
+          // Bundle ALL meeting room charges into a SINGLE line item
+          // Note: Credits have already been deducted at booking time
+          // billable_amount on each booking only contains charges for minutes exceeding credits
+          const totalBillableAmount = clientCharges.total_amount;
+          const totalBookings = clientCharges.bookings.length;
+          const bookingIds = clientCharges.bookings.map(b => b.booking_id);
+          
+          // Create ONE bundled meeting room line item
+          const bundledMeetingRoomItem = {
+            description: `Meeting Room Charges (${totalBookings} booking${totalBookings > 1 ? 's' : ''})`,
             service_type: "meeting_room",
             quantity: 1,
-            rate: booking.amount,
+            rate: totalBillableAmount,
             is_taxable: true,
             hsn_sac: "997212",
             unit: "Units",
             is_prorated: false,
             prorate_days: null,
             prorate_total_days: 30,
-            booking_id: booking.booking_id // Track which booking this is for
-          }));
+            is_bundled_meeting_room: true, // Flag to identify bundled meeting room item
+            booking_ids: bookingIds // Track all booking IDs for invoice creation
+          };
+          
           // Add to existing line items and sort
           setLineItems(prev => {
-            // Remove any existing meeting room items that are auto-added
-            const nonMeetingItems = prev.filter(item => !item.booking_id);
-            return sortLineItems([...nonMeetingItems, ...meetingRoomItems]);
+            // Remove any existing bundled meeting room items
+            const nonMeetingItems = prev.filter(item => !item.is_bundled_meeting_room);
+            return sortLineItems([...nonMeetingItems, bundledMeetingRoomItem]);
           });
         } else {
           setPendingCharges([]);
-          // Remove auto-added meeting room items and re-sort
-          setLineItems(prev => sortLineItems(prev.filter(item => !item.booking_id)));
+          // Remove bundled meeting room items and re-sort
+          setLineItems(prev => sortLineItems(prev.filter(item => !item.is_bundled_meeting_room)));
         }
       } catch (error) {
         console.error("Failed to fetch pending charges");
