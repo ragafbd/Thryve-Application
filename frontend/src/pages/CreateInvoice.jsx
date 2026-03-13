@@ -305,7 +305,7 @@ export default function CreateInvoice() {
     setLineItems(lineItems.filter((_, i) => i !== index));
   };
 
-  // Calculate totals
+  // Calculate totals with GST-compliant rounding
   const calculateTotals = () => {
     let subtotal = 0;
     let totalCgst = 0;
@@ -329,12 +329,29 @@ export default function CreateInvoice() {
       }
     });
 
+    // Keep full precision for subtotal and tax
+    const preciseSubtotal = Math.round(subtotal * 100) / 100;
+    const preciseCgst = Math.round(totalCgst * 100) / 100;
+    const preciseSgst = Math.round(totalSgst * 100) / 100;
+    const preciseTax = Math.round((totalCgst + totalSgst) * 100) / 100;
+    
+    // Calculate precise total before rounding
+    const preciseTotal = Math.round((subtotal + totalCgst + totalSgst) * 100) / 100;
+    
+    // Round final total to nearest whole rupee (>=0.50 rounds up, <0.50 rounds down)
+    const roundedTotal = Math.round(preciseTotal);
+    
+    // Calculate round-off adjustment
+    const roundOffAdjustment = Math.round((roundedTotal - preciseTotal) * 100) / 100;
+
     return {
-      subtotal: Math.round(subtotal * 100) / 100,
-      totalCgst: Math.round(totalCgst * 100) / 100,
-      totalSgst: Math.round(totalSgst * 100) / 100,
-      totalTax: Math.round((totalCgst + totalSgst) * 100) / 100,
-      grandTotal: Math.round((subtotal + totalCgst + totalSgst) * 100) / 100
+      subtotal: preciseSubtotal,
+      totalCgst: preciseCgst,
+      totalSgst: preciseSgst,
+      totalTax: preciseTax,
+      calculatedTotal: preciseTotal,
+      roundOffAdjustment: roundOffAdjustment,
+      grandTotal: roundedTotal
     };
   };
 
