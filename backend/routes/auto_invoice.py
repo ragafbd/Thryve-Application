@@ -608,13 +608,14 @@ async def generate_auto_invoices(
             
             # Add to result
             result.successful += 1
-            result.total_amount += total
+            result.total_amount += grand_total
             result.invoices.append({
                 "invoice_id": invoice_id,
                 "invoice_number": invoice_number,
                 "company_id": company["id"],
                 "company_name": company_name,
-                "amount": total,
+                "amount": grand_total,
+                "meeting_room_charges": len(pending_bookings),
                 "pdf_filename": invoice["pdf_filename"]
             })
             
