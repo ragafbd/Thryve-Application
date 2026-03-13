@@ -425,6 +425,13 @@ A secure, separate portal for coworking members to self-serve their needs.
 - [ ] Mobile-responsive optimization
 - [ ] Backend refactoring (move invoice routes to separate file)
 
+**Testing status**
+-   **Testing agent used after significant changes**: YES (Used after implementing Birthday feature, Credits system, and Primary Member logic).
+-   **Credit Deduction Logic Verified**: YES (December 2025) - Manually tested with curl:
+    - Full credit coverage: 90-min booking with 480 credits → 90 credits used, ₹0 billed ✅
+    - Partial credit coverage: 60-min booking with 30 credits → 30 credits used, ₹250 billed ✅
+    - Credit restoration on cancellation: Credits restored correctly ✅
+
 ## Test Reports
 - `/app/test_reports/iteration_2.json` - Authentication tests (17 passed)
 - `/app/test_reports/iteration_3.json` - Management tests (31 passed)
