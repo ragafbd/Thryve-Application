@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FileText, Play, Download, CheckCircle, XCircle, AlertCircle, Calendar, Users, IndianRupee, Eye, Clock } from "lucide-react";
+import { FileText, Play, Download, CheckCircle, XCircle, AlertCircle, Calendar, Users, IndianRupee } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,10 +30,7 @@ export default function AutoInvoice() {
   const [generating, setGenerating] = useState(false);
   const [runs, setRuns] = useState([]);
   const [companies, setCompanies] = useState([]);
-  const [previewData, setPreviewData] = useState(null);
-  const [previewLoading, setPreviewLoading] = useState(false);
   const [resultDialogOpen, setResultDialogOpen] = useState(false);
-  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [lastResult, setLastResult] = useState(null);
   
   // Form state
@@ -70,25 +67,6 @@ export default function AutoInvoice() {
     fetchRuns();
     fetchCompanies();
   }, []);
-
-  // Fetch preview when billing month changes
-  useEffect(() => {
-    if (billingMonth) {
-      fetchPreview();
-    }
-  }, [billingMonth]);
-
-  const fetchPreview = async () => {
-    setPreviewLoading(true);
-    try {
-      const response = await axios.get(`${API}/auto-invoice/eligible-companies?billing_month=${billingMonth}`);
-      setPreviewData(response.data);
-    } catch (error) {
-      console.error("Failed to fetch preview");
-    } finally {
-      setPreviewLoading(false);
-    }
-  };
 
   const handleGenerate = async () => {
     if (!billingMonth) {
