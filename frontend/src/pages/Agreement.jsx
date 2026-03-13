@@ -178,35 +178,35 @@ export default function Agreement() {
         <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">5. USE OF PREMISES</h3>
         <p style="text-align: justify; margin-bottom: 6pt;"><strong>5.1</strong> The Premises shall be used only for lawful business activities. Any illegal, immoral, or hazardous activities are strictly prohibited.</p>
         <p style="text-align: justify; margin-bottom: 6pt;"><strong>5.2</strong> The Licensee shall not:</p>
-        <ul style="margin-left: 30px;">
+        <ul style="margin-left: 30px; margin-bottom: 6pt;">
           <li>Install permanent fixtures</li>
           <li>Alter or damage the Premises</li>
           <li>Store hazardous materials</li>
           <li>Conduct activities causing nuisance, noise, or disturbance</li>
           <li>Allow unauthorized persons to occupy the workspace</li>
         </ul>
-        <p style="text-align: justify;"><strong>5.3</strong> The Licensee must maintain cleanliness and hygiene in its designated area.</p>
-        <p style="text-align: justify;"><strong>5.4</strong> Sub-licensing, assignment, or sharing of the workspace is strictly prohibited.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>5.3</strong> The Licensee must maintain cleanliness and hygiene in its designated area.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>5.4</strong> Sub-licensing, assignment, or sharing of the workspace is strictly prohibited.</p>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">6. MEETING ROOM & FACILITY RULES</h3>
-        <p style="text-align: justify;"><strong>6.1</strong> Meeting room usage is subject to prior booking and availability.</p>
-        <p style="text-align: justify;"><strong>6.2</strong> Overstay beyond the reserved slot may attract overtime charges.</p>
-        <p style="text-align: justify;"><strong>6.3</strong> Common area usage shall be respectful and non-disruptive. Any events or visitors should be notified in advance and are subject to approval & charges at the discretion of the Licensor.</p>
-        <p style="text-align: justify;"><strong>6.4</strong> Pantry use is for light refreshments only; cooking/heating heavy food items is prohibited.</p>
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">6. MEETING ROOM & FACILITY RULES</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>6.1</strong> Meeting room usage is subject to prior booking and availability.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>6.2</strong> Overstay beyond the reserved slot may attract overtime charges.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>6.3</strong> Common area usage shall be respectful and non-disruptive. Any events or visitors should be notified in advance and are subject to approval & charges at the discretion of the Licensor.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>6.4</strong> Pantry use is for light refreshments only; cooking/heating heavy food items is prohibited.</p>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">7. INTERNET, IT & ELECTRICAL USAGE</h3>
-        <p style="text-align: justify;"><strong>7.1</strong> The Licensee shall use the Licensor's internet responsibly and not engage in illegal downloads, hacking, or bandwidth abuse.</p>
-        <p style="text-align: justify;"><strong>7.2</strong> High electrical load equipment (servers, printers, etc.) requires prior approval.</p>
-        <p style="text-align: justify;"><strong>7.3</strong> The Licensor is not liable for internet downtime caused by third-party providers.</p>
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">7. INTERNET, IT & ELECTRICAL USAGE</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>7.1</strong> The Licensee shall use the Licensor's internet responsibly and not engage in illegal downloads, hacking, or bandwidth abuse.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>7.2</strong> High electrical load equipment (servers, printers, etc.) requires prior approval.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>7.3</strong> The Licensor is not liable for internet downtime caused by third-party providers.</p>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">8. ACCESS & SECURITY</h3>
-        <p style="text-align: justify;"><strong>8.1</strong> Normal access hours: Monday to Saturday 9:00 AM to 9:00 PM. The Premises will remain closed on all Sundays and Govt. declared public holidays (as notified from time to time) unless otherwise permitted.</p>
-        <p style="text-align: justify;"><strong>8.2</strong> Licensee shall not tamper with CCTV, access control systems, or security devices.</p>
-        <p style="text-align: justify;"><strong>8.3</strong> Visitors must follow the Licensor's entry protocols.</p>
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">8. ACCESS & SECURITY</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>8.1</strong> Normal access hours: Monday to Saturday 9:00 AM to 9:00 PM. The Premises will remain closed on all Sundays and Govt. declared public holidays (as notified from time to time) unless otherwise permitted.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>8.2</strong> Licensee shall not tamper with CCTV, access control systems, or security devices.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>8.3</strong> Visitors must follow the Licensor's entry protocols.</p>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">9. DAMAGE & LOSS</h3>
-        <p style="text-align: justify;"><strong>9.1</strong> The Licensee shall be responsible for any damage caused by its employees, agents, or guests.</p>
-        <p style="text-align: justify;"><strong>9.2</strong> The Licensor is not responsible for theft, loss, or damage to personal belongings, laptops, or equipment brought by the Licensee.</p>
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">9. DAMAGE & LOSS</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>9.1</strong> The Licensee shall be responsible for any damage caused by its employees, agents, or guests.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>9.2</strong> The Licensor is not responsible for theft, loss, or damage to personal belongings, laptops, or equipment brought by the Licensee.</p>
         
         <h3 style="margin-top: 25px; font-size: 14px;">10. TERMINATION</h3>
         <p style="text-align: justify;"><strong>10.1</strong> Either Party may terminate this Agreement by giving 30 days prior written notice.</p>
