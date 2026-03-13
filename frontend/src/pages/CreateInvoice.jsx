@@ -138,19 +138,23 @@ export default function CreateInvoice() {
           c => c.company_name === selectedClient.company_name
         );
         
-        if (clientCharges && clientCharges.bookings.length > 0 && clientCharges.total_amount > 0) {
-          setPendingCharges(clientCharges.bookings);
+        // Check if there are billable charges (total_amount > 0)
+        // The backend now recalculates: total_usage - allowed_credits
+        if (clientCharges && clientCharges.total_amount > 0) {
+          setPendingCharges(clientCharges.bookings || []);
           
           // Bundle ALL meeting room charges into a SINGLE line item
-          // Note: Credits have already been deducted at booking time
-          // billable_amount on each booking only contains charges for minutes exceeding credits
+          // The backend has already calculated: billable = total_usage - allowed_credits
           const totalBillableAmount = clientCharges.total_amount;
-          const totalBookings = clientCharges.bookings.length;
-          const bookingIds = clientCharges.bookings.map(b => b.booking_id);
+          const bookingCount = clientCharges.booking_count || clientCharges.bookings?.length || 0;
+          const billableMinutes = clientCharges.billable_minutes || 0;
+          const totalUsage = clientCharges.total_usage_minutes || 0;
+          const allowedCredits = clientCharges.allowed_credits || 0;
+          const bookingIds = (clientCharges.bookings || []).map(b => b.booking_id);
           
-          // Create ONE bundled meeting room line item
+          // Create ONE bundled meeting room line item with detailed description
           const bundledMeetingRoomItem = {
-            description: `Meeting Room Charges (${totalBookings} booking${totalBookings > 1 ? 's' : ''})`,
+            description: `Meeting Room Charges (${bookingCount} booking${bookingCount !== 1 ? 's' : ''} - ${billableMinutes} min billable)`,
             service_type: "meeting_room",
             quantity: 1,
             rate: totalBillableAmount,
@@ -160,19 +164,22 @@ export default function CreateInvoice() {
             is_prorated: false,
             prorate_days: null,
             prorate_total_days: 30,
-            is_bundled_meeting_room: true, // Flag to identify bundled meeting room item
-            booking_ids: bookingIds // Track all booking IDs for invoice creation
+            is_bundled_meeting_room: true,
+            booking_ids: bookingIds,
+            // Additional info for display
+            total_usage_minutes: totalUsage,
+            allowed_credits: allowedCredits,
+            billable_minutes: billableMinutes
           };
           
           // Add to existing line items and sort
           setLineItems(prev => {
-            // Remove any existing bundled meeting room items
             const nonMeetingItems = prev.filter(item => !item.is_bundled_meeting_room);
             return sortLineItems([...nonMeetingItems, bundledMeetingRoomItem]);
           });
         } else {
           setPendingCharges([]);
-          // Remove bundled meeting room items and re-sort
+          // Remove bundled meeting room items - no charges (usage <= allowed credits)
           setLineItems(prev => sortLineItems(prev.filter(item => !item.is_bundled_meeting_room)));
         }
       } catch (error) {
