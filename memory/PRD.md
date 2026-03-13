@@ -11,6 +11,18 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Public holiday management for booking restrictions**
 
 ## Recent Updates (March 13, 2026)
+- **Lock-in Period Field Added to Client Records**:
+  - New "Lock-in Period (months)" field in Add/Edit Client form (Subscription Details section)
+  - Default value: 11 months
+  - Displayed in client details expansion and LLA Generator table
+  - Dynamically incorporated into LLA document clause 2.1
+  
+- **LLA Document Formatting Improvements**:
+  - All main clause headings (1-16) are now bold with consistent font styling
+  - Uniform spacing between all clauses and sub-clauses
+  - Fixed missing margin between clause 5.4 and 6.1
+  - All sub-clauses now have proper margin-bottom for consistent spacing
+
 - **48-Hour Cancellation Policy for Meeting Room Credits**:
   - Credits are only restored if cancellation is made 48+ hours before the booking
   - Late cancellations (less than 48 hours before) forfeit the credits used
