@@ -333,12 +333,22 @@ export default function CreateInvoice() {
 
   const totals = calculateTotals();
 
+  // Map client data to expected invoice format
+  const mappedClient = selectedClient ? {
+    company_name: selectedClient.company_name,
+    name: selectedClient.signatory_name || selectedClient.company_name,
+    address: selectedClient.company_address || "",
+    gstin: selectedClient.company_gstin || "",
+    email: selectedClient.signatory_email || selectedClient.company_email || "",
+    phone: selectedClient.signatory_phone || ""
+  } : null;
+
   // Build preview data
   const previewData = {
     invoice_number: "THR/XXXX/XX/XXXX",
     invoice_date: invoiceDate.toISOString(),
     due_date: dueDate.toISOString(),
-    client: selectedClient || null,
+    client: mappedClient,
     company: company,
     line_items: lineItems.map(item => {
       const qty = parseFloat(item.quantity) || 0;
