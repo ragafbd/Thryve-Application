@@ -71,6 +71,25 @@ export default function AutoInvoice() {
     fetchCompanies();
   }, []);
 
+  // Fetch preview when billing month changes
+  useEffect(() => {
+    if (billingMonth) {
+      fetchPreview();
+    }
+  }, [billingMonth]);
+
+  const fetchPreview = async () => {
+    setPreviewLoading(true);
+    try {
+      const response = await axios.get(`${API}/auto-invoice/eligible-companies?billing_month=${billingMonth}`);
+      setPreviewData(response.data);
+    } catch (error) {
+      console.error("Failed to fetch preview");
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!billingMonth) {
       toast.error("Please select a billing month");
