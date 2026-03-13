@@ -906,13 +906,23 @@ async def generate_invoice_pdf(invoice_id: str):
     elements.append(items_table)
     elements.append(Spacer(1, 10))
     
-    # Totals
+    # Totals with GST-compliant rounding
+    round_off = invoice.get('round_off_adjustment', 0)
+    grand_total = invoice.get('grand_total', 0)
+    
     totals_data = [
         ['Sub Total', f"Rs. {invoice.get('subtotal', 0):,.2f}"],
         ['CGST (9%)', f"Rs. {invoice.get('total_cgst', 0):,.2f}"],
         ['SGST (9%)', f"Rs. {invoice.get('total_sgst', 0):,.2f}"],
-        ['Total Amount', f"Rs. {invoice.get('grand_total', 0):,.2f}"],
     ]
+    
+    # Add round-off row if non-zero
+    if round_off != 0:
+        round_off_str = f"+Rs. {round_off:,.2f}" if round_off >= 0 else f"-Rs. {abs(round_off):,.2f}"
+        totals_data.append(['Round-Off Adj.', round_off_str])
+    
+    # Grand total is always whole rupee
+    totals_data.append(['Total Amount', f"Rs. {int(grand_total):,}"])
     
     totals_table = Table(totals_data, colWidths=[100, 80])
     totals_table.setStyle(TableStyle([
@@ -934,8 +944,8 @@ async def generate_invoice_pdf(invoice_id: str):
     elements.append(totals_wrapper)
     elements.append(Spacer(1, 10))
     
-    # Amount in words
-    amount_words = number_to_words(invoice.get('grand_total', 0))
+    # Amount in words (always whole rupee)
+    amount_words = number_to_words(int(grand_total))
     elements.append(Paragraph(f"<b>Amount in words:</b> {amount_words}", styles['Normal']))
     elements.append(Spacer(1, 20))
     
