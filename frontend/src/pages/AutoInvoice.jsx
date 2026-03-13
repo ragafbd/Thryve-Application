@@ -152,10 +152,19 @@ export default function AutoInvoice() {
     });
   };
 
-  // Calculate preview totals based on companies
-  const totalActiveCompanies = companies.length;
-  const totalMonthlyRevenue = companies.reduce((sum, c) => sum + (c.total_rate || 0), 0);
-  const totalWithGst = totalMonthlyRevenue * 1.18;
+  // Calculate preview totals based on eligible companies from preview
+  const eligibleCount = previewData?.eligible_count || 0;
+  const ineligibleCount = previewData?.ineligible_count || 0;
+  const totalActiveCompanies = eligibleCount + ineligibleCount;
+  const totalEstimatedAmount = previewData?.total_estimated_amount || 0;
+
+  // Format due date (4 days after invoice date)
+  const formatDueDate = (invoiceDate) => {
+    if (!invoiceDate) return "-";
+    const date = new Date(invoiceDate);
+    date.setDate(date.getDate() + 4);
+    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
 
   return (
     <div className="space-y-6 animate-fade-in" data-testid="auto-invoice-page">
@@ -166,22 +175,22 @@ export default function AutoInvoice() {
             Auto Invoice Generation
           </h1>
           <p className="text-[#2E375B]/60 mt-1">
-            Generate monthly invoices with PDFs for all active companies
+            Generate monthly invoices with PDFs for eligible companies
           </p>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="border border-[#2E375B]/10">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Users className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-green-100 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-[#2E375B]/60">Active Companies</p>
-                <p className="text-2xl font-bold text-[#2E375B]">{totalActiveCompanies}</p>
+                <p className="text-sm text-[#2E375B]/60">Eligible Companies</p>
+                <p className="text-2xl font-bold text-green-600">{eligibleCount}</p>
               </div>
             </div>
           </CardContent>
@@ -190,12 +199,12 @@ export default function AutoInvoice() {
         <Card className="border border-[#2E375B]/10">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <IndianRupee className="w-5 h-5 text-green-600" />
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <XCircle className="w-5 h-5 text-orange-600" />
               </div>
               <div>
-                <p className="text-sm text-[#2E375B]/60">Monthly Revenue (excl. GST)</p>
-                <p className="text-2xl font-bold text-[#2E375B]">₹{totalMonthlyRevenue.toLocaleString('en-IN')}</p>
+                <p className="text-sm text-[#2E375B]/60">Ineligible/Skipped</p>
+                <p className="text-2xl font-bold text-orange-600">{ineligibleCount}</p>
               </div>
             </div>
           </CardContent>
@@ -208,8 +217,22 @@ export default function AutoInvoice() {
                 <IndianRupee className="w-5 h-5 text-[#FFA14A]" />
               </div>
               <div>
-                <p className="text-sm text-[#2E375B]/60">With GST (18%)</p>
-                <p className="text-2xl font-bold text-[#2E375B]">₹{totalWithGst.toLocaleString('en-IN', {maximumFractionDigits: 0})}</p>
+                <p className="text-sm text-[#2E375B]/60">Est. Amount (with GST)</p>
+                <p className="text-2xl font-bold text-[#2E375B]">₹{totalEstimatedAmount.toLocaleString('en-IN', {maximumFractionDigits: 0})}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-[#2E375B]/10">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Clock className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-[#2E375B]/60">Due Date</p>
+                <p className="text-lg font-bold text-[#2E375B]">{previewData?.due_date ? formatDueDate(previewData.invoice_date) : "-"}</p>
               </div>
             </div>
           </CardContent>
