@@ -571,6 +571,9 @@ async def generate_auto_invoices(
     # Save generation result
     await db.auto_invoice_runs.insert_one(result_dict)
     
+    # Remove MongoDB _id before returning (insert_one adds it in place)
+    result_dict.pop("_id", None)
+    
     return {
         "message": f"Generated {result.successful} invoices successfully" + (f" ({len(skipped_companies)} companies skipped due to start date)" if skipped_companies else ""),
         "result": result_dict
