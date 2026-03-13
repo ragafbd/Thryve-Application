@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 
 from models.management import (
     Company, CompanyCreate, CompanyUpdate, CompanyTerminate,
-    Member, CompanyMemberCreate, MemberUpdate
+    Member, CompanyMemberCreate, MemberUpdate, CompanyMemberUpdate
 )
 
 router = APIRouter(prefix="/api/companies", tags=["Companies"])
