@@ -418,7 +418,7 @@ export default function AutoInvoice() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Invoice #</TableHead>
-                          <TableHead>Member</TableHead>
+                          <TableHead>Company</TableHead>
                           <TableHead className="text-right">Amount</TableHead>
                           <TableHead className="text-right">PDF</TableHead>
                         </TableRow>
@@ -427,7 +427,7 @@ export default function AutoInvoice() {
                         {lastResult.invoices.map((inv) => (
                           <TableRow key={inv.invoice_id}>
                             <TableCell className="font-mono text-sm">{inv.invoice_number}</TableCell>
-                            <TableCell>{inv.member_name}</TableCell>
+                            <TableCell>{inv.company_name}</TableCell>
                             <TableCell className="text-right">₹{inv.amount?.toLocaleString('en-IN')}</TableCell>
                             <TableCell className="text-right">
                               <Button
