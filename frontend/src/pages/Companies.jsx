@@ -1205,12 +1205,38 @@ export default function Companies() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setMemberDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveMember} disabled={saving} className="bg-[#2E375B] hover:bg-[#232B47]">
-              {saving ? "Adding..." : "Add Member"}
+            <Button onClick={() => handleSaveMember(false)} disabled={saving} className="bg-[#2E375B] hover:bg-[#232B47]">
+              {saving ? "Saving..." : (editingMember ? "Update Member" : "Add Member")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Primary Contact Conflict Dialog */}
+      <AlertDialog open={primaryConflictDialogOpen} onOpenChange={setPrimaryConflictDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-orange-600">Primary Contact Already Exists</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>There is already a Primary Contact for this company:</p>
+              <div className="p-3 bg-slate-100 rounded-lg">
+                <p className="font-semibold text-slate-800">{existingPrimaryMember?.name}</p>
+                <p className="text-sm text-slate-600">{existingPrimaryMember?.email}</p>
+              </div>
+              <p>What would you like to do?</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel onClick={() => setPrimaryConflictDialogOpen(false)}>Cancel</AlertDialogCancel>
+            <Button variant="outline" onClick={handleSkipPrimary}>
+              Skip (Keep as Regular Member)
+            </Button>
+            <Button onClick={handleReplacePrimary} className="bg-orange-600 hover:bg-orange-700">
+              Replace Primary Contact
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
