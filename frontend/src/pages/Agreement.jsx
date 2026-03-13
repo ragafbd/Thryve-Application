@@ -208,63 +208,63 @@ export default function Agreement() {
         <p style="text-align: justify; margin-bottom: 6pt;"><strong>9.1</strong> The Licensee shall be responsible for any damage caused by its employees, agents, or guests.</p>
         <p style="text-align: justify; margin-bottom: 6pt;"><strong>9.2</strong> The Licensor is not responsible for theft, loss, or damage to personal belongings, laptops, or equipment brought by the Licensee.</p>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">10. TERMINATION</h3>
-        <p style="text-align: justify;"><strong>10.1</strong> Either Party may terminate this Agreement by giving 30 days prior written notice.</p>
-        <p style="text-align: justify;"><strong>10.2</strong> The Licensor may terminate this leave and license agreement immediately if there is:</p>
-        <ul style="margin-left: 30px;">
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">10. TERMINATION</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>10.1</strong> Either Party may terminate this Agreement by giving 30 days prior written notice.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>10.2</strong> The Licensor may terminate this leave and license agreement immediately if there is:</p>
+        <ul style="margin-left: 30px; margin-bottom: 6pt;">
           <li>Non-payment of license fee for two months</li>
           <li>Any illegal activity, misconduct or nuisance by the Licensee or its employees</li>
           <li>Any damage caused to property & person by the Licensee or its employees</li>
           <li>Any Breach of Agreement terms by the Licensee or its employees</li>
         </ul>
-        <p style="text-align: justify;"><strong>10.3</strong> On termination, the Licensee shall:</p>
-        <ul style="margin-left: 30px;">
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>10.3</strong> On termination, the Licensee shall:</p>
+        <ul style="margin-left: 30px; margin-bottom: 6pt;">
           <li>Vacate the workspace peacefully</li>
           <li>Remove all personal belongings</li>
           <li>Return access cards/keys</li>
           <li>Clear all dues</li>
         </ul>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">11. NO TENANCY / NO LEASE</h3>
-        <p style="text-align: justify;"><strong>11.1</strong> This Agreement creates no tenancy, lease, occupancy rights, or interest in the Premises.</p>
-        <p style="text-align: justify;"><strong>11.2</strong> The Licensee acknowledges that:</p>
-        <ul style="margin-left: 30px;">
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">11. NO TENANCY / NO LEASE</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>11.1</strong> This Agreement creates no tenancy, lease, occupancy rights, or interest in the Premises.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>11.2</strong> The Licensee acknowledges that:</p>
+        <ul style="margin-left: 30px; margin-bottom: 6pt;">
           <li>The Licensor retains full control over the Premises</li>
           <li>The Licensee's right is purely permissive</li>
           <li>This Agreement does not fall under the Rent Control Act</li>
         </ul>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">12. INDEMNITY</h3>
-        <p style="text-align: justify;"><strong>12.1</strong> The Licensee agrees to indemnify and hold harmless the Licensor from all:</p>
-        <ul style="margin-left: 30px;">
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">12. INDEMNITY</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>12.1</strong> The Licensee agrees to indemnify and hold harmless the Licensor from all:</p>
+        <ul style="margin-left: 30px; margin-bottom: 6pt;">
           <li>Legal claims</li>
           <li>Damages</li>
           <li>Liabilities</li>
           <li>Losses arising out of the Licensee's use of the Premises.</li>
         </ul>
-        <p style="text-align: justify;"><strong>12.2</strong> The Licensee will be solely responsible for compliance with all applicable laws, payments of all statutory levies, dues, or liabilities including Goods & Service Tax (GST) arising from the use of the licensed premises. The Licensor will not be held responsible in any manner whatsoever for any such liabilities, defaults or non-compliances on the part of the Licensee.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>12.2</strong> The Licensee will be solely responsible for compliance with all applicable laws, payments of all statutory levies, dues, or liabilities including Goods & Service Tax (GST) arising from the use of the licensed premises. The Licensor will not be held responsible in any manner whatsoever for any such liabilities, defaults or non-compliances on the part of the Licensee.</p>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">13. LIMITATION OF LIABILITY</h3>
-        <p style="text-align: justify;"><strong>13.1</strong> The Licensor shall not be responsible for:</p>
-        <ul style="margin-left: 30px;">
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">13. LIMITATION OF LIABILITY</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>13.1</strong> The Licensor shall not be responsible for:</p>
+        <ul style="margin-left: 30px; margin-bottom: 6pt;">
           <li>Business losses</li>
           <li>Data loss</li>
           <li>Interruption of services due to external factors</li>
           <li>Acts of God, electrical failures, or internet breakdowns</li>
         </ul>
-        <p style="text-align: justify;"><strong>13.2</strong> The maximum liability of the Licensor shall not exceed the monthly license fee.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>13.2</strong> The maximum liability of the Licensor shall not exceed the monthly license fee.</p>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">14. GOVERNING LAW & JURISDICTION</h3>
-        <p style="text-align: justify;"><strong>14.1</strong> This Agreement shall be governed by the laws of India.</p>
-        <p style="text-align: justify;"><strong>14.2</strong> Courts in Faridabad, Haryana shall have exclusive jurisdiction.</p>
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">14. GOVERNING LAW & JURISDICTION</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>14.1</strong> This Agreement shall be governed by the laws of India.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>14.2</strong> Courts in Faridabad, Haryana shall have exclusive jurisdiction.</p>
         
-        <h3 style="margin-top: 25px; font-size: 14px;">15. MISCELLANEOUS</h3>
-        <p style="text-align: justify;"><strong>15.1</strong> Any amendments must be in writing and signed by both Parties.</p>
-        <p style="text-align: justify;"><strong>15.2</strong> Notices shall be served via email and registered post.</p>
-        <p style="text-align: justify;"><strong>15.3</strong> If any clause is held invalid, the remaining clauses shall remain enforceable.</p>
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">15. MISCELLANEOUS</h3>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>15.1</strong> Any amendments must be in writing and signed by both Parties.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>15.2</strong> Notices shall be served via email and registered post.</p>
+        <p style="text-align: justify; margin-bottom: 6pt;"><strong>15.3</strong> If any clause is held invalid, the remaining clauses shall remain enforceable.</p>
         
-        <h3 style="margin-top: 30px; font-size: 14px;">16. SIGNATURES</h3>
-        <p>IN WITNESS WHEREOF, the Parties hereto have executed this Agreement on the date and year first written above.</p>
+        <h3 style="margin-top: 16pt; margin-bottom: 8pt; font-size: 11pt; font-weight: bold;">16. SIGNATURES</h3>
+        <p style="margin-bottom: 12pt;">IN WITNESS WHEREOF, the Parties hereto have executed this Agreement on the date and year first written above.</p>
         
         <div style="margin-top: 40px; page-break-inside: avoid;">
           <table style="width: 100%; margin-top: 30px;">
