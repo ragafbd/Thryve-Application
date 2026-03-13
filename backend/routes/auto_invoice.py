@@ -512,7 +512,7 @@ async def generate_auto_invoices(
             total_cgst_sum = cgst
             total_sgst_sum = sgst
             
-            # 2. Fetch and add pending meeting room charges (always last)
+            # 2. Fetch and bundle all pending meeting room charges into a single line item (always last)
             pending_bookings = await db.bookings.find({
                 "company_id": company["id"],
                 "billable_amount": {"$gt": 0},
@@ -520,41 +520,44 @@ async def generate_auto_invoices(
                 "status": {"$ne": "cancelled"}
             }, {"_id": 0}).to_list(100)
             
-            for booking in pending_bookings:
-                booking_amount = booking.get("billable_amount", 0)
-                booking_cgst = round(booking_amount * (GST_RATE / 2) / 100, 2)
-                booking_sgst = round(booking_amount * (GST_RATE / 2) / 100, 2)
+            if pending_bookings:
+                # Calculate total meeting room charges
+                total_meeting_room_amount = sum(booking.get("billable_amount", 0) for booking in pending_bookings)
+                meeting_room_cgst = round(total_meeting_room_amount * (GST_RATE / 2) / 100, 2)
+                meeting_room_sgst = round(total_meeting_room_amount * (GST_RATE / 2) / 100, 2)
                 
+                # Create a single bundled meeting room line item
                 meeting_item = {
-                    "description": f"Meeting Room - {booking.get('room_name', 'Room')} ({booking.get('date', '')})",
+                    "description": f"Meeting Room Charges ({len(pending_bookings)} booking{'s' if len(pending_bookings) > 1 else ''})",
                     "service_type": "meeting_room",
-                    "quantity": 1,
-                    "rate": booking_amount,
+                    "quantity": len(pending_bookings),
+                    "rate": round(total_meeting_room_amount / len(pending_bookings), 2) if len(pending_bookings) > 0 else 0,
                     "is_taxable": True,
                     "hsn_sac": "997212",
-                    "unit": "hour",
+                    "unit": "bookings",
                     "is_prorated": False,
                     "prorate_days": 0,
                     "prorate_total_days": 0,
-                    "amount": booking_amount,
-                    "cgst": booking_cgst,
-                    "sgst": booking_sgst,
-                    "total": booking_amount + booking_cgst + booking_sgst,
-                    "booking_id": booking.get("id"),
+                    "amount": total_meeting_room_amount,
+                    "cgst": meeting_room_cgst,
+                    "sgst": meeting_room_sgst,
+                    "total": total_meeting_room_amount + meeting_room_cgst + meeting_room_sgst,
+                    "booking_ids": [booking.get("id") for booking in pending_bookings],
                     "order": 99  # Always last
                 }
                 line_items.append(meeting_item)
                 
                 # Add to totals
-                total_subtotal += booking_amount
-                total_cgst_sum += booking_cgst
-                total_sgst_sum += booking_sgst
+                total_subtotal += total_meeting_room_amount
+                total_cgst_sum += meeting_room_cgst
+                total_sgst_sum += meeting_room_sgst
                 
-                # Mark booking as included in invoice
-                await db.bookings.update_one(
-                    {"id": booking.get("id")},
-                    {"$set": {"payment_status": "invoiced", "invoice_id": invoice_id}}
-                )
+                # Mark all bookings as included in invoice
+                for booking in pending_bookings:
+                    await db.bookings.update_one(
+                        {"id": booking.get("id")},
+                        {"$set": {"payment_status": "invoiced", "invoice_id": invoice_id}}
+                    )
             
             # Sort line items by order
             line_items.sort(key=lambda x: x.get("order", 50))
