@@ -76,31 +76,36 @@ export default function MemberDashboard() {
         </div>
       </div>
 
-      {/* Meeting Room Credits Card */}
+      {/* Meeting Room Credits Card - Credit-Based System */}
       {totalCredits > 0 && (
         <Card className="border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50" data-testid="credits-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold flex items-center gap-2 text-[#2E375B]">
               <Timer className="w-5 h-5 text-blue-600" />
               Company Meeting Room Credits
+              <span className="text-xs font-normal text-blue-500 ml-2">(1 Credit = Rs. 50)</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-4 mb-4">
               <div className="text-center p-3 bg-white/80 rounded-lg">
-                <p className="text-2xl font-bold text-[#2E375B]">{totalCredits.toLocaleString('en-IN')}</p>
-                <p className="text-xs text-[#2E375B]/60">Total Credits (mins)</p>
+                <p className="text-2xl font-bold text-[#2E375B]">{totalCredits}</p>
+                <p className="text-xs text-[#2E375B]/60">Total Credits</p>
               </div>
               <div className="text-center p-3 bg-white/80 rounded-lg">
-                <p className="text-2xl font-bold text-orange-600">{creditsUsed.toLocaleString('en-IN')}</p>
-                <p className="text-xs text-[#2E375B]/60">Used (mins)</p>
+                <p className="text-2xl font-bold text-orange-600">{creditsUsed}</p>
+                <p className="text-xs text-[#2E375B]/60">Credits Used</p>
               </div>
               <div className="text-center p-3 bg-white/80 rounded-lg">
                 <p className={`text-2xl font-bold ${creditsRemaining > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {creditsRemaining.toLocaleString('en-IN')}
+                  {creditsRemaining}
                 </p>
-                <p className="text-xs text-[#2E375B]/60">Balance (mins)</p>
+                <p className="text-xs text-[#2E375B]/60">Credits Remaining</p>
               </div>
+            </div>
+            {/* Credit costs info */}
+            <div className="text-xs text-[#2E375B]/60 mb-2 bg-white/50 p-2 rounded">
+              <strong>Costs:</strong> Conference Room: 20 credits/hr • Meeting Room: 5 credits/30 min
             </div>
             {/* Progress bar */}
             <div>
@@ -118,7 +123,7 @@ export default function MemberDashboard() {
             </div>
             {companyCredits?.member_credits_used !== undefined && (
               <p className="text-xs text-[#2E375B]/60 mt-2">
-                Your usage: {companyCredits.member_credits_used.toLocaleString('en-IN')} mins
+                Your usage: {companyCredits.member_credits_used} credits
               </p>
             )}
           </CardContent>
