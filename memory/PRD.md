@@ -11,6 +11,27 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Public holiday management for booking restrictions**
 
 ## Recent Updates (March 13, 2026)
+- **Enhanced Create Invoice Form & Auto-Generation**: Complete invoice improvements
+  - **Invoice Item Ordering**: Strict order enforced automatically
+    1. Monthly Plan Fee - always first (order: 1)
+    2. Refundable Security Deposit - always second (order: 2)
+    3. Setup Charges (order: 3)
+    4. Day Pass (order: 4)
+    5. Meeting Room Charges - always last (order: 99)
+  - **GST Rule for Security Deposits**: 
+    - GST checkbox disabled and greyed out for Security Deposit items
+    - Shows "(Not applicable for Security Deposit)" label
+    - Service type dropdown shows "(No GST)" suffix
+  - **Auto-Invoice Meeting Room Charges**:
+    - Auto-generation now includes pending meeting room charges
+    - Charges above client's credits are automatically added as line items
+    - Bookings marked as "invoiced" after inclusion
+  - **Auto-populate from Client Data**:
+    - Quantity (Seats) pre-filled from client's `total_seats`
+    - Rate pre-filled from client's `rate_per_seat`
+    - Description uses client's `plan_name`
+  - **Fixed Input Behavior**: No more leading zeros, blank defaults instead of 0
+
 - **Create Invoice Form Improvements**: Enhanced line item auto-population and input behavior
   - **Auto-populate Quantity (Seats)**: Pre-filled from client's `total_seats` when client is selected
   - **Auto-populate Rate**: Pre-filled from client's `rate_per_seat` when client is selected
