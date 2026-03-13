@@ -531,8 +531,19 @@ async def create_invoice(invoice_data: InvoiceCreate):
     company_name = client.get("company_name") or client.get("name", "")
     invoice_number = await generate_invoice_number(company_name)
     
-    # Calculate line items
-    calculated_items = [calculate_line_item(item) for item in invoice_data.line_items]
+    # Calculate line items and collect booking IDs for meeting room charges
+    calculated_items = []
+    all_booking_ids = []
+    
+    for item in invoice_data.line_items:
+        calculated_item = calculate_line_item(item)
+        calculated_items.append(calculated_item)
+        
+        # Collect booking IDs from bundled meeting room charges
+        if hasattr(item, 'booking_ids') and item.booking_ids:
+            all_booking_ids.extend(item.booking_ids)
+        elif isinstance(item, dict) and item.get('booking_ids'):
+            all_booking_ids.extend(item.get('booking_ids', []))
     
     # Calculate totals
     subtotal = sum(item["amount"] for item in calculated_items)
@@ -560,7 +571,24 @@ async def create_invoice(invoice_data: InvoiceCreate):
     doc = invoice_obj.model_dump()
     # Remove None values to avoid storing them
     doc = {k: v for k, v in doc.items() if v is not None}
+    
+    # Store booking IDs if present (for tracking)
+    if all_booking_ids:
+        doc["meeting_room_booking_ids"] = all_booking_ids
+    
     await db.invoices.insert_one(doc)
+    
+    # Mark associated bookings as invoiced
+    if all_booking_ids:
+        await db.bookings.update_many(
+            {"id": {"$in": all_booking_ids}},
+            {"$set": {
+                "payment_status": "invoiced",
+                "invoice_id": invoice_obj.id,
+                "invoiced_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+    
     return invoice_obj
 
 @api_router.get("/invoices", response_model=List[Invoice])
