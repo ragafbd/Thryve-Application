@@ -158,44 +158,30 @@ export default function AutoInvoice() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="border border-[#2E375B]/10">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Users className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-[#2E375B]/60">Active Companies</p>
+                <p className="text-2xl font-bold text-blue-600">{totalActiveCompanies}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
         <Card className="border border-[#2E375B]/10">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-green-600" />
+                <Calendar className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-[#2E375B]/60">Eligible Companies</p>
-                <p className="text-2xl font-bold text-green-600">{eligibleCount}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border border-[#2E375B]/10">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <XCircle className="w-5 h-5 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-sm text-[#2E375B]/60">Ineligible/Skipped</p>
-                <p className="text-2xl font-bold text-orange-600">{ineligibleCount}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border border-[#2E375B]/10">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-[#FFA14A]/20 rounded-lg">
-                <IndianRupee className="w-5 h-5 text-[#FFA14A]" />
-              </div>
-              <div>
-                <p className="text-sm text-[#2E375B]/60">Est. Amount (with GST)</p>
-                <p className="text-2xl font-bold text-[#2E375B]">₹{totalEstimatedAmount.toLocaleString('en-IN', {maximumFractionDigits: 0})}</p>
+                <p className="text-sm text-[#2E375B]/60">Billing Month</p>
+                <p className="text-lg font-bold text-green-600">{formatMonth(billingMonth)}</p>
               </div>
             </div>
           </CardContent>
@@ -204,12 +190,12 @@ export default function AutoInvoice() {
         <Card className="border border-[#2E375B]/10">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Clock className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-[#FFA14A]/20 rounded-lg">
+                <FileText className="w-5 h-5 text-[#FFA14A]" />
               </div>
               <div>
-                <p className="text-sm text-[#2E375B]/60">Due Date</p>
-                <p className="text-lg font-bold text-[#2E375B]">{previewData?.due_date ? formatDueDate(previewData.invoice_date) : "-"}</p>
+                <p className="text-sm text-[#2E375B]/60">Ready to Generate</p>
+                <p className="text-2xl font-bold text-[#2E375B]">{billingMonth ? "Yes" : "No"}</p>
               </div>
             </div>
           </CardContent>
