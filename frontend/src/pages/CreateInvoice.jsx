@@ -210,7 +210,14 @@ export default function CreateInvoice() {
   };
 
   const addLineItem = () => {
-    setLineItems([...lineItems, { ...emptyLineItem }]);
+    // Create new line item - populate with client data if available
+    const newItem = {
+      ...emptyLineItem,
+      quantity: selectedClient?.total_seats || "",
+      rate: selectedClient?.rate_per_seat || "",
+      description: selectedClient?.plan_name || "Monthly Plan"
+    };
+    setLineItems([...lineItems, newItem]);
   };
 
   const removeLineItem = (index) => {
