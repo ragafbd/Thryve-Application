@@ -130,8 +130,10 @@ class Company(BaseModel):
     lock_in_months: int = 11  # NEW: For LLA (default 11 months)
     
     # Meeting Room Credits (per seat)
-    meeting_room_credits: int = 0  # Credits per seat in minutes
-    credits_used: int = 0
+    meeting_room_credits: int = 0  # Credits per seat in minutes (allocated_minutes_per_seat)
+    total_credits: int = 0  # Total credits = total_seats × meeting_room_credits
+    credits_used: int = 0  # Total credits used by all members
+    remaining_credits: int = 0  # Total credits - credits_used
     credits_reset_date: str = ""
     
     # Internet/Bandwidth Details
