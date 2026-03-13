@@ -225,11 +225,15 @@ export default function CreateInvoice() {
     let totalSgst = 0;
 
     lineItems.forEach(item => {
+      // Handle empty or invalid quantity/rate as 0 for calculation
+      const qty = parseFloat(item.quantity) || 0;
+      const rate = parseFloat(item.rate) || 0;
+      
       let amount;
       if (item.is_prorated && item.prorate_days && item.prorate_total_days) {
-        amount = item.quantity * (item.rate / item.prorate_total_days) * item.prorate_days;
+        amount = qty * (rate / item.prorate_total_days) * item.prorate_days;
       } else {
-        amount = item.quantity * item.rate;
+        amount = qty * rate;
       }
       subtotal += amount;
       if (item.is_taxable) {
