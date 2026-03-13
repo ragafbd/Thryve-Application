@@ -478,12 +478,21 @@ async def cancel_member_booking(booking_id: str, current_member: dict = Depends(
     if booking.get("status") == "cancelled":
         raise HTTPException(status_code=400, detail="Booking is already cancelled")
     
-    # Restore credits
-    if booking.get("credits_used", 0) > 0:
-        await db.members.update_one(
-            {"id": current_member["id"]},
-            {"$inc": {"credits_used": -booking["credits_used"]}}
-        )
+    # Restore credits to company (not member)
+    credits_used = booking.get("credits_used", 0)
+    company_id = booking.get("company_id") or current_member.get("company_id")
+    
+    if credits_used > 0 and company_id:
+        company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+        if company:
+            current_remaining = company.get("remaining_credits", 0)
+            await db.companies.update_one(
+                {"id": company_id},
+                {
+                    "$inc": {"credits_used": -credits_used},
+                    "$set": {"remaining_credits": current_remaining + credits_used}
+                }
+            )
     
     await db.bookings.update_one({"id": booking_id}, {"$set": {"status": "cancelled"}})
     
