@@ -328,11 +328,15 @@ class TestBookingCreditsDeduction:
         if initial_remaining <= 0:
             pytest.skip("No remaining credits to test")
         
-        # Create a booking
-        tomorrow = (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d")
+        # Find next weekday (Monday-Saturday, skip Sunday)
+        test_date = datetime.now() + timedelta(days=2)
+        while test_date.weekday() == 6:  # Skip Sunday
+            test_date += timedelta(days=1)
+        
+        booking_date = test_date.strftime("%Y-%m-%d")
         booking_data = {
             "room_id": self.test_room["id"],
-            "date": tomorrow,
+            "date": booking_date,
             "start_time": "14:00",
             "end_time": "15:00",
             "purpose": "Test booking for credits restoration"
