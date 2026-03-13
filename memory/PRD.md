@@ -11,20 +11,34 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Public holiday management for booking restrictions**
 
 ## Recent Updates (March 13, 2026)
+- **Meeting Room Credits System**: Complete company-level credits tracking for meeting room bookings
+  - **Credits Calculation**: Total Credits = Total Seats × Allocated Minutes per Seat
+  - **Admin Panel (Clients Page)**:
+    - Each company shows credits badge (e.g., "120 min credits")
+    - Expanded client view shows "Meeting Room Credits" section with:
+      - Credits/Seat, Total Credits, Credits Used, Balance Credits
+      - Visual progress bar showing percentage remaining
+  - **Member Portal (Dashboard)**:
+    - Welcome header shows Balance Credits prominently
+    - Dedicated "Company Meeting Room Credits" card with:
+      - Total/Used/Balance credits with progress bar
+      - Member's personal usage tracking
+  - **Booking Flow**:
+    - Booking deducts minutes from company's remaining credits
+    - Cancellation restores credits to company balance
+    - Beyond-credits usage generates billable amount
+  - **APIs**:
+    - GET `/api/companies/{id}/credits` - Detailed credits info
+    - GET `/api/member/company-credits` - Member's company credits
+    - POST/DELETE bookings automatically update company credits
+  - **Migration**: All existing companies have been migrated with calculated credits
+
 - **Enhanced Upcoming Birthdays Feature**: Complete redesign of the birthday tracking system
-  - **Sidebar Widget**: New "Birthdays" navigation item with count badge
-    - Appears below Dashboard in sidebar with pink/purple gradient styling
-    - Shows count of birthdays in next 10 days
-    - Click scrolls to birthday section on dashboard
-  - **Dashboard Birthday Section**: Enhanced display with full details
-    - Shows member name, company name, phone number, birthday date, days until
-    - Today's birthdays highlighted with special styling (pink gradient, "Today!" badge, gift icon)
-    - Phone displayed with 📱 emoji prefix
-    - Future birthdays show cake icon
-    - Empty state displays "No Upcoming Birthdays" message
+  - **Sidebar Widget**: "Birthdays" navigation item with count badge under Admin section
+  - **Dedicated Page**: `/admin/birthdays` shows member birthdays with:
+    - Member name, company name, birthday (dd-mm format), phone number
+    - "Today!" badge for current day birthdays
   - API: GET `/api/management/birthdays/upcoming?days=N`
-    - Returns: id, name, email, phone, company_name, date_of_birth, birthday_date, days_until, turning_age, is_today
-    - Sorted by days_until (closest first)
 
 ## Previous Updates (March 11, 2026)
 - **Invoice Editing Feature**: Added ability to edit invoices after creation
