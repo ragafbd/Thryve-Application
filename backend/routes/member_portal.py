@@ -432,7 +432,12 @@ async def get_member_bookings(
 
 @router.post("/bookings")
 async def create_member_booking(booking_data: MemberBookingCreate, current_member: dict = Depends(get_current_member)):
-    """Create a room booking for the member"""
+    """Create a room booking for the member using CREDIT-BASED system"""
+    # Credit system: 1 Credit = Rs. 50
+    # Conference Room: 20 credits/hour (1-hour slots)
+    # Meeting Room: 5 credits/30-min slot
+    CREDIT_VALUE = 50  # Rs. 50 per credit
+    
     # Validate booking date
     try:
         booking_date = datetime.strptime(booking_data.date, "%Y-%m-%d").date()
@@ -461,13 +466,28 @@ async def create_member_booking(booking_data: MemberBookingCreate, current_membe
     if not room:
         raise HTTPException(status_code=400, detail="Invalid room")
     
-    # Calculate duration
+    # Get room type and credit cost
+    room_type = room.get("room_type", "meeting_room")
+    slot_duration = room.get("slot_duration", 30)  # 60 for CR, 30 for MR
+    credit_cost_per_slot = room.get("credit_cost_per_slot", 5 if room_type == "meeting_room" else 20)
+    
+    # Calculate duration and validate slot rules
     start = datetime.strptime(booking_data.start_time, "%H:%M")
     end = datetime.strptime(booking_data.end_time, "%H:%M")
     duration = int((end - start).total_seconds() / 60)
     
     if duration <= 0:
         raise HTTPException(status_code=400, detail="End time must be after start time")
+    
+    # Validate slot duration rules
+    if room_type == "conference_room" and duration % 60 != 0:
+        raise HTTPException(status_code=400, detail="Conference rooms must be booked in 1-hour slots only")
+    if room_type == "meeting_room" and duration % 30 != 0:
+        raise HTTPException(status_code=400, detail="Meeting rooms must be booked in 30-minute slots")
+    
+    # Calculate number of slots and credits required
+    num_slots = duration // slot_duration
+    credits_required = num_slots * credit_cost_per_slot
     
     # Check for conflicts
     conflicts = await db.bookings.find_one({
@@ -490,20 +510,23 @@ async def create_member_booking(booking_data: MemberBookingCreate, current_membe
     if company_id:
         company = await db.companies.find_one({"id": company_id}, {"_id": 0})
         if company:
-            # Calculate company's remaining credits
-            total_credits = company.get("total_credits", company.get("total_seats", 0) * company.get("meeting_room_credits", 0))
+            # Calculate company's total and remaining credits
+            total_seats = company.get("total_seats", 0)
+            credits_per_seat = company.get("meeting_room_credits", 30)
+            total_credits = company.get("total_credits", total_seats * credits_per_seat)
             credits_used = company.get("credits_used", 0)
             company_remaining_credits = company.get("remaining_credits", total_credits - credits_used)
     
-    # Calculate credits and billing using company credits
-    credits_to_use = min(duration, company_remaining_credits) if company_remaining_credits > 0 else 0
-    billable_minutes = duration - credits_to_use
-    billable_amount = (billable_minutes / 60) * room["hourly_rate"] if billable_minutes > 0 else 0
+    # Calculate credits to use from balance and billable credits
+    credits_to_use = min(credits_required, company_remaining_credits) if company_remaining_credits > 0 else 0
+    billable_credits = credits_required - credits_to_use
+    billable_amount = billable_credits * CREDIT_VALUE  # Rs. 50 per credit
     
     booking = {
         "id": str(__import__('uuid').uuid4()),
         "room_id": booking_data.room_id,
         "room_name": room["name"],
+        "room_type": room_type,
         "member_id": current_member["id"],
         "member_name": current_member["name"],
         "company_id": company_id,
@@ -512,18 +535,23 @@ async def create_member_booking(booking_data: MemberBookingCreate, current_membe
         "start_time": booking_data.start_time,
         "end_time": booking_data.end_time,
         "duration_minutes": duration,
+        "num_slots": num_slots,
         "purpose": booking_data.purpose or "",
         "attendees": booking_data.attendees,
+        "credit_cost_per_slot": credit_cost_per_slot,
+        "credits_required": credits_required,
         "credits_used": credits_to_use,
+        "billable_credits": billable_credits,
         "billable_amount": round(billable_amount, 2),
         "status": "confirmed",
+        "payment_status": "pending" if billable_amount > 0 else "covered",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "created_by": current_member["id"]
     }
     
     await db.bookings.insert_one(booking)
     
-    # Update company's credits used and remaining (instead of member)
+    # Update company's credits used and remaining
     if credits_to_use > 0 and company_id:
         await db.companies.update_one(
             {"id": company_id},
