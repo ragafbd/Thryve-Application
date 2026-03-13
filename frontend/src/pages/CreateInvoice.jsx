@@ -37,12 +37,27 @@ import InvoicePreview from "@/components/InvoicePreview";
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const SERVICE_TYPES = [
-  { value: "monthly_rental", label: "Monthly Plan", taxable: true, hsn: "997212", unit: "Month" },
-  { value: "security_deposit", label: "Refundable Security Deposit", taxable: false, hsn: "", unit: "Units" },
-  { value: "setup_charges", label: "Setup Charges", taxable: true, hsn: "997212", unit: "Units" },
-  { value: "day_pass", label: "Day Pass", taxable: true, hsn: "997212", unit: "Day" },
-  { value: "meeting_room", label: "Meeting Room Charges", taxable: true, hsn: "997212", unit: "Hour" },
+  { value: "monthly_rental", label: "Monthly Plan", taxable: true, hsn: "997212", unit: "Month", order: 1 },
+  { value: "security_deposit", label: "Refundable Security Deposit", taxable: false, hsn: "", unit: "Units", order: 2, gstLocked: true },
+  { value: "setup_charges", label: "Setup Charges", taxable: true, hsn: "997212", unit: "Units", order: 3 },
+  { value: "day_pass", label: "Day Pass", taxable: true, hsn: "997212", unit: "Day", order: 4 },
+  { value: "meeting_room", label: "Meeting Room Charges", taxable: true, hsn: "997212", unit: "Hour", order: 99 }, // Always last
 ];
+
+// Get sort order for a service type
+const getServiceOrder = (serviceType) => {
+  const service = SERVICE_TYPES.find(s => s.value === serviceType);
+  return service?.order || 50; // Default to middle if not found
+};
+
+// Sort line items by service type order
+const sortLineItems = (items) => {
+  return [...items].sort((a, b) => {
+    const orderA = getServiceOrder(a.service_type);
+    const orderB = getServiceOrder(b.service_type);
+    return orderA - orderB;
+  });
+};
 
 const emptyLineItem = {
   description: "Monthly Plan", // Default description from service type
