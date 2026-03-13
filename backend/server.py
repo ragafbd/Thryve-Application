@@ -545,12 +545,16 @@ async def create_invoice(invoice_data: InvoiceCreate):
         elif isinstance(item, dict) and item.get('booking_ids'):
             all_booking_ids.extend(item.get('booking_ids', []))
     
-    # Calculate totals
+    # Calculate totals with full precision
     subtotal = sum(item["amount"] for item in calculated_items)
     total_cgst = sum(item["cgst"] for item in calculated_items)
     total_sgst = sum(item["sgst"] for item in calculated_items)
     total_tax = total_cgst + total_sgst
-    grand_total = subtotal + total_tax
+    calculated_total = round(subtotal + total_tax, 2)
+    
+    # GST-compliant rounding: Round final total to nearest whole rupee
+    rounded_total = round(calculated_total)
+    round_off_adjustment = round(rounded_total - calculated_total, 2)
     
     # Create invoice object
     invoice_obj = Invoice(
@@ -563,7 +567,7 @@ async def create_invoice(invoice_data: InvoiceCreate):
         total_cgst=round(total_cgst, 2),
         total_sgst=round(total_sgst, 2),
         total_tax=round(total_tax, 2),
-        grand_total=round(grand_total, 2),
+        grand_total=rounded_total,
         notes=invoice_data.notes or "",
         status="pending"
     )
