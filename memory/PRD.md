@@ -11,6 +11,20 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Public holiday management for booking restrictions**
 
 ## Recent Updates (March 13, 2026)
+- **Primary Member Validation & Edit Feature**: Complete member management enhancement
+  - **Primary Contact Constraint**: Only one primary member allowed per company
+  - **Conflict Handling**: When adding/editing a member as primary while one exists:
+    - Shows dialog: "Primary Contact Already Exists" with existing primary info
+    - Options: **Skip** (save as regular member) or **Replace Primary Contact**
+  - **Edit Member**: Admin can now edit member details
+    - Edit button (pencil icon) in members table
+    - Dialog pre-fills all member data (name, email, phone, DOB, seat, primary status)
+    - "Update Member" button in edit mode
+  - **Atomic Replace**: When replacing primary, old primary demoted and new one assigned atomically
+  - **APIs**:
+    - POST `/api/companies/{id}/members` - Returns 409 if primary exists (unless replace_primary=true)
+    - PUT `/api/companies/{id}/members/{member_id}` - Same validation for primary status change
+
 - **Auto Invoice Generation Enhancement**: Enhanced logic to respect client start dates and adjust due dates
   - **Start Date Validation**: Invoices can only be generated for companies whose start_date is on or before the billing period
   - **Due Date Calculation**: Changed from 15th of month to invoice_date + 4 days
