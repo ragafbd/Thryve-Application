@@ -163,6 +163,23 @@ export default function Layout() {
     return () => clearInterval(interval);
   }, [lastTicketCheck, navigate]);
 
+  // Fetch upcoming birthday count (next 10 days)
+  useEffect(() => {
+    const fetchBirthdayCount = async () => {
+      try {
+        const response = await axios.get(`${API}/management/birthdays/upcoming?days=10`);
+        setUpcomingBirthdayCount(response.data?.length || 0);
+      } catch (error) {
+        console.error('Failed to fetch birthdays:', error);
+      }
+    };
+
+    fetchBirthdayCount();
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchBirthdayCount, 300000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Close sidebar on mobile when route changes
   useEffect(() => {
     if (window.innerWidth < 1024) {
