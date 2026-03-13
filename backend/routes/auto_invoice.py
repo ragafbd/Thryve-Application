@@ -574,7 +574,6 @@ async def generate_auto_invoices(
             }
             
             # Create invoice
-            invoice_id = str(uuid.uuid4())
             invoice = {
                 "id": invoice_id,
                 "invoice_number": invoice_number,
