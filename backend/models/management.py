@@ -375,6 +375,7 @@ class Booking(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     room_id: str
     room_name: str = ""
+    room_type: str = "meeting_room"  # "conference_room" or "meeting_room"
     member_id: Optional[str] = None  # Optional for guest bookings
     member_name: str = ""
     company_id: Optional[str] = None  # Reference to company for credit deduction
@@ -383,11 +384,22 @@ class Booking(BaseModel):
     start_time: str
     end_time: str
     duration_minutes: int = 0
+    num_slots: int = 1  # Number of slots booked
     purpose: str = ""
     attendees: Optional[int] = None
-    credits_used: int = 0  # Credits deducted for this booking
-    billable_amount: float = 0  # Amount to bill (if credits exhausted)
+    
+    # Credit-based billing (1 Credit = Rs. 50)
+    credit_cost_per_slot: int = 5  # Credits per slot (20 for CR, 5 for MR)
+    credits_required: int = 0  # Total credits required for this booking
+    credits_used: int = 0  # Credits deducted from company balance
+    billable_credits: int = 0  # Credits that exceeded company balance
+    billable_amount: float = 0  # Amount to bill = billable_credits × Rs. 50
+    
     status: str = "confirmed"  # confirmed, cancelled, completed
+    
+    # Cancellation tracking
+    is_late_cancellation: bool = False
+    cancelled_at: Optional[str] = None
     
     # Guest booking fields
     is_guest: bool = False
