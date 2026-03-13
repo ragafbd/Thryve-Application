@@ -36,8 +36,10 @@ class MeetingRoom(BaseModel):
     name: str  # e.g., "CR-1", "MR-1", "MR-2"
     display_name: str  # e.g., "Conference Room 1", "Meeting Room 1"
     capacity: int  # Number of seats
-    hourly_rate: float  # Rate per hour
-    slot_duration: int  # Slot duration in minutes (60 for hourly, 30 for half-hourly)
+    hourly_rate: float  # Rate per hour (Rs. 1000 for CR, Rs. 500 for MR)
+    slot_duration: int  # Slot duration in minutes (60 for CR, 30 for MR)
+    room_type: str = "meeting_room"  # "conference_room" or "meeting_room"
+    credit_cost_per_slot: int = 5  # Credits per slot (20 for CR, 5 for MR)
     is_active: bool = True
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -47,6 +49,8 @@ class MeetingRoomCreate(BaseModel):
     capacity: int
     hourly_rate: float
     slot_duration: int
+    room_type: str = "meeting_room"
+    credit_cost_per_slot: int = 5
 
 # ==================== COMPANY SUBSCRIPTIONS ====================
 
