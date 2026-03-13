@@ -1217,13 +1217,15 @@ export default function Companies() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-orange-600">Primary Contact Already Exists</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-3">
-              <p>There is already a Primary Contact for this company:</p>
-              <div className="p-3 bg-slate-100 rounded-lg">
-                <p className="font-semibold text-slate-800">{existingPrimaryMember?.name}</p>
-                <p className="text-sm text-slate-600">{existingPrimaryMember?.email}</p>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <span>There is already a Primary Contact for this company:</span>
+                <div className="p-3 bg-slate-100 rounded-lg">
+                  <span className="font-semibold text-slate-800 block">{existingPrimaryMember?.name}</span>
+                  <span className="text-sm text-slate-600 block">{existingPrimaryMember?.email}</span>
+                </div>
+                <span>What would you like to do?</span>
               </div>
-              <p>What would you like to do?</p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
