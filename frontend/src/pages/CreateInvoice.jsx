@@ -520,13 +520,21 @@ export default function CreateInvoice() {
 
                     {/* Quantity */}
                     <div className="space-y-2">
-                      <Label>Quantity</Label>
+                      <Label>Quantity (Seats)</Label>
                       <Input
-                        type="number"
-                        min="1"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         value={item.quantity}
-                        onChange={(e) => handleLineItemChange(index, "quantity", parseFloat(e.target.value) || 1)}
-                        className="font-mono"
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          // Allow empty or numeric values only
+                          if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                            handleLineItemChange(index, "quantity", val === '' ? '' : parseFloat(val) || '');
+                          }
+                        }}
+                        placeholder={selectedClient?.total_seats ? `${selectedClient.total_seats}` : "Enter quantity"}
+                        className="font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         data-testid={`quantity-${index}`}
                       />
                     </div>
@@ -535,12 +543,19 @@ export default function CreateInvoice() {
                     <div className="space-y-2">
                       <Label>Rate (₹)</Label>
                       <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
+                        type="text"
+                        inputMode="decimal"
+                        pattern="[0-9]*\.?[0-9]*"
                         value={item.rate}
-                        onChange={(e) => handleLineItemChange(index, "rate", parseFloat(e.target.value) || 0)}
-                        className="font-mono"
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          // Allow empty or numeric values (with decimal) only
+                          if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                            handleLineItemChange(index, "rate", val === '' ? '' : parseFloat(val) || '');
+                          }
+                        }}
+                        placeholder={selectedClient?.rate_per_seat ? `${selectedClient.rate_per_seat}` : "Enter rate"}
+                        className="font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         data-testid={`rate-${index}`}
                       />
                     </div>
