@@ -363,6 +363,7 @@ A secure, separate portal for coworking members to self-serve their needs.
 - `/app/test_reports/iteration_6.json` - Public Holidays feature (21 passed, 100%)
 - `/app/test_reports/iteration_7.json` - Excel Import & LLA Generator tests
 - `/app/test_reports/iteration_8.json` - Invoice Edit & Create Invoice description (100% passed)
+- `/app/test_reports/iteration_9.json` - Enhanced Upcoming Birthdays feature (100% passed)
 
 ## Credentials
 - **Admin**: admin@thryve.in / password (URL: `/admin/login`)
