@@ -659,7 +659,6 @@ async def get_eligible_companies(
         "ineligible_companies": ineligible,
         "total_estimated_amount": sum(c.get("total_rate", 0) * 1.18 for c in eligible)  # With 18% GST
     }
-    return runs
 
 
 @router.get("/invoice/{invoice_id}/pdf")
