@@ -64,8 +64,8 @@ export default function MemberDashboard() {
         <p className="text-white/70 mt-1">{member?.company_name} • {member?.plan_name}</p>
         <div className="flex items-center gap-6 mt-4">
           <div>
-            <p className="text-3xl font-bold text-[#FFA14A]">{creditsRemaining}</p>
-            <p className="text-xs text-white/60">Meeting Room Minutes</p>
+            <p className="text-3xl font-bold text-[#FFA14A]">{creditsRemaining.toLocaleString('en-IN')}</p>
+            <p className="text-xs text-white/60">Balance Credits (mins)</p>
           </div>
           {member?.seat_number && (
             <div className="border-l border-white/20 pl-6">
@@ -75,6 +75,55 @@ export default function MemberDashboard() {
           )}
         </div>
       </div>
+
+      {/* Meeting Room Credits Card */}
+      {totalCredits > 0 && (
+        <Card className="border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50" data-testid="credits-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold flex items-center gap-2 text-[#2E375B]">
+              <Timer className="w-5 h-5 text-blue-600" />
+              Company Meeting Room Credits
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="text-center p-3 bg-white/80 rounded-lg">
+                <p className="text-2xl font-bold text-[#2E375B]">{totalCredits.toLocaleString('en-IN')}</p>
+                <p className="text-xs text-[#2E375B]/60">Total Credits (mins)</p>
+              </div>
+              <div className="text-center p-3 bg-white/80 rounded-lg">
+                <p className="text-2xl font-bold text-orange-600">{creditsUsed.toLocaleString('en-IN')}</p>
+                <p className="text-xs text-[#2E375B]/60">Used (mins)</p>
+              </div>
+              <div className="text-center p-3 bg-white/80 rounded-lg">
+                <p className={`text-2xl font-bold ${creditsRemaining > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {creditsRemaining.toLocaleString('en-IN')}
+                </p>
+                <p className="text-xs text-[#2E375B]/60">Balance (mins)</p>
+              </div>
+            </div>
+            {/* Progress bar */}
+            <div>
+              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full rounded-full transition-all duration-300 ${
+                    creditsPercentage > 50 ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
+                    creditsPercentage > 20 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
+                    'bg-gradient-to-r from-red-500 to-rose-500'
+                  }`}
+                  style={{ width: `${creditsPercentage}%` }}
+                />
+              </div>
+              <p className="text-xs text-[#2E375B]/50 mt-1 text-right">{creditsPercentage}% remaining</p>
+            </div>
+            {companyCredits?.member_credits_used !== undefined && (
+              <p className="text-xs text-[#2E375B]/60 mt-2">
+                Your usage: {companyCredits.member_credits_used.toLocaleString('en-IN')} mins
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
