@@ -610,11 +610,27 @@ export default function CreateInvoice() {
                       <Checkbox
                         id={`taxable-${index}`}
                         checked={item.is_taxable}
-                        onCheckedChange={(checked) => handleLineItemChange(index, "is_taxable", checked)}
+                        onCheckedChange={(checked) => {
+                          // Don't allow changing GST for security deposits
+                          if (item.service_type !== 'security_deposit') {
+                            handleLineItemChange(index, "is_taxable", checked);
+                          }
+                        }}
+                        disabled={item.service_type === 'security_deposit'}
+                        className={item.service_type === 'security_deposit' ? 'opacity-50 cursor-not-allowed' : ''}
                         data-testid={`taxable-${index}`}
                       />
-                      <Label htmlFor={`taxable-${index}`} className="text-sm">
+                      <Label 
+                        htmlFor={`taxable-${index}`} 
+                        className={cn(
+                          "text-sm",
+                          item.service_type === 'security_deposit' && "text-slate-400"
+                        )}
+                      >
                         GST Applicable (18%)
+                        {item.service_type === 'security_deposit' && (
+                          <span className="text-xs text-slate-400 ml-2">(Not applicable for Security Deposit)</span>
+                        )}
                       </Label>
                     </div>
 
