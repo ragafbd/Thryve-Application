@@ -1120,12 +1120,12 @@ export default function Companies() {
         </DialogContent>
       </Dialog>
 
-      {/* Add Member Dialog */}
+      {/* Add/Edit Member Dialog */}
       <Dialog open={memberDialogOpen} onOpenChange={(open) => { setMemberDialogOpen(open); if (!open) resetMemberForm(); }}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="font-[Manrope] text-[#2E375B]">
-              Add Member to {selectedCompanyForMember?.company_name}
+              {editingMember ? `Edit Member - ${selectedCompanyForMember?.company_name}` : `Add Member to ${selectedCompanyForMember?.company_name}`}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
