@@ -658,7 +658,7 @@ export default function Companies() {
                 <CollapsibleContent>
                   <div className="border-t border-[#2E375B]/10 p-4 bg-slate-50/50">
                     {/* Company Details */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4 text-sm">
                       <div>
                         <p className="text-[#2E375B]/60">GSTIN</p>
                         <p className="font-medium text-[#2E375B]">{company.company_gstin || "-"}</p>
@@ -674,6 +674,10 @@ export default function Companies() {
                       <div>
                         <p className="text-[#2E375B]/60">Start Date</p>
                         <p className="font-medium text-[#2E375B]">{company.start_date}</p>
+                      </div>
+                      <div>
+                        <p className="text-[#2E375B]/60">Lock-in Period</p>
+                        <p className="font-medium text-[#2E375B]">{company.lock_in_months || 11} months</p>
                       </div>
                     </div>
 
