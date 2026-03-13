@@ -481,8 +481,11 @@ async def generate_auto_invoices(
             sgst = round(rate * (GST_RATE / 2) / 100, 2)
             total = rate + cgst + sgst
             
-            # Create line item
-            line_item = {
+            # Create line items list - Monthly Plan first (order: 1)
+            line_items = []
+            
+            # 1. Monthly Plan Fee (always first)
+            monthly_item = {
                 "description": f"{company.get('plan_name', 'Workspace')} - {month_name} {year}",
                 "service_type": "monthly_rental",
                 "quantity": company.get("total_seats", 1),
@@ -496,8 +499,65 @@ async def generate_auto_invoices(
                 "amount": rate,
                 "cgst": cgst,
                 "sgst": sgst,
-                "total": total
+                "total": total,
+                "order": 1
             }
+            line_items.append(monthly_item)
+            
+            # Track totals
+            total_subtotal = rate
+            total_cgst_sum = cgst
+            total_sgst_sum = sgst
+            
+            # 2. Fetch and add pending meeting room charges (always last)
+            pending_bookings = await db.bookings.find({
+                "company_id": company["id"],
+                "billable_amount": {"$gt": 0},
+                "payment_status": {"$in": ["pending", None, ""]},
+                "status": {"$ne": "cancelled"}
+            }, {"_id": 0}).to_list(100)
+            
+            for booking in pending_bookings:
+                booking_amount = booking.get("billable_amount", 0)
+                booking_cgst = round(booking_amount * (GST_RATE / 2) / 100, 2)
+                booking_sgst = round(booking_amount * (GST_RATE / 2) / 100, 2)
+                
+                meeting_item = {
+                    "description": f"Meeting Room - {booking.get('room_name', 'Room')} ({booking.get('date', '')})",
+                    "service_type": "meeting_room",
+                    "quantity": 1,
+                    "rate": booking_amount,
+                    "is_taxable": True,
+                    "hsn_sac": "997212",
+                    "unit": "hour",
+                    "is_prorated": False,
+                    "prorate_days": 0,
+                    "prorate_total_days": 0,
+                    "amount": booking_amount,
+                    "cgst": booking_cgst,
+                    "sgst": booking_sgst,
+                    "total": booking_amount + booking_cgst + booking_sgst,
+                    "booking_id": booking.get("id"),
+                    "order": 99  # Always last
+                }
+                line_items.append(meeting_item)
+                
+                # Add to totals
+                total_subtotal += booking_amount
+                total_cgst_sum += booking_cgst
+                total_sgst_sum += booking_sgst
+                
+                # Mark booking as included in invoice
+                await db.bookings.update_one(
+                    {"id": booking.get("id")},
+                    {"$set": {"payment_status": "invoiced", "invoice_id": invoice_id}}
+                )
+            
+            # Sort line items by order
+            line_items.sort(key=lambda x: x.get("order", 50))
+            
+            # Calculate grand total
+            grand_total = total_subtotal + total_cgst_sum + total_sgst_sum
             
             # Create client object from company
             client_data = {
@@ -520,12 +580,12 @@ async def generate_auto_invoices(
                 "billing_month": request.billing_month,
                 "client": client_data,
                 "company": COMPANY_DETAILS,
-                "line_items": [line_item],
-                "subtotal": rate,
-                "total_cgst": cgst,
-                "total_sgst": sgst,
-                "total_tax": cgst + sgst,
-                "grand_total": total,
+                "line_items": line_items,
+                "subtotal": round(total_subtotal, 2),
+                "total_cgst": round(total_cgst_sum, 2),
+                "total_sgst": round(total_sgst_sum, 2),
+                "total_tax": round(total_cgst_sum + total_sgst_sum, 2),
+                "grand_total": round(grand_total, 2),
                 "notes": request.notes or f"Auto-generated invoice for {month_name} {year}",
                 "status": "pending",
                 "auto_generated": True,
