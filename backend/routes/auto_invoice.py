@@ -481,6 +481,9 @@ async def generate_auto_invoices(
             sgst = round(rate * (GST_RATE / 2) / 100, 2)
             total = rate + cgst + sgst
             
+            # Generate invoice ID first (needed for booking references)
+            invoice_id = str(uuid.uuid4())
+            
             # Create line items list - Monthly Plan first (order: 1)
             line_items = []
             
