@@ -398,21 +398,18 @@ export default function Layout() {
               {/* Upcoming Birthdays - under Admin section */}
               {upcomingBirthdayCount > 0 && (
                 <NavLink
-                  to="/admin"
+                  to="birthdays"
                   data-testid="nav-birthdays-widget"
-                  onClick={(e) => {
-                    setTimeout(() => {
-                      const birthdaySection = document.getElementById('birthday-section');
-                      if (birthdaySection) {
-                        birthdaySection.scrollIntoView({ behavior: 'smooth' });
-                      }
-                    }, 100);
-                  }}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-white/70 hover:bg-white/10 hover:text-white relative"
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 relative",
+                    location.pathname === "/admin/birthdays"
+                      ? "bg-[#FFA14A] text-[#2E375B] font-medium" 
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
+                  )}
                 >
                   <Cake className="w-4 h-4" strokeWidth={1.5} />
                   <span className="text-sm">Upcoming Birthdays</span>
-                  <span className="ml-auto bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
                     {upcomingBirthdayCount}
                   </span>
                 </NavLink>
