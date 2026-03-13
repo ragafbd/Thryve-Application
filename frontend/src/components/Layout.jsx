@@ -411,7 +411,7 @@ export default function Layout() {
                   className="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-white/70 hover:bg-white/10 hover:text-white relative"
                 >
                   <Cake className="w-4 h-4" strokeWidth={1.5} />
-                  <span className="text-sm">Birthdays</span>
+                  <span className="text-sm">Upcoming Birthdays</span>
                   <span className="ml-auto bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
                     {upcomingBirthdayCount}
                   </span>
