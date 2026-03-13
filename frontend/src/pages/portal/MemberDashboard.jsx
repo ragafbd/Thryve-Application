@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { 
   FileText, CalendarDays, Ticket, CreditCard, Clock, CheckCircle, 
-  AlertTriangle, ArrowRight, Building2, Video
+  AlertTriangle, ArrowRight, Building2, Video, Timer
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,23 +19,26 @@ export default function MemberDashboard() {
   const [tickets, setTickets] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [pendingCharges, setPendingCharges] = useState([]);
+  const [companyCredits, setCompanyCredits] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [invRes, bookRes, tickRes, annRes, chargesRes] = await Promise.all([
+        const [invRes, bookRes, tickRes, annRes, chargesRes, creditsRes] = await Promise.all([
           axios.get(`${API}/invoices`),
           axios.get(`${API}/bookings?upcoming_only=true`),
           axios.get(`${API}/tickets`),
           axios.get(`${API}/announcements`),
-          axios.get(`${API}/pending-charges`).catch(() => ({ data: [] }))
+          axios.get(`${API}/pending-charges`).catch(() => ({ data: [] })),
+          axios.get(`${API}/company-credits`).catch(() => ({ data: null }))
         ]);
         setInvoices(invRes.data);
         setBookings(bookRes.data);
         setTickets(tickRes.data);
         setAnnouncements(annRes.data.slice(0, 3));
         setPendingCharges(chargesRes.data || []);
+        setCompanyCredits(creditsRes.data);
         refreshProfile(); // Refresh credits info
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -48,7 +51,10 @@ export default function MemberDashboard() {
 
   const pendingInvoices = invoices.filter(i => i.status === 'pending' || i.status === 'overdue');
   const openTickets = tickets.filter(t => t.status === 'open' || t.status === 'in_progress');
-  const creditsRemaining = (member?.meeting_room_credits || 0) - (member?.credits_used || 0);
+  const creditsRemaining = companyCredits?.remaining_credits || member?.credits_remaining || 0;
+  const totalCredits = companyCredits?.total_credits || member?.meeting_room_credits || 0;
+  const creditsUsed = companyCredits?.credits_used || member?.credits_used || 0;
+  const creditsPercentage = totalCredits > 0 ? Math.round((creditsRemaining / totalCredits) * 100) : 0;
 
   return (
     <div className="space-y-6 animate-fade-in" data-testid="member-dashboard">
