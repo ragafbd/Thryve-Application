@@ -221,62 +221,88 @@ export default function Dashboard() {
       </div>
 
       {/* Upcoming Birthdays */}
-      {upcomingBirthdays.length > 0 && (
-        <Card className="border border-slate-200 shadow-sm bg-gradient-to-r from-pink-50 to-purple-50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold text-slate-700 font-[Manrope] flex items-center gap-2">
-              <Cake className="w-5 h-5 text-pink-500" />
-              Upcoming Birthdays ({upcomingBirthdays.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {upcomingBirthdays.slice(0, 5).map((member) => (
-                <div 
-                  key={member.id} 
-                  className={`flex items-center justify-between p-3 rounded-lg ${
-                    member.is_today ? 'bg-gradient-to-r from-pink-100 to-purple-100 border border-pink-200' : 'bg-white/80'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    {member.is_today ? (
-                      <div className="w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center">
-                        <Gift className="w-5 h-5 text-white" />
-                      </div>
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                        <Cake className="w-5 h-5 text-purple-500" />
-                      </div>
-                    )}
-                    <div>
-                      <p className={`font-medium ${member.is_today ? 'text-pink-700' : 'text-slate-800'}`}>
-                        {member.name}
-                        {member.is_today && (
-                          <Badge className="ml-2 bg-pink-500 text-white text-xs">Today!</Badge>
+      <div id="birthday-section">
+        {upcomingBirthdays.length > 0 ? (
+          <Card className="border border-slate-200 shadow-sm overflow-hidden">
+            <CardHeader className="pb-2 bg-gradient-to-r from-pink-50 to-purple-50 border-b border-pink-100">
+              <CardTitle className="text-base font-semibold text-slate-700 font-[Manrope] flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center">
+                  <Cake className="w-4 h-4 text-white" />
+                </div>
+                <span>Upcoming Birthdays</span>
+                <Badge className="ml-2 bg-pink-500 text-white">{upcomingBirthdays.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-slate-100">
+                {upcomingBirthdays.map((member) => (
+                  <div 
+                    key={member.id} 
+                    className={`flex items-center justify-between p-4 hover:bg-slate-50 transition-colors ${
+                      member.is_today ? 'bg-gradient-to-r from-pink-50 to-purple-50' : ''
+                    }`}
+                    data-testid={`birthday-item-${member.id}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      {member.is_today ? (
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center animate-pulse">
+                          <Gift className="w-6 h-6 text-white" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-pink-100 to-purple-100 flex items-center justify-center">
+                          <Cake className="w-6 h-6 text-purple-500" />
+                        </div>
+                      )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className={`font-semibold ${member.is_today ? 'text-pink-700' : 'text-slate-800'}`}>
+                            {member.name}
+                          </p>
+                          {member.is_today && (
+                            <Badge className="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs animate-bounce">
+                              🎂 Today!
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-slate-500">{member.company_name}</p>
+                        {member.phone && (
+                          <p className="text-xs text-slate-400 mt-0.5">📱 {member.phone}</p>
                         )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-slate-700">
+                        {new Date(member.birthday_date).toLocaleDateString('en-IN', { 
+                          weekday: 'short',
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}
                       </p>
-                      <p className="text-sm text-slate-500">{member.company_name}</p>
+                      <p className={`text-xs ${member.is_today ? 'text-pink-600 font-semibold' : 'text-slate-500'}`}>
+                        {member.is_today ? `Turning ${member.turning_age} 🎉` : `In ${member.days_until} day${member.days_until > 1 ? 's' : ''}`}
+                      </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-slate-700">
-                      {new Date(member.birthday_date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {member.is_today ? `Turning ${member.turning_age}` : `In ${member.days_until} days`}
-                    </p>
-                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border border-slate-200 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4 text-slate-500">
+                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+                  <Cake className="w-6 h-6 text-slate-400" />
                 </div>
-              ))}
-              {upcomingBirthdays.length > 5 && (
-                <p className="text-center text-sm text-slate-500 pt-2">
-                  +{upcomingBirthdays.length - 5} more birthdays this month
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                <div>
+                  <p className="font-medium text-slate-600">No Upcoming Birthdays</p>
+                  <p className="text-sm">No member birthdays in the next 30 days</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Pending Meeting Room Charges */}
       {pendingCharges.total_pending > 0 && (
