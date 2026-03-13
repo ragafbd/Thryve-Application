@@ -775,18 +775,29 @@ export default function Companies() {
                                   <td className="p-3 text-[#2E375B]/70">{member.phone}</td>
                                   <td className="p-3 text-[#2E375B]/70">{member.seat_number || "-"}</td>
                                   <td className="p-3 text-right">
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 text-red-500 hover:text-red-700"
-                                      onClick={() => {
-                                        setItemToDelete({ ...member, company_id: company.id });
-                                        setDeleteType("member");
-                                        setDeleteDialogOpen(true);
-                                      }}
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
+                                    <div className="flex items-center justify-end gap-1">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-[#2E375B]/70 hover:text-[#2E375B]"
+                                        onClick={() => openMemberDialog(company, member)}
+                                        data-testid={`edit-member-${member.id}`}
+                                      >
+                                        <Edit className="w-4 h-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-red-500 hover:text-red-700"
+                                        onClick={() => {
+                                          setItemToDelete({ ...member, company_id: company.id });
+                                          setDeleteType("member");
+                                          setDeleteDialogOpen(true);
+                                        }}
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
                                   </td>
                                 </tr>
                               ))}
