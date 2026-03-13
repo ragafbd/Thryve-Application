@@ -411,9 +411,21 @@ async def create_member_booking(booking_data: MemberBookingCreate, current_membe
     if conflicts:
         raise HTTPException(status_code=400, detail="Time slot is already booked")
     
-    # Calculate credits and billing
-    member_credits = current_member.get("meeting_room_credits", 0) - current_member.get("credits_used", 0)
-    credits_to_use = min(duration, member_credits) if member_credits > 0 else 0
+    # Get company to check credits at company level
+    company_id = current_member.get("company_id")
+    company = None
+    company_remaining_credits = 0
+    
+    if company_id:
+        company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+        if company:
+            # Calculate company's remaining credits
+            total_credits = company.get("total_credits", company.get("total_seats", 0) * company.get("meeting_room_credits", 0))
+            credits_used = company.get("credits_used", 0)
+            company_remaining_credits = company.get("remaining_credits", total_credits - credits_used)
+    
+    # Calculate credits and billing using company credits
+    credits_to_use = min(duration, company_remaining_credits) if company_remaining_credits > 0 else 0
     billable_minutes = duration - credits_to_use
     billable_amount = (billable_minutes / 60) * room["hourly_rate"] if billable_minutes > 0 else 0
     
@@ -423,6 +435,7 @@ async def create_member_booking(booking_data: MemberBookingCreate, current_membe
         "room_name": room["name"],
         "member_id": current_member["id"],
         "member_name": current_member["name"],
+        "company_id": company_id,
         "company_name": current_member["company_name"],
         "date": booking_data.date,
         "start_time": booking_data.start_time,
@@ -439,11 +452,14 @@ async def create_member_booking(booking_data: MemberBookingCreate, current_membe
     
     await db.bookings.insert_one(booking)
     
-    # Update member's credits used
-    if credits_to_use > 0:
-        await db.members.update_one(
-            {"id": current_member["id"]},
-            {"$inc": {"credits_used": credits_to_use}}
+    # Update company's credits used and remaining (instead of member)
+    if credits_to_use > 0 and company_id:
+        await db.companies.update_one(
+            {"id": company_id},
+            {
+                "$inc": {"credits_used": credits_to_use},
+                "$set": {"remaining_credits": company_remaining_credits - credits_to_use}
+            }
         )
     
     booking.pop("_id", None)
