@@ -254,7 +254,7 @@ class TestBookingCreditsDeduction:
         self.member = response.json().get("member", {})
         
         # Get available meeting rooms
-        rooms_response = self.session.get(f"{BASE_URL}/api/member/meeting-rooms")
+        rooms_response = self.session.get(f"{BASE_URL}/api/member/rooms")
         if rooms_response.status_code != 200:
             pytest.skip("Could not fetch meeting rooms")
         
