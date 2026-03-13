@@ -1031,7 +1031,7 @@ export default function Companies() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Meeting Room Credits (minutes per seat)</Label>
+                  <Label>Meeting Room Credits (credits per seat)</Label>
                   <Input
                     type="text"
                     inputMode="numeric"
