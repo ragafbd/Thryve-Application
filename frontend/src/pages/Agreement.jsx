@@ -736,13 +736,14 @@ export default function Agreement() {
                   <th className="text-left p-3 text-[#2E375B]">Start Date</th>
                   <th className="text-left p-3 text-[#2E375B]">Seats</th>
                   <th className="text-left p-3 text-[#2E375B]">Rate/Seat</th>
+                  <th className="text-left p-3 text-[#2E375B]">Lock-in</th>
                   <th className="text-right p-3 text-[#2E375B]">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {companies.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-8 text-[#2E375B]">
+                    <td colSpan={7} className="text-center py-8 text-[#2E375B]">
                       No active clients found. Import or add clients first.
                     </td>
                   </tr>
@@ -754,6 +755,7 @@ export default function Agreement() {
                       <td className="p-3 text-[#2E375B]">{formatDate(company.start_date)}</td>
                       <td className="p-3 text-[#2E375B]">{company.total_seats}</td>
                       <td className="p-3 text-[#2E375B]">₹{(company.rate_per_seat || 0).toLocaleString('en-IN')}</td>
+                      <td className="p-3 text-[#2E375B]">{company.lock_in_months || 11} mo</td>
                       <td className="p-3 text-right">
                         <div className="flex gap-2 justify-end">
                           <Button
