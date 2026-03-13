@@ -278,10 +278,27 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
                   {formatCurrency(invoice?.total_sgst)}
                 </td>
               </tr>
+              {/* Round-Off Adjustment */}
+              {invoice?.round_off_adjustment !== undefined && invoice?.round_off_adjustment !== 0 && (
+                <tr>
+                  <td className="border border-slate-300 px-3 py-1 text-slate-600">Round-Off Adjustment</td>
+                  <td className="border border-slate-300 px-3 py-1 text-right font-numbers">
+                    {invoice?.round_off_adjustment >= 0 ? '+' : ''}{formatCurrency(invoice?.round_off_adjustment)}
+                  </td>
+                </tr>
+              )}
+              {invoice?.round_off_adjustment === 0 && (
+                <tr>
+                  <td className="border border-slate-300 px-3 py-1 text-slate-600">Round-Off Adjustment</td>
+                  <td className="border border-slate-300 px-3 py-1 text-right font-numbers">
+                    {formatCurrency(0)}
+                  </td>
+                </tr>
+              )}
               <tr className="bg-[#2E375B]">
                 <td className="border border-slate-300 px-3 py-2 font-bold text-white whitespace-nowrap">Total Amount</td>
                 <td className="border border-slate-300 px-3 py-2 text-right font-numbers font-bold text-white whitespace-nowrap">
-                  {formatCurrency(invoice?.grand_total)}
+                  ₹{Math.round(invoice?.grand_total || 0).toLocaleString('en-IN')}
                 </td>
               </tr>
             </tbody>
