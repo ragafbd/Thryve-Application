@@ -47,8 +47,8 @@ const SERVICE_TYPES = [
 const emptyLineItem = {
   description: "Monthly Plan", // Default description from service type
   service_type: "monthly_rental",
-  quantity: 1,
-  rate: 0,
+  quantity: "",  // Will be populated from client data
+  rate: "",      // Will be populated from client data (blank if no rate)
   is_taxable: true,
   hsn_sac: "997212",
   unit: "Month",
