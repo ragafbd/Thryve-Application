@@ -106,6 +106,7 @@ function AdminRoutes() {
         <Route path="announcements" element={<Announcements />} />
         <Route path="users" element={<Users />} />
         <Route path="export" element={<ExportData />} />
+        <Route path="birthdays" element={<UpcomingBirthdays />} />
         <Route path="import" element={<ImportData />} />
         <Route path="agreement" element={<Agreement />} />
       </Route>
