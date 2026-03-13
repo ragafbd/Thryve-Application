@@ -210,6 +210,7 @@ class Invoice(BaseModel):
     total_cgst: float
     total_sgst: float
     total_tax: float
+    round_off_adjustment: float = 0  # GST-compliant rounding adjustment
     grand_total: float
     notes: str = ""
     status: str = "pending"  # pending, paid, overdue
@@ -567,6 +568,7 @@ async def create_invoice(invoice_data: InvoiceCreate):
         total_cgst=round(total_cgst, 2),
         total_sgst=round(total_sgst, 2),
         total_tax=round(total_tax, 2),
+        round_off_adjustment=round_off_adjustment,
         grand_total=rounded_total,
         notes=invoice_data.notes or "",
         status="pending"
