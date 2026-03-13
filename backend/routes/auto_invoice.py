@@ -512,48 +512,88 @@ async def generate_auto_invoices(
             total_cgst_sum = cgst
             total_sgst_sum = sgst
             
-            # 2. Fetch and bundle all pending meeting room charges into a single line item (always last)
-            pending_bookings = await db.bookings.find({
-                "company_id": company["id"],
-                "billable_amount": {"$gt": 0},
-                "payment_status": {"$in": ["pending", None, ""]},
-                "status": {"$ne": "cancelled"}
-            }, {"_id": 0}).to_list(100)
+            # 2. Fetch and bundle all pending meeting room charges - RECALCULATE based on credits
+            # Get ALL confirmed bookings for this company that haven't been invoiced
+            all_bookings = await db.bookings.find({
+                "$or": [
+                    {"company_id": company["id"]},
+                    {"company_name": company["company_name"]}
+                ],
+                "status": {"$ne": "cancelled"},
+                "payment_status": {"$nin": ["paid", "completed", "invoiced"]}
+            }, {"_id": 0}).to_list(1000)
             
-            if pending_bookings:
-                # Calculate total meeting room charges
-                total_meeting_room_amount = sum(booking.get("billable_amount", 0) for booking in pending_bookings)
-                meeting_room_cgst = round(total_meeting_room_amount * (GST_RATE / 2) / 100, 2)
-                meeting_room_sgst = round(total_meeting_room_amount * (GST_RATE / 2) / 100, 2)
+            if all_bookings:
+                # Calculate TOTAL usage minutes
+                total_usage_minutes = sum(b.get("duration_minutes", 0) for b in all_bookings)
                 
-                # Create a single bundled meeting room line item
-                meeting_item = {
-                    "description": f"Meeting Room Charges ({len(pending_bookings)} booking{'s' if len(pending_bookings) > 1 else ''})",
-                    "service_type": "meeting_room",
-                    "quantity": len(pending_bookings),
-                    "rate": round(total_meeting_room_amount / len(pending_bookings), 2) if len(pending_bookings) > 0 else 0,
-                    "is_taxable": True,
-                    "hsn_sac": "997212",
-                    "unit": "bookings",
-                    "is_prorated": False,
-                    "prorate_days": 0,
-                    "prorate_total_days": 0,
-                    "amount": total_meeting_room_amount,
-                    "cgst": meeting_room_cgst,
-                    "sgst": meeting_room_sgst,
-                    "total": total_meeting_room_amount + meeting_room_cgst + meeting_room_sgst,
-                    "booking_ids": [booking.get("id") for booking in pending_bookings],
-                    "order": 99  # Always last
-                }
-                line_items.append(meeting_item)
+                # Get TOTAL allowed credits for this company
+                total_seats = company.get("total_seats", 0)
+                credits_per_seat = company.get("meeting_room_credits", 0)
+                total_allowed_credits = company.get("total_credits", total_seats * credits_per_seat)
                 
-                # Add to totals
-                total_subtotal += total_meeting_room_amount
-                total_cgst_sum += meeting_room_cgst
-                total_sgst_sum += meeting_room_sgst
+                # Calculate billable minutes (usage - allowed credits)
+                if total_usage_minutes <= total_allowed_credits:
+                    # No charge - all usage is covered by credits
+                    billable_minutes = 0
+                    total_meeting_room_amount = 0
+                else:
+                    # Charge for excess minutes
+                    billable_minutes = total_usage_minutes - total_allowed_credits
+                    
+                    # Get room rates for calculation
+                    rooms = await db.meeting_rooms.find({}, {"_id": 0}).to_list(100)
+                    room_rates = {r.get("id"): r.get("hourly_rate", 500) for r in rooms}
+                    room_rates.update({r.get("name"): r.get("hourly_rate", 500) for r in rooms})
+                    
+                    # Calculate weighted average rate
+                    total_duration = sum(b.get("duration_minutes", 0) for b in all_bookings)
+                    weighted_rate = 0
+                    for b in all_bookings:
+                        room_id = b.get("room_id")
+                        room_name = b.get("room_name")
+                        duration = b.get("duration_minutes", 0)
+                        rate_per_hour = room_rates.get(room_id, room_rates.get(room_name, 500))
+                        weighted_rate += (duration / total_duration) * rate_per_hour if total_duration > 0 else rate_per_hour
+                    
+                    total_meeting_room_amount = round((billable_minutes / 60) * weighted_rate, 2)
                 
-                # Mark all bookings as included in invoice
-                for booking in pending_bookings:
+                # Only add meeting room line item if there are charges
+                if total_meeting_room_amount > 0:
+                    meeting_room_cgst = round(total_meeting_room_amount * (GST_RATE / 2) / 100, 2)
+                    meeting_room_sgst = round(total_meeting_room_amount * (GST_RATE / 2) / 100, 2)
+                    
+                    # Create a single bundled meeting room line item
+                    meeting_item = {
+                        "description": f"Meeting Room Charges ({len(all_bookings)} booking{'s' if len(all_bookings) > 1 else ''} - {billable_minutes} min billable)",
+                        "service_type": "meeting_room",
+                        "quantity": 1,
+                        "rate": total_meeting_room_amount,
+                        "is_taxable": True,
+                        "hsn_sac": "997212",
+                        "unit": "Units",
+                        "is_prorated": False,
+                        "prorate_days": 0,
+                        "prorate_total_days": 0,
+                        "amount": total_meeting_room_amount,
+                        "cgst": meeting_room_cgst,
+                        "sgst": meeting_room_sgst,
+                        "total": total_meeting_room_amount + meeting_room_cgst + meeting_room_sgst,
+                        "booking_ids": [b.get("id") for b in all_bookings],
+                        "total_usage_minutes": total_usage_minutes,
+                        "allowed_credits": total_allowed_credits,
+                        "billable_minutes": billable_minutes,
+                        "order": 99  # Always last
+                    }
+                    line_items.append(meeting_item)
+                    
+                    # Add to totals
+                    total_subtotal += total_meeting_room_amount
+                    total_cgst_sum += meeting_room_cgst
+                    total_sgst_sum += meeting_room_sgst
+                
+                # Mark all bookings as included in invoice (regardless of charges)
+                for booking in all_bookings:
                     await db.bookings.update_one(
                         {"id": booking.get("id")},
                         {"$set": {"payment_status": "invoiced", "invoice_id": invoice_id}}
