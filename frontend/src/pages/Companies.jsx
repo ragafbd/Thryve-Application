@@ -233,9 +233,24 @@ export default function Companies() {
     setCompanyDialogOpen(true);
   };
 
-  const openMemberDialog = (company) => {
+  const openMemberDialog = (company, member = null) => {
     setSelectedCompanyForMember(company);
-    resetMemberForm();
+    if (member) {
+      setEditingMember(member);
+      setMemberForm({
+        name: member.name,
+        email: member.email,
+        phone: member.phone,
+        aadhar_number: member.aadhar_number || "",
+        pan_number: member.pan_number || "",
+        date_of_birth: member.date_of_birth || "",
+        seat_number: member.seat_number || "",
+        is_primary_contact: member.is_primary_contact || false,
+        notes: member.notes || ""
+      });
+    } else {
+      resetMemberForm();
+    }
     setMemberDialogOpen(true);
   };
 
