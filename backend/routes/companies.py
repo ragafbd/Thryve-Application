@@ -144,6 +144,24 @@ async def update_company(
         
         update_dict['total_rate'] = total_seats * rate_per_seat * (1 - discount / 100)
     
+    # If seats or meeting_room_credits changed, recalculate total_credits
+    if any(k in update_dict for k in ['total_seats', 'meeting_room_credits']):
+        total_seats = update_dict.get('total_seats', existing['total_seats'])
+        credits_per_seat = update_dict.get('meeting_room_credits', existing.get('meeting_room_credits', 0))
+        new_total_credits = total_seats * credits_per_seat
+        
+        # Calculate new remaining credits (adjust for any change in total)
+        old_total_credits = existing.get('total_credits', 0)
+        credits_used = existing.get('credits_used', 0)
+        
+        # If total credits increased, add the difference to remaining
+        # If decreased, reduce remaining but not below 0
+        credits_diff = new_total_credits - old_total_credits
+        new_remaining = max(0, existing.get('remaining_credits', old_total_credits - credits_used) + credits_diff)
+        
+        update_dict['total_credits'] = new_total_credits
+        update_dict['remaining_credits'] = new_remaining
+    
     if update_dict:
         await db.companies.update_one({"id": company_id}, {"$set": update_dict})
     
