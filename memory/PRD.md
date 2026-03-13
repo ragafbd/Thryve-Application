@@ -10,7 +10,23 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Member self-service portal for viewing invoices, bookings, and tickets**
 - **Public holiday management for booking restrictions**
 
-## Recent Updates (March 11, 2026)
+## Recent Updates (March 13, 2026)
+- **Enhanced Upcoming Birthdays Feature**: Complete redesign of the birthday tracking system
+  - **Sidebar Widget**: New "Birthdays" navigation item with count badge
+    - Appears below Dashboard in sidebar with pink/purple gradient styling
+    - Shows count of birthdays in next 10 days
+    - Click scrolls to birthday section on dashboard
+  - **Dashboard Birthday Section**: Enhanced display with full details
+    - Shows member name, company name, phone number, birthday date, days until
+    - Today's birthdays highlighted with special styling (pink gradient, "Today!" badge, gift icon)
+    - Phone displayed with 📱 emoji prefix
+    - Future birthdays show cake icon
+    - Empty state displays "No Upcoming Birthdays" message
+  - API: GET `/api/management/birthdays/upcoming?days=N`
+    - Returns: id, name, email, phone, company_name, date_of_birth, birthday_date, days_until, turning_age, is_today
+    - Sorted by days_until (closest first)
+
+## Previous Updates (March 11, 2026)
 - **Invoice Editing Feature**: Added ability to edit invoices after creation
   - Edit button on invoice view page opens edit dialog
   - Can modify: client, due date, line items, notes
@@ -24,11 +40,6 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Setup Charges GST**: Setup Charges now have GST applicable (18%)
 - **Member Birthdays**: Added birthday tracking for members
   - New `date_of_birth` field in Add Member dialog
-  - API: GET `/api/management/birthdays/upcoming?days=30`
-- **Dashboard Upcoming Birthdays**: Added "Upcoming Birthdays" section on admin dashboard
-  - Shows members with birthdays in the next 30 days
-  - Displays member name, company, birthday date, and days until birthday
-  - Highlights "Today!" for same-day birthdays
 - **New Invoice Number Format**: Changed from `THR/YYYY/MM/XXXX` to `YY-YY/Mon/NNN/CompanyName`
   - Example: `26-27/Apr/001/Acme Corp Pvt Ltd`
   - YY-YY: Financial year (April to March), e.g., 26-27 for FY 2026-2027
