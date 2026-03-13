@@ -198,6 +198,7 @@ export default function Companies() {
       is_primary_contact: false,
       notes: ""
     });
+    setEditingMember(null);
   };
 
   const openCompanyDialog = (company = null) => {
