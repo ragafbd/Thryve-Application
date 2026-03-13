@@ -247,11 +247,11 @@ export default function AutoInvoice() {
             Generate Monthly Invoices
           </CardTitle>
           <CardDescription>
-            Generate invoices and PDFs for all active companies for a specific month
+            Generate invoices and PDFs for eligible companies (respects client start dates)
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div className="space-y-2">
               <Label className="text-[#2E375B]">Billing Month *</Label>
               <Input
@@ -271,8 +271,18 @@ export default function AutoInvoice() {
               />
             </div>
             <Button
+              onClick={() => setPreviewDialogOpen(true)}
+              variant="outline"
+              disabled={previewLoading || !billingMonth}
+              className="border-[#2E375B]/20"
+              data-testid="preview-companies-btn"
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              Preview Companies
+            </Button>
+            <Button
               onClick={handleGenerate}
-              disabled={generating || !billingMonth}
+              disabled={generating || !billingMonth || eligibleCount === 0}
               className="bg-[#2E375B] hover:bg-[#232B47]"
               data-testid="generate-invoices-btn"
             >
@@ -281,18 +291,32 @@ export default function AutoInvoice() {
               ) : (
                 <>
                   <Play className="w-4 h-4 mr-2" />
-                  Generate {totalActiveCompanies} Invoices
+                  Generate {eligibleCount} Invoices
                 </>
               )}
             </Button>
           </div>
           
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-            <p className="text-sm text-blue-700">
-              <AlertCircle className="w-4 h-4 inline mr-1" />
-              This will generate invoices for <strong>{totalActiveCompanies} active companies</strong> for{" "}
-              <strong>{formatMonth(billingMonth)}</strong>. Each invoice will include a PDF attachment.
-            </p>
+          <div className="mt-4 space-y-2">
+            <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg">
+              <p className="text-sm text-blue-700">
+                <AlertCircle className="w-4 h-4 inline mr-1" />
+                <strong>{eligibleCount} companies</strong> are eligible for invoice generation for{" "}
+                <strong>{formatMonth(billingMonth)}</strong>. 
+                {ineligibleCount > 0 && (
+                  <span className="text-orange-600"> ({ineligibleCount} companies skipped - click "Preview" for details)</span>
+                )}
+              </p>
+            </div>
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+              <p className="text-sm text-slate-700">
+                <Clock className="w-4 h-4 inline mr-1" />
+                <strong>Due Date:</strong> Invoices will have a due date of <strong>4 days</strong> after the invoice issue date.
+                {previewData?.due_date && (
+                  <span> For {formatMonth(billingMonth)}, due date will be <strong>{previewData.due_date}</strong>.</span>
+                )}
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
