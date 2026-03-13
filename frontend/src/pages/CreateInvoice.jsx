@@ -191,7 +191,21 @@ export default function CreateInvoice() {
 
   const handleLineItemChange = (index, field, value) => {
     const newItems = [...lineItems];
-    newItems[index] = { ...newItems[index], [field]: value };
+    
+    // Handle numeric fields properly - allow empty string and direct input
+    if (field === 'quantity' || field === 'rate') {
+      // Allow empty string or valid numbers
+      if (value === '' || value === null || value === undefined) {
+        newItems[index] = { ...newItems[index], [field]: '' };
+      } else {
+        // Parse as number, but keep as string if it's being typed
+        const numValue = parseFloat(value);
+        newItems[index] = { ...newItems[index], [field]: isNaN(numValue) ? '' : numValue };
+      }
+    } else {
+      newItems[index] = { ...newItems[index], [field]: value };
+    }
+    
     setLineItems(newItems);
   };
 
