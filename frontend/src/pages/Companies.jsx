@@ -87,6 +87,7 @@ export default function Companies() {
     rate_per_seat: "",
     discount_percent: "",
     meeting_room_credits: "",
+    lock_in_months: "11",
     start_date: "",
     isp_provider: "",
     bandwidth_speed: "",
