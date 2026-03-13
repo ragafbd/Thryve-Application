@@ -11,6 +11,18 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Public holiday management for booking restrictions**
 
 ## Recent Updates (March 13, 2026)
+- **Auto Invoice Generation Enhancement**: Enhanced logic to respect client start dates and adjust due dates
+  - **Start Date Validation**: Invoices can only be generated for companies whose start_date is on or before the billing period
+  - **Due Date Calculation**: Changed from 15th of month to invoice_date + 4 days
+  - **Eligible Companies Preview**: New "Preview Companies" button shows which companies will be included/excluded
+  - **New Endpoint**: `GET /api/auto-invoice/eligible-companies?billing_month=YYYY-MM`
+    - Returns: eligible_count, ineligible_count, invoice_date, due_date, eligible_companies, ineligible_companies
+    - Ineligible reasons: "Start date is after billing period" or "Invoice already exists"
+  - **UI Updates**:
+    - 4 stats cards: Eligible Companies, Ineligible/Skipped, Est. Amount (with GST), Due Date
+    - Preview dialog shows company details with reasons for ineligibility
+    - Generate button disabled when no eligible companies
+
 - **Meeting Room Credits System**: Complete company-level credits tracking for meeting room bookings
   - **Credits Calculation**: Total Credits = Total Seats × Allocated Minutes per Seat
   - **Admin Panel (Clients Page)**:
