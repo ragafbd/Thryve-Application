@@ -100,12 +100,7 @@ export default function Login() {
         </div>
 
         <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-semibold text-center font-[Manrope] text-[#1E2640]">
-              Administrator Login
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-[#1E2640]">Email</Label>
