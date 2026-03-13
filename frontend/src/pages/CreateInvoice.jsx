@@ -397,6 +397,8 @@ export default function CreateInvoice() {
     total_cgst: totals.totalCgst,
     total_sgst: totals.totalSgst,
     total_tax: totals.totalTax,
+    calculated_total: totals.calculatedTotal,
+    round_off_adjustment: totals.roundOffAdjustment,
     grand_total: totals.grandTotal,
     notes: notes
   };
