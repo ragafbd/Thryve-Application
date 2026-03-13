@@ -193,15 +193,18 @@ export default function CreateInvoice() {
     const service = SERVICE_TYPES.find(s => s.value === value);
     const newItems = [...lineItems];
     // Auto-populate all fields from the service type - no separate description input needed
+    // Security deposit has GST locked to false
     newItems[index] = {
       ...newItems[index],
       service_type: value,
       description: service?.label || value, // Use service label as description
       is_taxable: service?.taxable ?? true,
       hsn_sac: service?.hsn || "",
-      unit: service?.unit || "Units"
+      unit: service?.unit || "Units",
+      gst_locked: service?.gstLocked || false // Lock GST for security deposits
     };
-    setLineItems(newItems);
+    // Sort items after changing service type
+    setLineItems(sortLineItems(newItems));
   };
 
   const handleLineItemChange = (index, field, value) => {
