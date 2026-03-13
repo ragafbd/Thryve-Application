@@ -549,11 +549,19 @@ async def cancel_member_booking(booking_id: str, current_member: dict = Depends(
     if booking.get("status") == "cancelled":
         raise HTTPException(status_code=400, detail="Booking is already cancelled")
     
-    # Restore credits to company (not member)
+    # Check if cancellation is 48 hours before the booking
+    booking_datetime = datetime.strptime(f"{booking['date']} {booking['start_time']}", "%Y-%m-%d %H:%M")
+    booking_datetime = booking_datetime.replace(tzinfo=timezone.utc)
+    now = datetime.now(timezone.utc)
+    hours_until_booking = (booking_datetime - now).total_seconds() / 3600
+    
+    is_late_cancellation = hours_until_booking < 48
+    
     credits_used = booking.get("credits_used", 0)
     company_id = booking.get("company_id") or current_member.get("company_id")
     
-    if credits_used > 0 and company_id:
+    # Only restore credits if cancellation is 48+ hours before booking
+    if credits_used > 0 and company_id and not is_late_cancellation:
         company = await db.companies.find_one({"id": company_id}, {"_id": 0})
         if company:
             current_remaining = company.get("remaining_credits", 0)
@@ -565,9 +573,27 @@ async def cancel_member_booking(booking_id: str, current_member: dict = Depends(
                 }
             )
     
-    await db.bookings.update_one({"id": booking_id}, {"$set": {"status": "cancelled"}})
+    # Update booking status with late cancellation flag
+    update_data = {
+        "status": "cancelled",
+        "is_late_cancellation": is_late_cancellation,
+        "cancelled_at": datetime.now(timezone.utc).isoformat()
+    }
     
-    return {"message": "Booking cancelled successfully"}
+    await db.bookings.update_one({"id": booking_id}, {"$set": update_data})
+    
+    if is_late_cancellation:
+        return {
+            "message": "Booking cancelled. Note: Credits not restored due to late cancellation (less than 48 hours before booking).",
+            "is_late_cancellation": True,
+            "credits_forfeited": credits_used
+        }
+    
+    return {
+        "message": "Booking cancelled successfully. Credits have been restored.",
+        "is_late_cancellation": False,
+        "credits_restored": credits_used
+    }
 
 # ==================== ANNOUNCEMENTS (Read Only) ====================
 
