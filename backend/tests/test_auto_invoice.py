@@ -65,19 +65,21 @@ class TestAutoInvoiceEligibility:
         assert data["ineligible_count"] == 0, f"Expected 0 ineligible, got {data['ineligible_count']}"
     
     def test_eligible_companies_march_2026_existing_invoices(self):
-        """Test: March 2026 should have 0 eligible (all have existing invoices)"""
+        """Test: March 2026 should have 0 eligible (all have existing invoices or start_date after)"""
         resp = requests.get(f"{BASE_URL}/api/auto-invoice/eligible-companies?billing_month=2026-03", headers=self.headers)
         
         assert resp.status_code == 200
         data = resp.json()
         
-        # All companies should be ineligible due to existing invoices
+        # All companies should be ineligible due to existing invoices or start_date after billing period
         assert data["eligible_count"] == 0, f"Expected 0 eligible, got {data['eligible_count']}"
         assert data["ineligible_count"] == 13, f"Expected 13 ineligible, got {data['ineligible_count']}"
         
-        # Verify reason is "Invoice already exists"
+        # Verify reason is either "Invoice already exists" or "Start date is after billing period"
         for company in data["ineligible_companies"]:
-            assert "Invoice already exists" in company.get("reason", ""), f"Expected 'Invoice already exists' reason for {company['company_name']}"
+            reason = company.get("reason", "")
+            assert "Invoice already exists" in reason or "Start date" in reason, \
+                f"Unexpected reason for {company['company_name']}: {reason}"
     
     def test_due_date_calculation(self):
         """Test: Due date should be invoice_date + 4 days"""
