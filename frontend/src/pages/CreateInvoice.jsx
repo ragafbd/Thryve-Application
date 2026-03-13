@@ -706,7 +706,10 @@ export default function CreateInvoice() {
                         {item.is_prorated && (
                           <div className="col-span-2 grid grid-cols-2 gap-3 p-3 bg-amber-50 rounded-lg">
                             <div className="space-y-1">
-                              <Label className="text-xs text-amber-700">Days to Charge</Label>
+                              <Label className="text-xs text-amber-700">
+                                Days to Charge
+                                <span className="text-amber-500 ml-1">(auto-calculated, editable)</span>
+                              </Label>
                               <Input
                                 type="number"
                                 min="1"
@@ -717,9 +720,12 @@ export default function CreateInvoice() {
                                 className="font-numbers h-9"
                                 data-testid={`prorate-days-${index}`}
                               />
+                              <p className="text-xs text-amber-600">
+                                Invoice date: {invoiceDate ? format(new Date(invoiceDate), "d MMM") : "-"} → End of month
+                              </p>
                             </div>
                             <div className="space-y-1">
-                              <Label className="text-xs text-amber-700">Total Days in Period</Label>
+                              <Label className="text-xs text-amber-700">Total Days in Month</Label>
                               <Input
                                 type="number"
                                 min="1"
@@ -730,8 +736,8 @@ export default function CreateInvoice() {
                               />
                             </div>
                             {item.prorate_days && item.prorate_total_days && (
-                              <div className="col-span-2 text-xs text-amber-700">
-                                Charging for {item.prorate_days} of {item.prorate_total_days} days = {((item.prorate_days / item.prorate_total_days) * 100).toFixed(1)}% of monthly rate
+                              <div className="col-span-2 text-xs text-amber-700 bg-amber-100 p-2 rounded">
+                                <strong>Calculation:</strong> Charging for {item.prorate_days} of {item.prorate_total_days} days = {((item.prorate_days / item.prorate_total_days) * 100).toFixed(1)}% of monthly rate
                               </div>
                             )}
                           </div>
