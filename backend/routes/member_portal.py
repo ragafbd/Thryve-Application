@@ -171,19 +171,90 @@ async def login_member(data: MemberLogin):
 @router.get("/me")
 async def get_member_profile(current_member: dict = Depends(get_current_member)):
     """Get current member's profile"""
+    # Get company credits
+    company_id = current_member.get("company_id")
+    company_credits = {
+        "total_credits": 0,
+        "remaining_credits": 0,
+        "credits_used": 0
+    }
+    
+    if company_id:
+        company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+        if company:
+            total_credits = company.get("total_credits", company.get("total_seats", 0) * company.get("meeting_room_credits", 0))
+            credits_used = company.get("credits_used", 0)
+            remaining_credits = company.get("remaining_credits", total_credits - credits_used)
+            company_credits = {
+                "total_credits": total_credits,
+                "remaining_credits": remaining_credits,
+                "credits_used": credits_used
+            }
+    
     return {
         "id": current_member["id"],
         "name": current_member["name"],
         "email": current_member["email"],
         "phone": current_member["phone"],
         "company_name": current_member["company_name"],
+        "company_id": company_id,
         "plan_name": current_member.get("plan_name", ""),
         "seat_number": current_member.get("seat_number"),
-        "meeting_room_credits": current_member.get("meeting_room_credits", 0),
-        "credits_used": current_member.get("credits_used", 0),
-        "credits_remaining": current_member.get("meeting_room_credits", 0) - current_member.get("credits_used", 0),
+        "meeting_room_credits": company_credits["total_credits"],
+        "credits_used": company_credits["credits_used"],
+        "credits_remaining": company_credits["remaining_credits"],
         "start_date": current_member.get("start_date"),
         "status": current_member["status"]
+    }
+
+
+@router.get("/company-credits")
+async def get_member_company_credits(current_member: dict = Depends(get_current_member)):
+    """Get the company's meeting room credits for the member's company"""
+    company_id = current_member.get("company_id")
+    
+    if not company_id:
+        return {
+            "company_name": current_member.get("company_name"),
+            "total_credits": 0,
+            "remaining_credits": 0,
+            "credits_used": 0,
+            "total_seats": 0,
+            "credits_per_seat": 0
+        }
+    
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    if not company:
+        return {
+            "company_name": current_member.get("company_name"),
+            "total_credits": 0,
+            "remaining_credits": 0,
+            "credits_used": 0,
+            "total_seats": 0,
+            "credits_per_seat": 0
+        }
+    
+    total_seats = company.get("total_seats", 0)
+    credits_per_seat = company.get("meeting_room_credits", 0)
+    total_credits = company.get("total_credits", total_seats * credits_per_seat)
+    credits_used = company.get("credits_used", 0)
+    remaining_credits = company.get("remaining_credits", total_credits - credits_used)
+    
+    # Get member's own booking credits usage
+    member_bookings = await db.bookings.find(
+        {"member_id": current_member["id"], "credits_used": {"$gt": 0}},
+        {"_id": 0, "credits_used": 1}
+    ).to_list(500)
+    member_credits_used = sum(b.get("credits_used", 0) for b in member_bookings)
+    
+    return {
+        "company_name": company.get("company_name"),
+        "total_credits": total_credits,
+        "remaining_credits": remaining_credits,
+        "credits_used": credits_used,
+        "total_seats": total_seats,
+        "credits_per_seat": credits_per_seat,
+        "member_credits_used": member_credits_used
     }
 
 @router.post("/change-password")
