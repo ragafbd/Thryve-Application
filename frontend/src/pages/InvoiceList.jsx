@@ -105,15 +105,6 @@ export default function InvoiceList() {
             View and manage all your invoices
           </p>
         </div>
-        <Link to="create-invoice">
-          <Button 
-            className="bg-[#2E375B] hover:bg-[#232B47] text-white"
-            data-testid="create-invoice-btn"
-          >
-            <PlusCircle className="w-4 h-4 mr-2" />
-            Create Invoice
-          </Button>
-        </Link>
       </div>
 
       {/* Search & Filter */}
