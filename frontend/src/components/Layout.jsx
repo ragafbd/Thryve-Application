@@ -73,6 +73,7 @@ export default function Layout() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [newTicketCount, setNewTicketCount] = useState(0);
   const [lastTicketCheck, setLastTicketCheck] = useState(null);
+  const [upcomingBirthdayCount, setUpcomingBirthdayCount] = useState(0);
   const audioRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
