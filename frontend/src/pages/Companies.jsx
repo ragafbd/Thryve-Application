@@ -614,7 +614,7 @@ export default function Companies() {
                     <div className="flex items-center gap-3">
                       <StatusBadge status={company.status} />
                       <Badge variant="outline" className="text-[#2E375B]">
-                        {company.meeting_room_credits} min credits
+                        {company.meeting_room_credits || 30} credits/seat
                       </Badge>
                       
                       <DropdownMenu>
