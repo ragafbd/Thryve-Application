@@ -235,7 +235,8 @@ export default function CreateInvoice() {
       rate: selectedClient?.rate_per_seat || "",
       description: selectedClient?.plan_name || "Monthly Plan"
     };
-    setLineItems([...lineItems, newItem]);
+    // Sort items after adding to maintain correct order
+    setLineItems(sortLineItems([...lineItems, newItem]));
   };
 
   const removeLineItem = (index) => {
