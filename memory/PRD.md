@@ -11,6 +11,11 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Public holiday management for booking restrictions**
 
 ## Recent Updates (March 13, 2026)
+- **48-Hour Cancellation Policy for Meeting Room Credits**:
+  - Credits are only restored if cancellation is made 48+ hours before the booking
+  - Late cancellations (less than 48 hours before) forfeit the credits used
+  - Booking records now include `is_late_cancellation` flag and `cancelled_at` timestamp
+  - API response clearly indicates whether credits were restored or forfeited
 - **Enhanced Create Invoice Form & Auto-Generation**: Complete invoice improvements
   - **Invoice Item Ordering**: Strict order enforced automatically
     1. Monthly Plan Fee - always first (order: 1)
