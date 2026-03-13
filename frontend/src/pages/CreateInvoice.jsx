@@ -288,18 +288,33 @@ export default function CreateInvoice() {
       toast.error("Please select a client");
       return;
     }
-    if (lineItems.some(item => item.rate <= 0)) {
-      toast.error("Please enter valid rates for all line items");
+    
+    // Validate that all line items have valid quantity and rate
+    const invalidItems = lineItems.filter(item => {
+      const qty = parseFloat(item.quantity);
+      const rate = parseFloat(item.rate);
+      return isNaN(qty) || qty <= 0 || isNaN(rate) || rate <= 0;
+    });
+    
+    if (invalidItems.length > 0) {
+      toast.error("Please enter valid quantity and rate for all line items");
       return;
     }
 
     setSaving(true);
     try {
+      // Ensure numeric values are proper numbers before sending
+      const processedLineItems = lineItems.map(item => ({
+        ...item,
+        quantity: parseFloat(item.quantity) || 0,
+        rate: parseFloat(item.rate) || 0
+      }));
+      
       const response = await axios.post(`${API}/invoices`, {
         client_id: selectedClientId,
         invoice_date: invoiceDate.toISOString().split('T')[0],
         due_date: dueDate.toISOString().split('T')[0],
-        line_items: lineItems,
+        line_items: processedLineItems,
         notes: notes
       });
       toast.success("Invoice created successfully!");
