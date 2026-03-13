@@ -603,8 +603,12 @@ async def generate_auto_invoices(
             # Sort line items by order
             line_items.sort(key=lambda x: x.get("order", 50))
             
-            # Calculate grand total
-            grand_total = total_subtotal + total_cgst_sum + total_sgst_sum
+            # Calculate grand total with GST-compliant rounding
+            calculated_total = round(total_subtotal + total_cgst_sum + total_sgst_sum, 2)
+            
+            # GST-compliant rounding: Round final total to nearest whole rupee
+            rounded_total = round(calculated_total)
+            round_off_adjustment = round(rounded_total - calculated_total, 2)
             
             # Create client object from company
             client_data = {
@@ -631,7 +635,8 @@ async def generate_auto_invoices(
                 "total_cgst": round(total_cgst_sum, 2),
                 "total_sgst": round(total_sgst_sum, 2),
                 "total_tax": round(total_cgst_sum + total_sgst_sum, 2),
-                "grand_total": round(grand_total, 2),
+                "round_off_adjustment": round_off_adjustment,
+                "grand_total": rounded_total,
                 "notes": request.notes or f"Auto-generated invoice for {month_name} {year}",
                 "status": "pending",
                 "auto_generated": True,
