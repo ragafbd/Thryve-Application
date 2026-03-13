@@ -261,14 +261,18 @@ export default function CreateInvoice() {
     client: selectedClient || null,
     company: company,
     line_items: lineItems.map(item => {
+      const qty = parseFloat(item.quantity) || 0;
+      const rate = parseFloat(item.rate) || 0;
       let amount;
       if (item.is_prorated && item.prorate_days && item.prorate_total_days) {
-        amount = item.quantity * (item.rate / item.prorate_total_days) * item.prorate_days;
+        amount = qty * (rate / item.prorate_total_days) * item.prorate_days;
       } else {
-        amount = item.quantity * item.rate;
+        amount = qty * rate;
       }
       return {
         ...item,
+        quantity: qty,
+        rate: rate,
         amount: amount,
         cgst: item.is_taxable ? amount * 0.09 : 0,
         sgst: item.is_taxable ? amount * 0.09 : 0,
