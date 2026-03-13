@@ -44,7 +44,6 @@ export default function Dashboard() {
     active_announcements: 0
   });
   const [recentInvoices, setRecentInvoices] = useState([]);
-  const [upcomingBirthdays, setUpcomingBirthdays] = useState([]);
   const [pendingCharges, setPendingCharges] = useState({ company_charges: [], guest_charges: [], total_pending: 0 });
   const [loading, setLoading] = useState(true);
 
