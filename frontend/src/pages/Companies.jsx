@@ -681,38 +681,43 @@ export default function Companies() {
                       </div>
                     </div>
 
-                    {/* Meeting Room Credits */}
+                    {/* Meeting Room Credits - Credit-Based System */}
                     {company.meeting_room_credits > 0 && (
                       <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
                         <h4 className="font-semibold text-[#2E375B] flex items-center gap-2 mb-3">
                           <CreditCard className="w-4 h-4 text-blue-600" />
                           Meeting Room Credits
+                          <span className="text-xs font-normal text-blue-600 ml-2">(1 Credit = Rs. 50)</span>
                         </h4>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
-                            <p className="text-[#2E375B]/60">Credits/Seat</p>
-                            <p className="font-medium text-[#2E375B]">{company.meeting_room_credits?.toLocaleString('en-IN')} mins</p>
+                            <p className="text-[#2E375B]/60">Credits/Seat/Month</p>
+                            <p className="font-medium text-[#2E375B]">{company.meeting_room_credits || 30} credits</p>
                           </div>
                           <div>
-                            <p className="text-[#2E375B]/60">Total Credits</p>
+                            <p className="text-[#2E375B]/60">Total Allocated</p>
                             <p className="font-medium text-[#2E375B]">
-                              {(company.total_credits || (company.total_seats * company.meeting_room_credits))?.toLocaleString('en-IN')} mins
+                              {(company.total_credits || (company.total_seats * (company.meeting_room_credits || 30)))} credits
                             </p>
                           </div>
                           <div>
                             <p className="text-[#2E375B]/60">Credits Used</p>
-                            <p className="font-medium text-orange-600">{(company.credits_used || 0)?.toLocaleString('en-IN')} mins</p>
+                            <p className="font-medium text-orange-600">{(company.credits_used || 0)} credits</p>
                           </div>
                           <div>
-                            <p className="text-[#2E375B]/60">Balance Credits</p>
+                            <p className="text-[#2E375B]/60">Credits Remaining</p>
                             <p className={`font-bold ${
-                              (company.remaining_credits || ((company.total_credits || (company.total_seats * company.meeting_room_credits)) - (company.credits_used || 0))) > 0 
+                              (company.remaining_credits || ((company.total_credits || (company.total_seats * (company.meeting_room_credits || 30))) - (company.credits_used || 0))) > 0 
                                 ? 'text-green-600' 
                                 : 'text-red-600'
                             }`}>
-                              {(company.remaining_credits || ((company.total_credits || (company.total_seats * company.meeting_room_credits)) - (company.credits_used || 0)))?.toLocaleString('en-IN')} mins
+                              {(company.remaining_credits || ((company.total_credits || (company.total_seats * (company.meeting_room_credits || 30))) - (company.credits_used || 0)))} credits
                             </p>
                           </div>
+                        </div>
+                        {/* Credit value info */}
+                        <div className="mt-2 text-xs text-[#2E375B]/60">
+                          <span className="font-medium">Credit Costs:</span> Conference Room: 20 credits/hr • Meeting Room: 5 credits/30 min
                         </div>
                         {/* Progress bar */}
                         <div className="mt-3">
@@ -721,16 +726,16 @@ export default function Companies() {
                               className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-300"
                               style={{ 
                                 width: `${Math.min(100, Math.max(0, 
-                                  ((company.remaining_credits || ((company.total_credits || (company.total_seats * company.meeting_room_credits)) - (company.credits_used || 0))) / 
-                                  (company.total_credits || (company.total_seats * company.meeting_room_credits) || 1)) * 100
+                                  ((company.remaining_credits || ((company.total_credits || (company.total_seats * (company.meeting_room_credits || 30))) - (company.credits_used || 0))) / 
+                                  (company.total_credits || (company.total_seats * (company.meeting_room_credits || 30)) || 1)) * 100
                                 ))}%` 
                               }}
                             />
                           </div>
                           <p className="text-xs text-[#2E375B]/50 mt-1 text-right">
                             {Math.round(
-                              ((company.remaining_credits || ((company.total_credits || (company.total_seats * company.meeting_room_credits)) - (company.credits_used || 0))) / 
-                              (company.total_credits || (company.total_seats * company.meeting_room_credits) || 1)) * 100
+                              ((company.remaining_credits || ((company.total_credits || (company.total_seats * (company.meeting_room_credits || 30))) - (company.credits_used || 0))) / 
+                              (company.total_credits || (company.total_seats * (company.meeting_room_credits || 30)) || 1)) * 100
                             )}% remaining
                           </p>
                         </div>
