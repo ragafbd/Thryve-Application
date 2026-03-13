@@ -79,7 +79,7 @@ class CompanyCreate(BaseModel):
     total_seats: int  # Number of seats subscribed
     rate_per_seat: float  # Custom rate per seat (admin-set)
     discount_percent: float = 0  # Any discount
-    meeting_room_credits: int = 0  # Meeting room credits per seat (in minutes)
+    meeting_room_credits: int = 30  # Meeting room credits per seat (default 30 credits/seat/month)
     
     # LLA Financial Details
     security_deposit: Optional[float] = 0  # NEW: For LLA
