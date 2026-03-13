@@ -222,6 +222,7 @@ export default function Companies() {
         rate_per_seat: company.rate_per_seat,
         discount_percent: company.discount_percent || "",
         meeting_room_credits: company.meeting_room_credits || "",
+        lock_in_months: company.lock_in_months || "11",
         start_date: company.start_date,
         isp_provider: company.isp_provider || "",
         bandwidth_speed: company.bandwidth_speed || "",
