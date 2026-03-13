@@ -310,7 +310,7 @@ export default function Companies() {
     }
   };
 
-  const handleSaveMember = async () => {
+  const handleSaveMember = async (replaceExistingPrimary = false) => {
     if (!memberForm.name || !memberForm.email || !memberForm.phone) {
       toast.error("Please fill in all required fields");
       return;
@@ -318,24 +318,93 @@ export default function Companies() {
 
     setSaving(true);
     try {
-      await axios.post(`${API}/companies/${selectedCompanyForMember.id}/members`, {
+      const payload = {
         ...memberForm,
-        company_id: selectedCompanyForMember.id
-      });
-      toast.success("Member added successfully");
+        company_id: selectedCompanyForMember.id,
+        replace_primary: replaceExistingPrimary
+      };
+
+      if (editingMember) {
+        // Update existing member
+        await axios.put(
+          `${API}/companies/${selectedCompanyForMember.id}/members/${editingMember.id}`,
+          payload
+        );
+        toast.success("Member updated successfully");
+      } else {
+        // Add new member
+        await axios.post(`${API}/companies/${selectedCompanyForMember.id}/members`, payload);
+        toast.success("Member added successfully");
+      }
+      
       setMemberDialogOpen(false);
+      setPrimaryConflictDialogOpen(false);
       resetMemberForm();
       fetchCompanies();
+      
       // Refresh expanded company
       if (expandedCompany === selectedCompanyForMember.id) {
         const response = await axios.get(`${API}/companies/${selectedCompanyForMember.id}`);
         setCompanies(prev => prev.map(c => c.id === selectedCompanyForMember.id ? response.data : c));
       }
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Failed to add member");
+      // Handle primary contact conflict (HTTP 409)
+      if (error.response?.status === 409) {
+        const detail = error.response.data.detail;
+        setExistingPrimaryMember(detail.existing_primary);
+        setPendingMemberAction(editingMember ? 'edit' : 'add');
+        setPrimaryConflictDialogOpen(true);
+      } else {
+        toast.error(error.response?.data?.detail || "Failed to save member");
+      }
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSkipPrimary = async () => {
+    // Save member without primary status
+    setMemberForm(prev => ({ ...prev, is_primary_contact: false }));
+    setPrimaryConflictDialogOpen(false);
+    
+    // Re-save with is_primary_contact = false
+    setSaving(true);
+    try {
+      const payload = {
+        ...memberForm,
+        is_primary_contact: false,
+        company_id: selectedCompanyForMember.id
+      };
+
+      if (editingMember) {
+        await axios.put(
+          `${API}/companies/${selectedCompanyForMember.id}/members/${editingMember.id}`,
+          payload
+        );
+        toast.success("Member updated (kept as regular member)");
+      } else {
+        await axios.post(`${API}/companies/${selectedCompanyForMember.id}/members`, payload);
+        toast.success("Member added (as regular member)");
+      }
+      
+      setMemberDialogOpen(false);
+      resetMemberForm();
+      fetchCompanies();
+      
+      if (expandedCompany === selectedCompanyForMember.id) {
+        const response = await axios.get(`${API}/companies/${selectedCompanyForMember.id}`);
+        setCompanies(prev => prev.map(c => c.id === selectedCompanyForMember.id ? response.data : c));
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to save member");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReplacePrimary = () => {
+    // Save member with replace_primary = true
+    handleSaveMember(true);
   };
 
   const handleDelete = async () => {
