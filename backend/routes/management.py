@@ -910,61 +910,110 @@ async def get_upcoming_birthdays(days: int = 30):
 
 @router.get("/pending-charges")
 async def get_pending_meeting_charges():
-    """Get all pending meeting room charges grouped by company"""
-    # Get bookings with billable_amount > 0 and payment not marked as paid
-    # Include confirmed bookings and cancelled bookings with late cancellation charges
-    pending_bookings = await db.bookings.find(
-        {
-            "billable_amount": {"$gt": 0},
-            "payment_status": {"$nin": ["paid", "completed"]},
-            "$or": [
-                {"status": "confirmed"},
-                {"status": "cancelled", "cancellation_charge": True}
-            ]
-        },
-        {"_id": 0}
-    ).to_list(1000)
+    """Get all pending meeting room charges grouped by company - RECALCULATES at invoice time"""
     
-    # Group by company_name (since company_id might not always be set)
-    company_charges = {}
+    # Get all active companies
+    companies = await db.companies.find({"status": "active"}, {"_id": 0}).to_list(1000)
+    
+    company_charges = []
     guest_charges = []
     
-    for booking in pending_bookings:
-        if booking.get("is_guest"):
-            guest_charges.append({
-                "booking_id": booking.get("id"),
-                "guest_name": booking.get("guest_name"),
-                "guest_company": booking.get("guest_company"),
-                "date": booking.get("date"),
-                "room_name": booking.get("room_name"),
-                "amount": booking.get("billable_amount", 0),
-                "payment_status": booking.get("payment_status", "pending")
-            })
+    for company in companies:
+        company_id = company.get("id")
+        company_name = company.get("company_name")
+        
+        # Get TOTAL allowed credits for this company
+        total_seats = company.get("total_seats", 0)
+        credits_per_seat = company.get("meeting_room_credits", 0)
+        total_allowed_credits = company.get("total_credits", total_seats * credits_per_seat)
+        
+        # Get ALL confirmed bookings for this company that haven't been invoiced
+        bookings = await db.bookings.find({
+            "$or": [
+                {"company_id": company_id},
+                {"company_name": company_name}
+            ],
+            "status": {"$ne": "cancelled"},
+            "payment_status": {"$nin": ["paid", "completed", "invoiced"]}
+        }, {"_id": 0}).to_list(1000)
+        
+        if not bookings:
+            continue
+        
+        # Calculate TOTAL usage minutes
+        total_usage_minutes = sum(b.get("duration_minutes", 0) for b in bookings)
+        
+        # Calculate billable minutes (usage - allowed credits)
+        if total_usage_minutes <= total_allowed_credits:
+            # No charge - all usage is covered by credits
+            billable_minutes = 0
+            billable_amount = 0
         else:
-            # Use company_name as the grouping key
-            company_name = booking.get("company_name", "Unknown Company")
-            company_id = booking.get("company_id") or booking.get("member_id", "unknown")
+            # Charge for excess minutes
+            billable_minutes = total_usage_minutes - total_allowed_credits
             
-            if company_name not in company_charges:
-                company_charges[company_name] = {
-                    "company_id": company_id,
-                    "company_name": company_name,
-                    "bookings": [],
-                    "total_amount": 0
-                }
-            company_charges[company_name]["bookings"].append({
-                "booking_id": booking.get("id"),
-                "member_name": booking.get("member_name"),
-                "date": booking.get("date"),
-                "room_name": booking.get("room_name"),
-                "amount": booking.get("billable_amount", 0)
+            # Calculate average hourly rate from bookings (or use default)
+            total_duration = sum(b.get("duration_minutes", 0) for b in bookings)
+            # Get room rates for accurate calculation
+            rooms = await db.meeting_rooms.find({}, {"_id": 0}).to_list(100)
+            room_rates = {r.get("id"): r.get("hourly_rate", 500) for r in rooms}
+            room_rates.update({r.get("name"): r.get("hourly_rate", 500) for r in rooms})
+            
+            # Calculate weighted average rate based on actual room usage
+            weighted_rate = 0
+            for b in bookings:
+                room_id = b.get("room_id")
+                room_name = b.get("room_name")
+                duration = b.get("duration_minutes", 0)
+                rate = room_rates.get(room_id, room_rates.get(room_name, 500))
+                weighted_rate += (duration / total_duration) * rate if total_duration > 0 else rate
+            
+            # Calculate billable amount
+            billable_amount = round((billable_minutes / 60) * weighted_rate, 2)
+        
+        # Only add to charges if there's something to bill
+        if billable_amount > 0:
+            company_charges.append({
+                "company_id": company_id,
+                "company_name": company_name,
+                "total_usage_minutes": total_usage_minutes,
+                "allowed_credits": total_allowed_credits,
+                "billable_minutes": billable_minutes,
+                "total_amount": billable_amount,
+                "booking_count": len(bookings),
+                "bookings": [{
+                    "booking_id": b.get("id"),
+                    "member_name": b.get("member_name"),
+                    "date": b.get("date"),
+                    "room_name": b.get("room_name"),
+                    "duration_minutes": b.get("duration_minutes", 0),
+                    "amount": 0  # Individual amounts not used - bundled
+                } for b in bookings]
             })
-            company_charges[company_name]["total_amount"] += booking.get("billable_amount", 0)
+    
+    # Handle guest bookings separately (no credit system)
+    guest_bookings = await db.bookings.find({
+        "is_guest": True,
+        "billable_amount": {"$gt": 0},
+        "payment_status": {"$nin": ["paid", "completed", "invoiced"]},
+        "status": {"$ne": "cancelled"}
+    }, {"_id": 0}).to_list(1000)
+    
+    for booking in guest_bookings:
+        guest_charges.append({
+            "booking_id": booking.get("id"),
+            "guest_name": booking.get("guest_name"),
+            "guest_company": booking.get("guest_company"),
+            "date": booking.get("date"),
+            "room_name": booking.get("room_name"),
+            "amount": booking.get("billable_amount", 0),
+            "payment_status": booking.get("payment_status", "pending")
+        })
     
     return {
-        "company_charges": list(company_charges.values()),
+        "company_charges": company_charges,
         "guest_charges": guest_charges,
-        "total_pending": sum(c["total_amount"] for c in company_charges.values()) + sum(g["amount"] for g in guest_charges)
+        "total_pending": sum(c["total_amount"] for c in company_charges) + sum(g["amount"] for g in guest_charges)
     }
 
 # ==================== SEED DEFAULT DATA ====================
