@@ -512,7 +512,13 @@ async def generate_auto_invoices(
             total_cgst_sum = cgst
             total_sgst_sum = sgst
             
-            # 2. Fetch and bundle all pending meeting room charges - RECALCULATE based on credits
+            # 2. CREDIT-BASED MEETING ROOM BILLING
+            # 1 Credit = Rs. 50
+            # Conference Room: 20 credits/hour
+            # Meeting Room: 5 credits/30-min slot
+            CREDIT_VALUE = 50
+            CREDITS_PER_SEAT = 30
+            
             # Get ALL confirmed bookings for this company that haven't been invoiced
             all_bookings = await db.bookings.find({
                 "$or": [
@@ -524,54 +530,48 @@ async def generate_auto_invoices(
             }, {"_id": 0}).to_list(1000)
             
             if all_bookings:
-                # Calculate TOTAL usage minutes
-                total_usage_minutes = sum(b.get("duration_minutes", 0) for b in all_bookings)
+                # Calculate TOTAL credits used from all bookings
+                total_credits_used = 0
+                for b in all_bookings:
+                    if b.get("credits_required"):
+                        total_credits_used += b.get("credits_required", 0)
+                    else:
+                        # Legacy: Convert from minutes to credits
+                        duration = b.get("duration_minutes", 0)
+                        room_name = b.get("room_name", "").upper()
+                        if "CR" in room_name:  # Conference Room: 20 credits/hour
+                            credits = (duration / 60) * 20
+                        else:  # Meeting Room: 5 credits/30 min
+                            credits = (duration / 30) * 5
+                        total_credits_used += int(credits)
                 
-                # Get TOTAL allowed credits for this company
+                # Get TOTAL allocated credits for this company
                 total_seats = company.get("total_seats", 0)
-                credits_per_seat = company.get("meeting_room_credits", 0)
-                total_allowed_credits = company.get("total_credits", total_seats * credits_per_seat)
+                credits_per_seat = company.get("meeting_room_credits", CREDITS_PER_SEAT)
+                total_allocated_credits = company.get("total_credits", total_seats * credits_per_seat)
                 
-                # Calculate billable minutes (usage - allowed credits)
-                if total_usage_minutes <= total_allowed_credits:
-                    # No charge - all usage is covered by credits
-                    billable_minutes = 0
+                # Calculate billable credits (excess over allocated)
+                if total_credits_used <= total_allocated_credits:
+                    billable_credits = 0
                     total_meeting_room_amount = 0
                 else:
-                    # Charge for excess minutes
-                    billable_minutes = total_usage_minutes - total_allowed_credits
-                    
-                    # Get room rates for calculation
-                    rooms = await db.meeting_rooms.find({}, {"_id": 0}).to_list(100)
-                    room_rates = {r.get("id"): r.get("hourly_rate", 500) for r in rooms}
-                    room_rates.update({r.get("name"): r.get("hourly_rate", 500) for r in rooms})
-                    
-                    # Calculate weighted average rate
-                    total_duration = sum(b.get("duration_minutes", 0) for b in all_bookings)
-                    weighted_rate = 0
-                    for b in all_bookings:
-                        room_id = b.get("room_id")
-                        room_name = b.get("room_name")
-                        duration = b.get("duration_minutes", 0)
-                        rate_per_hour = room_rates.get(room_id, room_rates.get(room_name, 500))
-                        weighted_rate += (duration / total_duration) * rate_per_hour if total_duration > 0 else rate_per_hour
-                    
-                    total_meeting_room_amount = round((billable_minutes / 60) * weighted_rate, 2)
+                    billable_credits = total_credits_used - total_allocated_credits
+                    total_meeting_room_amount = billable_credits * CREDIT_VALUE
                 
-                # Only add meeting room line item if there are charges
-                if total_meeting_room_amount > 0:
+                # Only add meeting room line item if there are excess credits
+                if billable_credits > 0:
                     meeting_room_cgst = round(total_meeting_room_amount * (GST_RATE / 2) / 100, 2)
                     meeting_room_sgst = round(total_meeting_room_amount * (GST_RATE / 2) / 100, 2)
                     
-                    # Create a single bundled meeting room line item
+                    # Create a single bundled meeting room line item (Credit-based)
                     meeting_item = {
-                        "description": f"Meeting Room Charges ({len(all_bookings)} booking{'s' if len(all_bookings) > 1 else ''} - {billable_minutes} min billable)",
+                        "description": f"Meeting Room Usage Charges ({billable_credits} excess credits @ Rs.{CREDIT_VALUE}/credit)",
                         "service_type": "meeting_room",
-                        "quantity": 1,
-                        "rate": total_meeting_room_amount,
+                        "quantity": billable_credits,
+                        "rate": CREDIT_VALUE,
                         "is_taxable": True,
                         "hsn_sac": "997212",
-                        "unit": "Units",
+                        "unit": "Credits",
                         "is_prorated": False,
                         "prorate_days": 0,
                         "prorate_total_days": 0,
@@ -580,9 +580,10 @@ async def generate_auto_invoices(
                         "sgst": meeting_room_sgst,
                         "total": total_meeting_room_amount + meeting_room_cgst + meeting_room_sgst,
                         "booking_ids": [b.get("id") for b in all_bookings],
-                        "total_usage_minutes": total_usage_minutes,
-                        "allowed_credits": total_allowed_credits,
-                        "billable_minutes": billable_minutes,
+                        "total_credits_used": total_credits_used,
+                        "total_allocated_credits": total_allocated_credits,
+                        "billable_credits": billable_credits,
+                        "credit_value": CREDIT_VALUE,
                         "order": 99  # Always last
                     }
                     line_items.append(meeting_item)
