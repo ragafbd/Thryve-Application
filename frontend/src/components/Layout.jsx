@@ -310,6 +310,32 @@ export default function Layout() {
             <span className="text-sm">Dashboard</span>
           </NavLink>
 
+          {/* Upcoming Birthdays Widget */}
+          {upcomingBirthdayCount > 0 && (
+            <NavLink
+              to="/admin"
+              data-testid="nav-birthdays-widget"
+              onClick={(e) => {
+                // Scroll to birthday section on dashboard
+                setTimeout(() => {
+                  const birthdaySection = document.getElementById('birthday-section');
+                  if (birthdaySection) {
+                    birthdaySection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }, 100);
+              }}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 mb-1 bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-white border border-pink-400/30 hover:from-pink-500/30 hover:to-purple-500/30"
+            >
+              <div className="relative">
+                <Cake className="w-4 h-4 text-pink-400" strokeWidth={1.5} />
+              </div>
+              <span className="text-sm text-pink-200">Birthdays</span>
+              <span className="ml-auto bg-pink-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                {upcomingBirthdayCount}
+              </span>
+            </NavLink>
+          )}
+
           {/* Management Section */}
           <p className="text-xs text-white/60 uppercase tracking-wider px-3 py-1.5 mt-1 font-bold">Management</p>
           {managementNavItems.map((item) => {
