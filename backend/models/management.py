@@ -354,6 +354,7 @@ class Booking(BaseModel):
     room_name: str = ""
     member_id: Optional[str] = None  # Optional for guest bookings
     member_name: str = ""
+    company_id: Optional[str] = None  # Reference to company for credit deduction
     company_name: str = ""
     date: str
     start_time: str
