@@ -130,11 +130,10 @@ export default function AutoInvoice() {
     });
   };
 
-  // Calculate preview totals based on eligible companies from preview
-  const eligibleCount = previewData?.eligible_count || 0;
-  const ineligibleCount = previewData?.ineligible_count || 0;
-  const totalActiveCompanies = eligibleCount + ineligibleCount;
-  const totalEstimatedAmount = previewData?.total_estimated_amount || 0;
+  // Calculate basic stats
+  const totalActiveCompanies = companies.length;
+  const eligibleCount = totalActiveCompanies; // Simplified - will be calculated on generation
+  const ineligibleCount = 0; // Will be shown after generation
 
   // Format due date (4 days after invoice date)
   const formatDueDate = (invoiceDate) => {
