@@ -10,7 +10,40 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Member self-service portal for viewing invoices, bookings, and tickets**
 - **Public holiday management for booking restrictions**
 
-## Recent Updates (March 13, 2026)
+## Recent Updates (March 14, 2026)
+
+### Invoice Number Format Enhancement
+- **New Format**: `YYYY-YYYY/MM/SEQ/CLIENT` (e.g., `2026-2027/05/001/Apex Legal Eagles`)
+- **Financial Year Derivation**: Based on invoice date (not current date)
+  - April to December: FY = CurrentYear-NextYear (e.g., May 2026 → 2026-2027)
+  - January to March: FY = PrevYear-CurrentYear (e.g., March 2026 → 2025-2026)
+- **Two-digit month**: 01-12 format
+- **Sequential numbering**: Resets each financial year
+
+### GST-Compliant Invoice Rounding
+- **Round-Off Adjustment**: Added to invoice totals
+- **Whole Rupee Totals**: Grand total always rounded to nearest whole rupee
+- **Calculation**: `round_off = rounded_total - calculated_total`
+- **Display**: Shown in invoice preview and PDF
+
+### Meeting Room Invoice Label
+- **Dynamic Label**: "Excess Credits" shown when Meeting Room Charges is selected
+- **Default Label**: "Quantity (Seats)" for all other service types
+- **Auto-disabled**: Quantity field disabled for bundled meeting room charges
+
+### Credit Pricing Rules (Verified)
+- **Conference Room (CR)**: 20 credits per hour (60-minute slots)
+- **Meeting Room (MR)**: 5 credits per 30-minute slot
+- **Credit Value**: Rs. 50 per credit
+
+### 48-Hour Cancellation Policy (Verified)
+- **Early Cancellation (>48 hours)**: Credits restored to company balance
+- **Late Cancellation (<48 hours)**: Credits forfeited (not restored)
+- **Response Fields**: `is_late_cancellation`, `credits_restored`/`credits_forfeited`
+
+---
+
+## Previous Updates (March 13, 2026)
 - **Lock-in Period Field Added to Client Records**:
   - New "Lock-in Period (months)" field in Add/Edit Client form (Subscription Details section)
   - Default value: 11 months
