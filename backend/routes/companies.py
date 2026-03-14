@@ -121,7 +121,7 @@ async def get_companies(
 
 @router.get("/{company_id}")
 async def get_company(company_id: str, current_user: dict = Depends(get_current_user)):
-    """Get a specific company with its members"""
+    """Get a specific company with its members and dynamically calculated credits"""
     check_permission(current_user, "view_invoice")
     
     company = await db.companies.find_one({"id": company_id}, {"_id": 0})
@@ -132,11 +132,22 @@ async def get_company(company_id: str, current_user: dict = Depends(get_current_
     members = await db.members.find({"company_id": company_id}, {"_id": 0}).to_list(100)
     company["members"] = members
     
-    # Ensure credits fields are present (for backward compatibility)
-    if "total_credits" not in company:
-        company["total_credits"] = company.get("total_seats", 0) * company.get("meeting_room_credits", 0)
-    if "remaining_credits" not in company:
-        company["remaining_credits"] = company["total_credits"] - company.get("credits_used", 0)
+    # Calculate credits from actual bookings (not cached values)
+    total_seats = company.get("total_seats", 0)
+    credits_per_seat = company.get("meeting_room_credits", 30)
+    total_credits = company.get("total_credits", total_seats * credits_per_seat)
+    
+    # Dynamic calculation from bookings
+    credits_used = await calculate_company_credits_from_bookings(
+        company_id, 
+        company.get("company_name")
+    )
+    remaining_credits = max(0, total_credits - credits_used)
+    
+    # Override stored values with calculated values
+    company["total_credits"] = total_credits
+    company["credits_used"] = credits_used
+    company["remaining_credits"] = remaining_credits
     
     return company
 
