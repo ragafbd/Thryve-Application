@@ -46,6 +46,11 @@ export default function MemberBookings() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({ purpose: "" });
+  
+  // Cancel confirmation dialog state
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [bookingToCancel, setBookingToCancel] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
 
   // Calculate date limits
   const today = new Date();
