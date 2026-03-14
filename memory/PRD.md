@@ -12,6 +12,20 @@ Build an automatic invoice generator and comprehensive management system for Thr
 
 ## Recent Updates (March 14, 2026)
 
+### Dynamic Credit Calculation (Fixed)
+- **Root Cause**: Dashboard was reading stale cached `credits_used` from company document
+- **Fix**: Credits now calculated dynamically from all confirmed bookings
+- **Applied To**: Admin Companies page, Company details, Member Portal dashboard, All credit-related APIs
+- **Formula**: Conference Room = 20 credits/hour, Meeting Room = 5 credits/30-min
+
+### Member Portal Bookings Display Enhancement
+- **Label Changed**: "My Upcoming Bookings" → "My Bookings"
+- **Credits Display**: Shows calculated credits (e.g., "20 credits") instead of duration in minutes
+- **Date Range**: Last 30 days of bookings (past + future)
+- **Color Coding**: Orange = Past bookings, Blue = Upcoming bookings
+- **Sort Order**: Ascending by booking date
+- **Cancel Button**: Only shown for upcoming (future) bookings
+
 ### Invoice Number Format Enhancement
 - **New Format**: `YYYY-YYYY/MM/SEQ/CLIENT` (e.g., `2026-2027/05/001/Apex Legal Eagles`)
 - **Financial Year Derivation**: Based on invoice date (not current date)
