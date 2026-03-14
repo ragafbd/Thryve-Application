@@ -213,9 +213,10 @@ async def login_member(data: MemberLogin):
 
 @router.get("/me")
 async def get_member_profile(current_member: dict = Depends(get_current_member)):
-    """Get current member's profile"""
-    # Get company credits
+    """Get current member's profile with dynamically calculated credits"""
+    # Get company credits - calculated from actual bookings
     company_id = current_member.get("company_id")
+    company_name = current_member.get("company_name")
     company_credits = {
         "total_credits": 0,
         "remaining_credits": 0,
@@ -225,9 +226,12 @@ async def get_member_profile(current_member: dict = Depends(get_current_member))
     if company_id:
         company = await db.companies.find_one({"id": company_id}, {"_id": 0})
         if company:
-            total_credits = company.get("total_credits", company.get("total_seats", 0) * company.get("meeting_room_credits", 0))
-            credits_used = company.get("credits_used", 0)
-            remaining_credits = company.get("remaining_credits", total_credits - credits_used)
+            total_credits = company.get("total_credits", company.get("total_seats", 0) * company.get("meeting_room_credits", 30))
+            
+            # Calculate credits used from actual bookings (not cached value)
+            credits_used = await calculate_company_credits_from_bookings(company_id, company_name)
+            remaining_credits = max(0, total_credits - credits_used)
+            
             company_credits = {
                 "total_credits": total_credits,
                 "remaining_credits": remaining_credits,
