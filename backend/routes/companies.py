@@ -85,7 +85,7 @@ async def get_companies(
     status: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get all companies"""
+    """Get all companies with dynamically calculated credits from bookings"""
     check_permission(current_user, "view_invoice")
     
     query = {}
@@ -94,10 +94,27 @@ async def get_companies(
     
     companies = await db.companies.find(query, {"_id": 0}).sort("company_name", 1).to_list(1000)
     
-    # Get member counts for each company
+    # Get member counts and calculate actual credits for each company
     for company in companies:
         member_count = await db.members.count_documents({"company_id": company["id"], "status": "active"})
         company["members_count"] = member_count
+        
+        # Calculate credits from actual bookings (not cached values)
+        total_seats = company.get("total_seats", 0)
+        credits_per_seat = company.get("meeting_room_credits", 30)
+        total_credits = company.get("total_credits", total_seats * credits_per_seat)
+        
+        # Dynamic calculation from bookings
+        credits_used = await calculate_company_credits_from_bookings(
+            company["id"], 
+            company.get("company_name")
+        )
+        remaining_credits = max(0, total_credits - credits_used)
+        
+        # Override stored values with calculated values
+        company["total_credits"] = total_credits
+        company["credits_used"] = credits_used
+        company["remaining_credits"] = remaining_credits
     
     return companies
 
