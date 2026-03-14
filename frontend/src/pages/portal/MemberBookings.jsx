@@ -631,9 +631,6 @@ export default function MemberBookings() {
               })}
             </div>
           )}
-              })}
-            </div>
-          )}
         </CardContent>
       </Card>
 
