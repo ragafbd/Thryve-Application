@@ -490,9 +490,9 @@ async def generate_auto_invoices(
                 result.failed += 1
                 continue
             
-            # Generate invoice number with company name
+            # Generate invoice number with company name and invoice date
             company_name = company.get("company_name", "")
-            invoice_number = await generate_invoice_number(company_name)
+            invoice_number = await generate_invoice_number(company_name, invoice_date)
             
             # Calculate amounts - use total_rate from company
             rate = company.get("total_rate", 0)
