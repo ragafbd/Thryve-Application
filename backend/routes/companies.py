@@ -154,25 +154,48 @@ async def get_company(company_id: str, current_user: dict = Depends(get_current_
 
 @router.get("/{company_id}/credits")
 async def get_company_credits(company_id: str, current_user: dict = Depends(get_current_user)):
-    """Get meeting room credits information for a company"""
+    """Get meeting room credits information for a company - calculated from actual bookings"""
     check_permission(current_user, "view_invoice")
     
     company = await db.companies.find_one({"id": company_id}, {"_id": 0})
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
     
-    # Calculate credits if not already stored
+    # Calculate credits from actual bookings
     total_seats = company.get("total_seats", 0)
-    credits_per_seat = company.get("meeting_room_credits", 0)
+    credits_per_seat = company.get("meeting_room_credits", 30)
     total_credits = company.get("total_credits", total_seats * credits_per_seat)
-    credits_used = company.get("credits_used", 0)
-    remaining_credits = company.get("remaining_credits", total_credits - credits_used)
     
-    # Get recent bookings that used credits
+    # Dynamic calculation from bookings
+    credits_used = await calculate_company_credits_from_bookings(
+        company_id, 
+        company.get("company_name")
+    )
+    remaining_credits = max(0, total_credits - credits_used)
+    
+    # Get recent bookings with calculated credits
     recent_bookings = await db.bookings.find(
-        {"company_id": company_id, "credits_used": {"$gt": 0}},
-        {"_id": 0, "id": 1, "member_name": 1, "date": 1, "room_name": 1, "credits_used": 1}
+        {
+            "$or": [
+                {"company_id": company_id},
+                {"company_name": company.get("company_name")}
+            ],
+            "status": {"$ne": "cancelled"}
+        },
+        {"_id": 0}
     ).sort("created_at", -1).limit(10).to_list(10)
+    
+    # Calculate credits for each booking in case they don't have it stored
+    for booking in recent_bookings:
+        if not booking.get("credits_required") and not booking.get("credits_used"):
+            duration = booking.get("duration_minutes", 0)
+            room_name = (booking.get("room_name") or "").upper()
+            if "CR" in room_name:
+                booking["credits_calculated"] = int((duration / 60) * 20)
+            else:
+                booking["credits_calculated"] = int((duration / 30) * 5)
+        else:
+            booking["credits_calculated"] = booking.get("credits_required") or booking.get("credits_used", 0)
     
     return {
         "company_id": company_id,
