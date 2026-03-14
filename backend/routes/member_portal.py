@@ -36,6 +36,49 @@ def init_router(database):
     global db
     db = database
 
+async def calculate_company_credits_from_bookings(company_id: str, company_name: str = None):
+    """
+    Calculate actual credits used by summing all confirmed bookings for a company.
+    This ensures the dashboard always shows accurate credit usage regardless of 
+    any stale cached values on the company document.
+    
+    Credit rates:
+    - Conference Room (CR): 20 credits per hour (60-min slot)
+    - Meeting Room (MR): 5 credits per 30-min slot
+    """
+    query = {"status": {"$ne": "cancelled"}}
+    
+    if company_name:
+        query["$or"] = [
+            {"company_id": company_id},
+            {"company_name": company_name}
+        ]
+    else:
+        query["company_id"] = company_id
+    
+    bookings = await db.bookings.find(query, {"_id": 0}).to_list(1000)
+    
+    total_credits_used = 0
+    for booking in bookings:
+        # Use credits_required if available (new bookings), otherwise calculate from duration
+        if booking.get("credits_required"):
+            total_credits_used += booking.get("credits_required", 0)
+        elif booking.get("credits_used"):
+            total_credits_used += booking.get("credits_used", 0)
+        else:
+            # Calculate credits from duration based on room type
+            duration = booking.get("duration_minutes", 0)
+            room_name = (booking.get("room_name") or "").upper()
+            
+            if "CR" in room_name:  # Conference Room: 20 credits per hour
+                credits = (duration / 60) * 20
+            else:  # Meeting Room: 5 credits per 30-min slot
+                credits = (duration / 30) * 5
+            
+            total_credits_used += int(credits)
+    
+    return total_credits_used
+
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
