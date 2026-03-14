@@ -696,6 +696,50 @@ export default function MemberBookings() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Cancel Booking Confirmation Dialog */}
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600 font-[Manrope]">Cancel Booking</DialogTitle>
+            <DialogDescription>
+              {bookingToCancel && isLateCancellation(bookingToCancel) ? (
+                <span className="text-orange-600 font-medium">
+                  ⚠️ This is a late cancellation (less than 48 hours before the booking). 
+                  Credits will NOT be restored.
+                </span>
+              ) : (
+                <span className="text-[#2E375B]/70">
+                  Are you sure you want to cancel this booking? Credits will be restored.
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          {bookingToCancel && (
+            <div className="bg-gray-50 p-4 rounded-lg my-4">
+              <p className="font-semibold text-[#2E375B]">{bookingToCancel.room_name}</p>
+              <p className="text-sm text-[#2E375B]/70">{bookingToCancel.date}</p>
+              <p className="text-sm text-[#2E375B]/70">{bookingToCancel.start_time} - {bookingToCancel.end_time}</p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setCancelDialogOpen(false)}
+              disabled={cancelling}
+            >
+              Keep Booking
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={confirmCancelBooking}
+              disabled={cancelling}
+            >
+              {cancelling ? "Cancelling..." : "Yes, Cancel Booking"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
