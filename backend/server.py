@@ -533,9 +533,9 @@ async def create_invoice(invoice_data: InvoiceCreate):
         else:
             raise HTTPException(status_code=404, detail="Client not found")
     
-    # Generate invoice number with company name
+    # Generate invoice number with company name and invoice date
     company_name = client.get("company_name") or client.get("name", "")
-    invoice_number = await generate_invoice_number(company_name)
+    invoice_number = await generate_invoice_number(company_name, invoice_data.invoice_date)
     
     # Calculate line items and collect booking IDs for meeting room charges
     calculated_items = []
