@@ -304,7 +304,35 @@ export default function MemberBookings() {
   };
 
   const creditsRemaining = (member?.meeting_room_credits || 0) - (member?.credits_used || 0);
+  
+  // Calculate credits for a booking based on room type and duration
+  const calculateBookingCredits = (booking) => {
+    const duration = booking.duration_minutes || 0;
+    const roomName = (booking.room_name || '').toUpperCase();
+    
+    if (roomName.includes('CR')) {
+      // Conference Room: 20 credits per hour
+      return Math.round((duration / 60) * 20);
+    } else {
+      // Meeting Room: 5 credits per 30-min slot
+      return Math.round((duration / 30) * 5);
+    }
+  };
+  
+  // Get date 30 days ago
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const thirtyDaysAgoStr = getLocalDateString(thirtyDaysAgo);
+  const todayStr = getLocalDateString(new Date());
+  
+  // Filter bookings: last 30 days (past + future), exclude cancelled, sort ascending by date
+  const myBookings = bookings
+    .filter(b => b.date >= thirtyDaysAgoStr && b.status !== 'cancelled')
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.start_time || '').localeCompare(b.start_time || ''));
+  
+  // For upcoming bookings display in slot picker (still need future-only filter for cancellation)
   const upcomingBookings = bookings.filter(b => b.date >= minDateStr && b.status !== 'cancelled');
+  
   const totalMinutes = selectedSlots.length * (selectedRoom?.slot_duration || 30);
   const currentDateBlocked = isBlockedDate(selectedDate);
   const times = getBookingTimes();
