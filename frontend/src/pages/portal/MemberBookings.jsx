@@ -631,12 +631,9 @@ export default function MemberBookings() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className={canCancel 
-                            ? "text-red-500 hover:text-red-700 hover:bg-red-50" 
-                            : "text-[#2E375B]/30 cursor-not-allowed"}
-                          onClick={() => canCancel && handleCancelBooking(booking)}
-                          disabled={!canCancel}
-                          title={canCancel ? 'Cancel booking' : 'Cannot cancel within 48 hours'}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => openCancelDialog(booking)}
+                          data-testid={`cancel-booking-${booking.id}`}
                         >
                           <X className="w-4 h-4 mr-1" />
                           Cancel
