@@ -273,28 +273,23 @@ export default function MemberBookings() {
     return true;
   };
 
-  const handleCancelBooking = async (booking) => {
-    const bookingDate = new Date(booking.date);
-    const bookingTime = booking.start_time || "09:00";
-    const [hour, min] = bookingTime.split(':').map(Number);
-    bookingDate.setHours(hour, min, 0, 0);
+  // Open cancel confirmation dialog
+  const openCancelDialog = (booking) => {
+    setBookingToCancel(booking);
+    setCancelDialogOpen(true);
+  };
+
+  // Actually perform the cancellation
+  const confirmCancelBooking = async () => {
+    if (!bookingToCancel) return;
     
-    const now = new Date();
-    const hoursUntil = (bookingDate - now) / (1000 * 60 * 60);
-    
-    let confirmMessage = "Are you sure you want to cancel this booking?";
-    if (hoursUntil < 48) {
-      confirmMessage = "This is a late cancellation (less than 48 hours). Charges will still apply. Continue?";
-    }
-    
-    if (!window.confirm(confirmMessage)) return;
-    
+    setCancelling(true);
     try {
-      const response = await axios.delete(`${API}/bookings/${booking.id}`);
-      if (response.data.charges_apply) {
-        toast.warning("Booking cancelled. Late cancellation charges apply.");
+      const response = await axios.delete(`${API}/bookings/${bookingToCancel.id}`);
+      if (response.data.charges_apply || response.data.is_late_cancellation) {
+        toast.warning("Booking cancelled. Late cancellation - credits not restored.");
       } else {
-        toast.success("Booking cancelled successfully. No charges.");
+        toast.success("Booking cancelled successfully. Credits restored.");
       }
       fetchBookings();
       fetchAvailability();
@@ -306,7 +301,23 @@ export default function MemberBookings() {
       } else {
         toast.error("Failed to cancel booking");
       }
+    } finally {
+      setCancelling(false);
+      setCancelDialogOpen(false);
+      setBookingToCancel(null);
     }
+  };
+
+  // Check if cancellation is late (less than 48 hours)
+  const isLateCancellation = (booking) => {
+    const bookingDate = new Date(booking.date);
+    const bookingTime = booking.start_time || "09:00";
+    const [hour, min] = bookingTime.split(':').map(Number);
+    bookingDate.setHours(hour, min, 0, 0);
+    
+    const now = new Date();
+    const hoursUntil = (bookingDate - now) / (1000 * 60 * 60);
+    return hoursUntil < 48;
   };
 
   const creditsRemaining = (member?.meeting_room_credits || 0) - (member?.credits_used || 0);
