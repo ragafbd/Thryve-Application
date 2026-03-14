@@ -655,7 +655,7 @@ export default function CreateInvoice() {
 
                     {/* Quantity */}
                     <div className="space-y-2">
-                      <Label>Quantity (Seats)</Label>
+                      <Label>{item.service_type === 'meeting_room' ? 'Excess Credits' : 'Quantity (Seats)'}</Label>
                       <Input
                         type="text"
                         inputMode="numeric"
@@ -668,9 +668,12 @@ export default function CreateInvoice() {
                             handleLineItemChange(index, "quantity", val === '' ? '' : parseFloat(val) || '');
                           }
                         }}
-                        placeholder={selectedClient?.total_seats ? `${selectedClient.total_seats}` : "Enter quantity"}
+                        placeholder={item.service_type === 'meeting_room' 
+                          ? "Auto-calculated from bookings"
+                          : (selectedClient?.total_seats ? `${selectedClient.total_seats}` : "Enter quantity")}
                         className="font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         data-testid={`quantity-${index}`}
+                        disabled={item.is_bundled_meeting_room}
                       />
                     </div>
 
