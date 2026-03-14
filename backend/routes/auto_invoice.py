@@ -80,31 +80,42 @@ class AutoInvoiceResult(BaseModel):
 
 
 # Helper functions
-async def generate_invoice_number(company_name: str = ""):
+async def generate_invoice_number(company_name: str = "", invoice_date: str = None):
     """
-    Generate invoice number in format: YY-YY/Mon/NNN/CompanyName
-    - YY-YY: Financial year (April to March), e.g., 26-27
-    - Mon: Month abbreviation (Apr, May, etc.)
+    Generate invoice number in format: YYYY-YYYY/MM/NNN/CompanyName
+    - YYYY-YYYY: Financial year (April to March), e.g., 2026-2027
+    - MM: Two-digit month (01-12)
     - NNN: Sequential number, resets each financial year
     - CompanyName: Client company name for easy identification
+    
+    Financial year is derived from the invoice date:
+    - April to December: Current Year - Next Year (e.g., May 2026 → 2026-2027)
+    - January to March: Previous Year - Current Year (e.g., March 2026 → 2025-2026)
     """
-    now = datetime.now(timezone.utc)
+    # Use invoice date if provided, otherwise use current date
+    if invoice_date:
+        try:
+            date_obj = datetime.strptime(invoice_date.split('T')[0], "%Y-%m-%d")
+        except:
+            date_obj = datetime.now(timezone.utc)
+    else:
+        date_obj = datetime.now(timezone.utc)
     
-    # Determine financial year (April to March)
-    if now.month >= 4:  # April onwards
-        fy_start_year = now.year
-        fy_end_year = now.year + 1
+    # Determine financial year (April to March) from invoice date
+    if date_obj.month >= 4:  # April onwards
+        fy_start_year = date_obj.year
+        fy_end_year = date_obj.year + 1
     else:  # Jan-Mar
-        fy_start_year = now.year - 1
-        fy_end_year = now.year
+        fy_start_year = date_obj.year - 1
+        fy_end_year = date_obj.year
     
-    # Format: 26-27 for FY 2026-2027
-    fy_prefix = f"{fy_start_year % 100:02d}-{fy_end_year % 100:02d}"
+    # Format: 2026-2027 for FY 2026-2027
+    fy_prefix = f"{fy_start_year}-{fy_end_year}"
     
-    # Month abbreviation
-    month_abbr = now.strftime("%b")  # Apr, May, Jun, etc.
+    # Two-digit month from invoice date
+    month_num = f"{date_obj.month:02d}"
     
-    # Find the highest sequence number for this financial year
+    # Query for invoices in this financial year using the new format
     fy_pattern = f"^{fy_prefix}/"
     latest = await db.invoices.find_one(
         {"invoice_number": {"$regex": fy_pattern}},
@@ -130,8 +141,8 @@ async def generate_invoice_number(company_name: str = ""):
     if len(clean_company) > 30:
         clean_company = clean_company[:30].strip()
     
-    # Format: 26-27/Apr/001/Company Name
-    return f"{fy_prefix}/{month_abbr}/{next_num:03d}/{clean_company}"
+    # Format: 2026-2027/04/001/Company Name
+    return f"{fy_prefix}/{month_num}/{next_num:03d}/{clean_company}"
 
 
 def number_to_words(num):
