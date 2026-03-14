@@ -29,14 +29,22 @@ def init_router(database, auth_func, perm_func):
 
 async def calculate_company_credits_from_bookings(company_id: str, company_name: str = None):
     """
-    Calculate actual credits used by summing all confirmed bookings for a company.
-    This ensures accurate credit usage regardless of any stale cached values.
+    Calculate actual credits used by summing all confirmed bookings for a company
+    in the CURRENT MONTH only. Credits reset on the 1st of each month.
     
     Credit rates:
     - Conference Room (CR): 20 credits per hour (60-min slot)
     - Meeting Room (MR): 5 credits per 30-min slot
     """
-    query = {"status": {"$ne": "cancelled"}}
+    # Get current month date range (1st of current month to today)
+    now = datetime.now(timezone.utc)
+    first_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    first_of_month_str = first_of_month.strftime("%Y-%m-%d")
+    
+    query = {
+        "status": {"$ne": "cancelled"},
+        "date": {"$gte": first_of_month_str}  # Only bookings from current month
+    }
     
     if company_name:
         query["$or"] = [
