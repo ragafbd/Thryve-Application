@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import axios from "axios";
