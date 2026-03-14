@@ -257,12 +257,13 @@ async def get_member_profile(current_member: dict = Depends(get_current_member))
 
 @router.get("/company-credits")
 async def get_member_company_credits(current_member: dict = Depends(get_current_member)):
-    """Get the company's meeting room credits for the member's company"""
+    """Get the company's meeting room credits for the member's company - calculated from actual bookings"""
     company_id = current_member.get("company_id")
+    company_name = current_member.get("company_name")
     
     if not company_id:
         return {
-            "company_name": current_member.get("company_name"),
+            "company_name": company_name,
             "total_credits": 0,
             "remaining_credits": 0,
             "credits_used": 0,
@@ -273,7 +274,7 @@ async def get_member_company_credits(current_member: dict = Depends(get_current_
     company = await db.companies.find_one({"id": company_id}, {"_id": 0})
     if not company:
         return {
-            "company_name": current_member.get("company_name"),
+            "company_name": company_name,
             "total_credits": 0,
             "remaining_credits": 0,
             "credits_used": 0,
@@ -282,17 +283,33 @@ async def get_member_company_credits(current_member: dict = Depends(get_current_
         }
     
     total_seats = company.get("total_seats", 0)
-    credits_per_seat = company.get("meeting_room_credits", 0)
+    credits_per_seat = company.get("meeting_room_credits", 30)
     total_credits = company.get("total_credits", total_seats * credits_per_seat)
-    credits_used = company.get("credits_used", 0)
-    remaining_credits = company.get("remaining_credits", total_credits - credits_used)
+    
+    # Calculate credits used from actual bookings (not cached value)
+    credits_used = await calculate_company_credits_from_bookings(company_id, company.get("company_name"))
+    remaining_credits = max(0, total_credits - credits_used)
     
     # Get member's own booking credits usage
     member_bookings = await db.bookings.find(
-        {"member_id": current_member["id"], "credits_used": {"$gt": 0}},
-        {"_id": 0, "credits_used": 1}
+        {"member_id": current_member["id"], "status": {"$ne": "cancelled"}},
+        {"_id": 0}
     ).to_list(500)
-    member_credits_used = sum(b.get("credits_used", 0) for b in member_bookings)
+    
+    # Calculate member credits from their bookings
+    member_credits_used = 0
+    for booking in member_bookings:
+        if booking.get("credits_required"):
+            member_credits_used += booking.get("credits_required", 0)
+        elif booking.get("credits_used"):
+            member_credits_used += booking.get("credits_used", 0)
+        else:
+            duration = booking.get("duration_minutes", 0)
+            room_name = (booking.get("room_name") or "").upper()
+            if "CR" in room_name:
+                member_credits_used += int((duration / 60) * 20)
+            else:
+                member_credits_used += int((duration / 30) * 5)
     
     return {
         "company_name": company.get("company_name"),
