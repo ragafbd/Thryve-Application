@@ -544,55 +544,93 @@ export default function MemberBookings() {
         </div>
       )}
 
-      {/* My Upcoming Bookings */}
+      {/* My Bookings - Last 30 days */}
       <Card className="border border-[#2E375B]/10">
         <CardHeader>
           <CardTitle className="text-lg font-semibold font-[Manrope] text-[#2E375B]">
-            My Upcoming Bookings
+            My Bookings
           </CardTitle>
+          <p className="text-xs text-[#2E375B]/60">Last 30 days • Orange = Past • Blue = Upcoming</p>
         </CardHeader>
         <CardContent>
-          {upcomingBookings.length === 0 ? (
-            <p className="text-[#2E375B]/60 text-sm">No upcoming bookings</p>
+          {myBookings.length === 0 ? (
+            <p className="text-[#2E375B]/60 text-sm">No bookings in the last 30 days</p>
           ) : (
             <div className="space-y-3">
-              {upcomingBookings.map(booking => {
-                const canCancel = canCancelBooking(booking);
+              {myBookings.map(booking => {
+                const isPastBooking = booking.date < todayStr;
+                const canCancel = !isPastBooking && canCancelBooking(booking);
+                const credits = calculateBookingCredits(booking);
+                const roomType = (booking.room_name || '').toUpperCase().includes('CR') 
+                  ? 'Conference Room' 
+                  : 'Meeting Room';
+                
                 return (
-                  <div key={booking.id} className="flex items-center justify-between p-3 bg-[#2E375B]/5 rounded-lg">
+                  <div 
+                    key={booking.id} 
+                    className={`flex items-center justify-between p-3 rounded-lg border-l-4 ${
+                      isPastBooking 
+                        ? 'bg-orange-50 border-l-orange-400' 
+                        : 'bg-blue-50 border-l-blue-400'
+                    }`}
+                  >
                     <div className="flex items-center gap-4">
-                      <div className="text-center min-w-[100px]">
-                        <p className="font-semibold text-[#2E375B]">{booking.room_name}</p>
-                        <p className="text-xs text-[#2E375B]/60">{booking.date}</p>
+                      <div className="text-center min-w-[90px]">
+                        <p className={`font-semibold ${isPastBooking ? 'text-orange-700' : 'text-blue-700'}`}>
+                          {booking.date}
+                        </p>
+                        <p className={`text-xs ${isPastBooking ? 'text-orange-600/60' : 'text-blue-600/60'}`}>
+                          {isPastBooking ? 'Past' : 'Upcoming'}
+                        </p>
                       </div>
                       <div>
-                        <p className="font-mono text-sm text-[#2E375B]">{booking.start_time} - {booking.end_time}</p>
-                        {booking.purpose && <p className="text-xs text-[#2E375B]/60">{booking.purpose}</p>}
+                        <p className={`font-medium ${isPastBooking ? 'text-orange-800' : 'text-blue-800'}`}>
+                          {booking.room_name} <span className="text-xs font-normal">({roomType})</span>
+                        </p>
+                        <p className={`font-mono text-sm ${isPastBooking ? 'text-orange-700' : 'text-blue-700'}`}>
+                          {booking.start_time} - {booking.end_time}
+                        </p>
+                        {booking.purpose && (
+                          <p className={`text-xs ${isPastBooking ? 'text-orange-600/60' : 'text-blue-600/60'}`}>
+                            {booking.purpose}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {booking.credits_used > 0 && (
-                        <Badge className="bg-[#2E375B]/10 text-[#2E375B]">{booking.credits_used} min</Badge>
-                      )}
+                      <Badge className={`${
+                        isPastBooking 
+                          ? 'bg-orange-200 text-orange-800' 
+                          : 'bg-blue-200 text-blue-800'
+                      }`}>
+                        {credits} credits
+                      </Badge>
                       {booking.billable_amount > 0 && (
-                        <Badge className="bg-[#FFA14A]/10 text-[#FFA14A]">Rs. {booking.billable_amount}</Badge>
+                        <Badge className="bg-[#FFA14A]/10 text-[#FFA14A]">
+                          Rs. {booking.billable_amount}
+                        </Badge>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={canCancel 
-                          ? "text-red-500 hover:text-red-700 hover:bg-red-50" 
-                          : "text-[#2E375B]/30 cursor-not-allowed"}
-                        onClick={() => canCancel && handleCancelBooking(booking)}
-                        disabled={!canCancel}
-                        title={canCancel ? 'Cancel booking' : 'Cannot cancel within 48 hours'}
-                      >
-                        <X className="w-4 h-4 mr-1" />
-                        {canCancel ? 'Cancel' : 'Cannot Cancel'}
-                      </Button>
+                      {!isPastBooking && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={canCancel 
+                            ? "text-red-500 hover:text-red-700 hover:bg-red-50" 
+                            : "text-[#2E375B]/30 cursor-not-allowed"}
+                          onClick={() => canCancel && handleCancelBooking(booking)}
+                          disabled={!canCancel}
+                          title={canCancel ? 'Cancel booking' : 'Cannot cancel within 48 hours'}
+                        >
+                          <X className="w-4 h-4 mr-1" />
+                          Cancel
+                        </Button>
+                      )}
                     </div>
                   </div>
                 );
+              })}
+            </div>
+          )}
               })}
             </div>
           )}
