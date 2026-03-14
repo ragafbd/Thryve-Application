@@ -1050,11 +1050,13 @@ async def seed_default_data(database=None):
             plan_obj = PlanType(**plan)
             await _db.plan_types.insert_one(plan_obj.model_dump())
     
-    # Default meeting rooms
+    # Default meeting rooms with correct credit costs
+    # Conference Room: 20 credits per hour (60-min slot)
+    # Meeting Room: 5 credits per 30-min slot
     default_rooms = [
-        {"name": "CR-1", "display_name": "Conference Room 1", "capacity": 10, "hourly_rate": 1000, "slot_duration": 60},
-        {"name": "MR-1", "display_name": "Meeting Room 1", "capacity": 5, "hourly_rate": 500, "slot_duration": 30},
-        {"name": "MR-2", "display_name": "Meeting Room 2", "capacity": 5, "hourly_rate": 500, "slot_duration": 30},
+        {"name": "CR-1", "display_name": "Conference Room 1", "capacity": 10, "hourly_rate": 1000, "slot_duration": 60, "room_type": "conference_room", "credit_cost_per_slot": 20},
+        {"name": "MR-1", "display_name": "Meeting Room 1", "capacity": 5, "hourly_rate": 500, "slot_duration": 30, "room_type": "meeting_room", "credit_cost_per_slot": 5},
+        {"name": "MR-2", "display_name": "Meeting Room 2", "capacity": 5, "hourly_rate": 500, "slot_duration": 30, "room_type": "meeting_room", "credit_cost_per_slot": 5},
     ]
     
     for room in default_rooms:
