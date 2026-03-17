@@ -1041,10 +1041,7 @@ async def get_pending_meeting_charges():
                     "duration_minutes": b.get("duration_minutes", 0),
                     "start_time": b.get("start_time"),
                     "end_time": b.get("end_time"),
-                } for b in bookings]
-            })
                     "credits_required": b.get("credits_required", 0),
-                    "amount": 0  # Individual amounts not used - bundled
                 } for b in bookings]
             })
     
