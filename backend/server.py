@@ -1021,14 +1021,14 @@ async def generate_invoice_pdf(invoice_id: str):
     footer_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('LINEABOVE', (0, 0), (-1, 0), 0.5, colors.grey),
-        ('TOPPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
     ]))
     elements.append(footer_table)
-    elements.append(Spacer(1, 20))
+    elements.append(Spacer(1, 8))
     
     # Thank you message
     elements.append(Paragraph("Thank you for choosing Thryve Coworking!", styles['ThankYou']))
-    elements.append(Spacer(1, 5))
+    elements.append(Spacer(1, 3))
     elements.append(Paragraph("This is a Computer Generated Invoice", styles['Footer']))
     
     # Build PDF
