@@ -979,7 +979,6 @@ async def generate_invoice_pdf(invoice_id: str):
     signature_image = None
     try:
         import requests
-        from io import BytesIO
         from reportlab.platypus import Image as RLImage
         
         response = requests.get(signature_image_url, timeout=5)
