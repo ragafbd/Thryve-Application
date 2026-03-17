@@ -758,19 +758,19 @@ async def generate_invoice_pdf(invoice_id: str):
     
     # Create PDF buffer
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=25, leftMargin=25, topMargin=20, bottomMargin=20)
     
-    # Styles
+    # Styles - optimized for single page
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name='InvoiceTitle', fontSize=18, fontName='Helvetica-Bold', alignment=TA_RIGHT))
-    styles.add(ParagraphStyle(name='CompanyName', fontSize=14, fontName='Helvetica-Bold', textColor=colors.HexColor('#2E375B')))
-    styles.add(ParagraphStyle(name='Normal_Right', fontSize=10, alignment=TA_RIGHT))
-    styles.add(ParagraphStyle(name='Normal_Center', fontSize=10, alignment=TA_CENTER))
-    styles.add(ParagraphStyle(name='Small', fontSize=8, textColor=colors.grey))
-    styles.add(ParagraphStyle(name='SmallBold', fontSize=9, fontName='Helvetica-Bold'))
-    styles.add(ParagraphStyle(name='TableHeader', fontSize=9, fontName='Helvetica-Bold', textColor=colors.white))
-    styles.add(ParagraphStyle(name='Footer', fontSize=8, alignment=TA_CENTER, textColor=colors.grey))
-    styles.add(ParagraphStyle(name='ThankYou', fontSize=10, fontName='Helvetica-Bold', alignment=TA_CENTER, textColor=colors.HexColor('#2E375B')))
+    styles.add(ParagraphStyle(name='InvoiceTitle', fontSize=16, fontName='Helvetica-Bold', alignment=TA_RIGHT))
+    styles.add(ParagraphStyle(name='CompanyName', fontSize=12, fontName='Helvetica-Bold', textColor=colors.HexColor('#2E375B')))
+    styles.add(ParagraphStyle(name='Normal_Right', fontSize=9, alignment=TA_RIGHT))
+    styles.add(ParagraphStyle(name='Normal_Center', fontSize=9, alignment=TA_CENTER))
+    styles.add(ParagraphStyle(name='Small', fontSize=7, textColor=colors.grey))
+    styles.add(ParagraphStyle(name='SmallBold', fontSize=8, fontName='Helvetica-Bold'))
+    styles.add(ParagraphStyle(name='TableHeader', fontSize=8, fontName='Helvetica-Bold', textColor=colors.white))
+    styles.add(ParagraphStyle(name='Footer', fontSize=7, alignment=TA_CENTER, textColor=colors.grey))
+    styles.add(ParagraphStyle(name='ThankYou', fontSize=9, fontName='Helvetica-Bold', alignment=TA_CENTER, textColor=colors.HexColor('#2E375B')))
     
     elements = []
     
