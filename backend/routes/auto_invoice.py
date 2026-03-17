@@ -375,10 +375,82 @@ def generate_pdf_content(invoice: dict) -> bytes:
         elements.append(Paragraph(f"<b>Notes:</b> {invoice.get('notes')}", styles['Normal']))
         elements.append(Spacer(1, 15))
     
+    # Bank details and signature
+    bank = COMPANY_DETAILS.get('bank', {
+        'name': 'HDFC Bank',
+        'account_name': COMPANY_DETAILS.get('name', 'Thryve Coworking'),
+        'account_no': '50200115952448',
+        'branch': 'Sector 16, Faridabad',
+        'ifsc': 'HDFC0000279'
+    })
+    
+    bank_info = f"""
+    <b>Company's Bank Details</b><br/>
+    A/c Name: {bank.get('account_name', COMPANY_DETAILS.get('name', ''))}<br/>
+    Bank Name: {bank.get('name', '')}<br/>
+    A/c No: {bank.get('account_no', '')}<br/>
+    Branch: {bank.get('branch', '')}<br/>
+    IFSC: {bank.get('ifsc', '')}
+    """
+    
+    # Signature section with image
+    signature_image_url = "https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/x6h984ax_Untitled%20design.jpg"
+    
+    # Try to download and embed signature image
+    signature_image = None
+    try:
+        import requests
+        from reportlab.platypus import Image as RLImage
+        
+        response = requests.get(signature_image_url, timeout=5)
+        if response.status_code == 200:
+            img_buffer = BytesIO(response.content)
+            signature_image = RLImage(img_buffer, width=80, height=40)
+    except Exception as e:
+        print(f"Could not load signature image: {e}")
+        signature_image = None
+    
+    # Create signature paragraph
+    signature_text = f"""
+    <para align='right'>
+    <font size='8' color='gray'>E. &amp; O.E.</font><br/><br/><br/><br/><br/>
+    <b>for {COMPANY_DETAILS.get('name', 'Thryve Coworking')}</b><br/><br/><br/><br/>
+    Authorised Signatory
+    </para>
+    """
+    
+    # If we have a signature image, create a custom layout
+    if signature_image:
+        # Create a table for signature section with image
+        sig_table_data = [
+            [Paragraph(f"<para align='right'><font size='8' color='gray'>E. &amp; O.E.</font></para>", styles['Normal'])],
+            [signature_image],
+            [Paragraph(f"<para align='right'><b>for {COMPANY_DETAILS.get('name', 'Thryve Coworking')}</b></para>", styles['Normal'])],
+            [Paragraph("<para align='right'>Authorised Signatory</para>", styles['Normal'])],
+        ]
+        sig_table = Table(sig_table_data, colWidths=[230])
+        sig_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ]))
+        
+        footer_data = [[Paragraph(bank_info, styles['Small']), sig_table]]
+    else:
+        footer_data = [[Paragraph(bank_info, styles['Small']), Paragraph(signature_text, styles['Normal_Right'])]]
+    
+    footer_table = Table(footer_data, colWidths=[300, 230])
+    footer_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LINEABOVE', (0, 0), (-1, 0), 0.5, colors.grey),
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+    ]))
+    elements.append(footer_table)
+    elements.append(Spacer(1, 20))
+    
     # Footer
-    elements.append(Paragraph("Thank you for your business!", styles['ThankYou']))
-    elements.append(Spacer(1, 10))
-    elements.append(Paragraph(f"For any queries, please contact {COMPANY_DETAILS.get('email', 'contact@thryvecoworking.in')}", styles['Footer']))
+    elements.append(Paragraph("Thank you for choosing Thryve Coworking!", styles['ThankYou']))
+    elements.append(Spacer(1, 5))
+    elements.append(Paragraph("This is a Computer Generated Invoice", styles['Footer']))
     
     doc.build(elements)
     return buffer.getvalue()
