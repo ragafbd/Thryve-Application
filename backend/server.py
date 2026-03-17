@@ -845,7 +845,7 @@ async def generate_invoice_pdf(invoice_id: str):
         ('RIGHTPADDING', (1, 0), (1, 0), 10),
     ]))
     elements.append(info_table)
-    elements.append(Spacer(1, 15))
+    elements.append(Spacer(1, 8))
     
     # Issued By / Bill To
     issued_by = f"""
