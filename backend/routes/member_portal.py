@@ -581,12 +581,14 @@ async def create_member_booking(booking_data: MemberBookingCreate, current_membe
     if company_id:
         company = await db.companies.find_one({"id": company_id}, {"_id": 0})
         if company:
-            # Calculate company's total and remaining credits
+            # Calculate company's total credits
             total_seats = company.get("total_seats", 0)
             credits_per_seat = company.get("meeting_room_credits", 30)
             total_credits = company.get("total_credits", total_seats * credits_per_seat)
-            credits_used = company.get("credits_used", 0)
-            company_remaining_credits = company.get("remaining_credits", total_credits - credits_used)
+            
+            # Calculate credits used from actual bookings (monthly reset)
+            credits_used = await calculate_company_credits_from_bookings(company_id, company.get("company_name"))
+            company_remaining_credits = max(0, total_credits - credits_used)
     
     # Calculate credits to use from balance and billable credits
     credits_to_use = min(credits_required, company_remaining_credits) if company_remaining_credits > 0 else 0
