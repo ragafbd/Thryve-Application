@@ -830,7 +830,7 @@ async def generate_invoice_pdf(invoice_id: str):
     
     due_date_text = ""
     if invoice.get('due_date'):
-        due_date_text = f"<b>PAYMENT DUEBY</b><br/><font size='12'><b>{format_date(invoice.get('due_date'))}</b></font>"
+        due_date_text = f"<b>PAYMENT DUE BY</b><br/><font size='12'><b>{format_date(invoice.get('due_date'))}</b></font>"
     
     info_data = [[Paragraph(invoice_info, styles['Normal']), Paragraph(due_date_text, styles['Normal_Right'])]]
     info_table = Table(info_data, colWidths=[350, 180])
