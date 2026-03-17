@@ -390,60 +390,48 @@ async def get_member_invoice(invoice_id: str, current_member: dict = Depends(get
 async def get_member_pending_charges(current_member: dict = Depends(get_current_member)):
     """
     Get pending meeting room charges for the current member's company.
-    Only returns charges when credits have been EXCEEDED (billable_credits > 0).
-    If the company still has remaining credits, no charges are shown.
+    Calculates excess credits dynamically based on current month's usage.
+    Only shows charges when total credits used > total credits allocated.
     """
     company_id = current_member.get("company_id")
     company_name = current_member.get("company_name")
     
-    # First check if the company has exceeded their credits this month
-    if company_id:
-        company = await db.companies.find_one({"id": company_id}, {"_id": 0})
-        if company:
-            total_seats = company.get("total_seats", 0)
-            credits_per_seat = company.get("meeting_room_credits", 30)
-            total_credits = company.get("total_credits", total_seats * credits_per_seat)
-            
-            # Calculate actual credits used this month
-            credits_used = await calculate_company_credits_from_bookings(company_id, company_name)
-            
-            # If credits are not exceeded, return empty - no pending charges
-            if credits_used <= total_credits:
-                return []
+    if not company_id:
+        return []
     
-    # Only get bookings with actual billable amount (excess credits)
-    pending_bookings = await db.bookings.find(
-        {
-            "company_name": company_name,
-            "billable_amount": {"$gt": 0},
-            "billable_credits": {"$gt": 0},  # Must have excess credits
-            "payment_status": {"$nin": ["paid", "completed"]},
-            "$or": [
-                {"status": "confirmed"},
-                {"status": "cancelled", "cancellation_charge": True}
-            ]
-        },
-        {"_id": 0}
-    ).to_list(100)
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    if not company:
+        return []
     
-    charges = []
-    total_pending = 0
+    # Calculate total allocated credits
+    total_seats = company.get("total_seats", 0)
+    credits_per_seat = company.get("meeting_room_credits", 30)
+    total_credits = company.get("total_credits", total_seats * credits_per_seat)
     
-    for booking in pending_bookings:
-        charges.append({
-            "booking_id": booking.get("id"),
-            "member_name": booking.get("member_name"),
-            "date": booking.get("date"),
-            "room_name": booking.get("room_name"),
-            "start_time": booking.get("start_time"),
-            "end_time": booking.get("end_time"),
-            "amount": booking.get("billable_amount", 0),
-            "credits_billed": booking.get("billable_credits", 0),
-            "status": "Late Cancellation" if booking.get("status") == "cancelled" else "Excess Credits"
-        })
-        total_pending += booking.get("billable_amount", 0)
+    # Calculate actual credits used this month from bookings
+    credits_used = await calculate_company_credits_from_bookings(company_id, company_name)
     
-    return charges
+    # If credits are not exceeded, no pending charges
+    excess_credits = max(0, credits_used - total_credits)
+    if excess_credits <= 0:
+        return []
+    
+    # Calculate the amount for excess credits
+    CREDIT_VALUE = 50  # Rs. 50 per credit
+    excess_amount = excess_credits * CREDIT_VALUE
+    
+    # Return a single summary charge for excess credits
+    return [{
+        "booking_id": "excess_credits",
+        "member_name": "Company Total",
+        "date": f"Current Month",
+        "room_name": "Meeting Room Usage",
+        "start_time": f"{credits_used} credits used",
+        "end_time": f"{total_credits} allocated",
+        "amount": excess_amount,
+        "credits_billed": excess_credits,
+        "status": "Excess Credits"
+    }]
 
 # ==================== MEMBER'S SUPPORT TICKETS ====================
 
