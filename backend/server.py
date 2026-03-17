@@ -945,14 +945,14 @@ async def generate_invoice_pdf(invoice_id: str):
     ]))
     
     # Right align totals table
-    totals_wrapper = Table([[None, totals_table]], colWidths=[350, 185])
+    totals_wrapper = Table([[None, totals_table]], colWidths=[360, 180])
     elements.append(totals_wrapper)
-    elements.append(Spacer(1, 10))
+    elements.append(Spacer(1, 5))
     
     # Amount in words (always whole rupee)
     amount_words = number_to_words(int(grand_total))
     elements.append(Paragraph(f"<b>Amount in words:</b> {amount_words}", styles['Normal']))
-    elements.append(Spacer(1, 20))
+    elements.append(Spacer(1, 10))
     
     # Bank details and signature
     bank = company.get('bank', {
