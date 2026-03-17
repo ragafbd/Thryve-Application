@@ -972,14 +972,52 @@ async def generate_invoice_pdf(invoice_id: str):
     IFSC: {bank.get('ifsc', '')}
     """
     
-    signature_info = f"""
-    <br/><br/><br/>
-    <b>for {company.get('name', 'Thryve Coworking')}</b><br/>
-    <br/><br/><br/>
+    # Signature section with image
+    signature_image_url = "https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/x6h984ax_Untitled%20design.jpg"
+    
+    # Try to download and embed signature image
+    signature_image = None
+    try:
+        import requests
+        from io import BytesIO
+        from reportlab.platypus import Image as RLImage
+        
+        response = requests.get(signature_image_url, timeout=5)
+        if response.status_code == 200:
+            img_buffer = BytesIO(response.content)
+            signature_image = RLImage(img_buffer, width=80, height=40)
+    except Exception as e:
+        print(f"Could not load signature image: {e}")
+        signature_image = None
+    
+    # Create signature paragraph
+    signature_text = f"""
+    <para align='right'>
+    <font size='8' color='gray'>E. &amp; O.E.</font><br/><br/><br/><br/><br/>
+    <b>for {company.get('name', 'Thryve Coworking')}</b><br/><br/><br/><br/>
     Authorised Signatory
+    </para>
     """
     
-    footer_data = [[Paragraph(bank_info, styles['Small']), Paragraph(signature_info, styles['Normal_Right'])]]
+    # If we have a signature image, create a custom layout
+    if signature_image:
+        # Create a table for signature section with image
+        sig_table_data = [
+            [Paragraph(f"<para align='right'><font size='8' color='gray'>E. &amp; O.E.</font></para>", styles['Normal'])],
+            [signature_image],
+            [Paragraph(f"<para align='right'><b>for {company.get('name', 'Thryve Coworking')}</b></para>", styles['Normal'])],
+            [Paragraph("<para align='right'>Authorised Signatory</para>", styles['Normal'])],
+        ]
+        sig_table = Table(sig_table_data, colWidths=[230])
+        sig_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ]))
+        
+        footer_data = [[Paragraph(bank_info, styles['Small']), sig_table]]
+    else:
+        footer_data = [[Paragraph(bank_info, styles['Small']), Paragraph(signature_text, styles['Normal_Right'])]]
+    
     footer_table = Table(footer_data, colWidths=[300, 230])
     footer_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
