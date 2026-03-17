@@ -793,7 +793,7 @@ async def generate_invoice_pdf(invoice_id: str):
         ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
     ]))
     elements.append(header_table)
-    elements.append(Spacer(1, 10))
+    elements.append(Spacer(1, 5))
     
     # Invoice details row
     def format_date(date_str):
