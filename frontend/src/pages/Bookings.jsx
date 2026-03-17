@@ -493,7 +493,7 @@ export default function Bookings() {
                               <span className="text-xs text-slate-500 block">{booking.guest_phone}</span>
                             </div>
                           ) : (
-                            booking.member_name
+                            booking.member_name || <span className="text-slate-400 italic">Admin Booking</span>
                           )}
                         </td>
                         <td className="p-3 text-[#2E375B]">{booking.purpose || "-"}</td>
