@@ -968,7 +968,9 @@ async def get_pending_meeting_charges():
     - Conference Room: 20 credits/hour
     - Meeting Room: 5 credits/30-min slot
     
-    Billing Logic:
+    Billing Logic (Monthly Reset):
+    - Credits reset on the 1st of each month
+    - Only current month's bookings are counted
     - If credits_used <= credits_allocated: No charge
     - If credits_used > credits_allocated: Charge for excess credits at Rs. 50/credit
     """
@@ -990,36 +992,25 @@ async def get_pending_meeting_charges():
         credits_per_seat = company.get("meeting_room_credits", CREDITS_PER_SEAT)
         total_allocated_credits = company.get("total_credits", total_seats * credits_per_seat)
         
-        # Get ALL confirmed bookings for this company that haven't been invoiced
+        # Calculate credits used from bookings THIS MONTH using the shared function
+        total_credits_used = await calculate_company_credits_from_bookings(company_id, company_name)
+        
+        # Get bookings for details (current month only)
+        now = datetime.now(timezone.utc)
+        first_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        first_of_month_str = first_of_month.strftime("%Y-%m-%d")
+        
         bookings = await db.bookings.find({
             "$or": [
                 {"company_id": company_id},
                 {"company_name": company_name}
             ],
             "status": {"$ne": "cancelled"},
-            "payment_status": {"$nin": ["paid", "completed", "invoiced"]}
+            "date": {"$gte": first_of_month_str}
         }, {"_id": 0}).to_list(1000)
         
         if not bookings:
             continue
-        
-        # Calculate TOTAL credits used from all bookings
-        total_credits_used = 0
-        for b in bookings:
-            # Use credits_required if available (new system), otherwise calculate
-            if b.get("credits_required"):
-                total_credits_used += b.get("credits_required", 0)
-            else:
-                # Legacy: Convert from minutes to credits
-                # Meeting Room: 5 credits per 30 min = 10 credits/hour
-                # Conference Room: 20 credits per hour
-                duration = b.get("duration_minutes", 0)
-                room_name = b.get("room_name", "").upper()
-                if "CR" in room_name:  # Conference Room
-                    credits = (duration / 60) * 20
-                else:  # Meeting Room
-                    credits = (duration / 30) * 5
-                total_credits_used += int(credits)
         
         # Calculate billable credits (excess over allocated)
         if total_credits_used <= total_allocated_credits:
@@ -1048,6 +1039,10 @@ async def get_pending_meeting_charges():
                     "date": b.get("date"),
                     "room_name": b.get("room_name"),
                     "duration_minutes": b.get("duration_minutes", 0),
+                    "start_time": b.get("start_time"),
+                    "end_time": b.get("end_time"),
+                } for b in bookings]
+            })
                     "credits_required": b.get("credits_required", 0),
                     "amount": 0  # Individual amounts not used - bundled
                 } for b in bookings]
