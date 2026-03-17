@@ -180,12 +180,28 @@ export default function Bookings() {
   };
 
   const getBookingForSlot = (slot) => {
-    return bookings.find(b => 
-      b.room_id === selectedRoom?.id &&
-      b.date === selectedDate &&
-      b.start_time === slot.start_time &&
-      b.status !== 'cancelled'
-    );
+    // Convert time string "HH:MM" to minutes for easier comparison
+    const timeToMinutes = (time) => {
+      const [h, m] = time.split(':').map(Number);
+      return h * 60 + m;
+    };
+    
+    const slotStart = timeToMinutes(slot.start_time);
+    const slotEnd = timeToMinutes(slot.end_time);
+    
+    // Find a booking where this slot falls within its time range
+    return bookings.find(b => {
+      if (b.room_id !== selectedRoom?.id) return false;
+      if (b.date !== selectedDate) return false;
+      if (b.status === 'cancelled') return false;
+      
+      const bookingStart = timeToMinutes(b.start_time);
+      const bookingEnd = timeToMinutes(b.end_time);
+      
+      // Check if slot overlaps with booking
+      // Slot is within booking if: slotStart >= bookingStart AND slotEnd <= bookingEnd
+      return slotStart >= bookingStart && slotEnd <= bookingEnd;
+    });
   };
 
   const openBookingDialog = (slot) => {
