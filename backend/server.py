@@ -863,15 +863,15 @@ async def generate_invoice_pdf(invoice_id: str):
     """
     
     party_data = [[Paragraph(issued_by, styles['Normal']), Paragraph(bill_to, styles['Normal'])]]
-    party_table = Table(party_data, colWidths=[265, 265])
+    party_table = Table(party_data, colWidths=[270, 270])
     party_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('BOX', (0, 0), (-1, -1), 0.5, colors.grey),
         ('LINEAFTER', (0, 0), (0, 0), 0.5, colors.grey),
-        ('TOPPADDING', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
-        ('LEFTPADDING', (0, 0), (-1, -1), 10),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
     ]))
     elements.append(party_table)
     elements.append(Spacer(1, 8))
