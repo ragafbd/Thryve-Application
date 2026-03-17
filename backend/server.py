@@ -909,7 +909,7 @@ async def generate_invoice_pdf(invoice_id: str):
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
     ]))
     elements.append(items_table)
-    elements.append(Spacer(1, 10))
+    elements.append(Spacer(1, 5))
     
     # Totals with GST-compliant rounding
     round_off = invoice.get('round_off_adjustment', 0)
