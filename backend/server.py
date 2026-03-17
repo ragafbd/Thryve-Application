@@ -874,7 +874,7 @@ async def generate_invoice_pdf(invoice_id: str):
         ('RIGHTPADDING', (0, 0), (-1, -1), 10),
     ]))
     elements.append(party_table)
-    elements.append(Spacer(1, 15))
+    elements.append(Spacer(1, 8))
     
     # Line items table
     line_items = invoice.get('line_items', [])
