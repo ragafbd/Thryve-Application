@@ -10,7 +10,29 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Member self-service portal for viewing invoices, bookings, and tickets**
 - **Public holiday management for booking restrictions**
 
-## Recent Updates (March 14, 2026)
+## Recent Updates (March 18, 2026)
+
+### PDF Invoice WYSIWYG Implementation (COMPLETED)
+- **Issue**: PDF download did not match the professional web preview (missing logo, broken layout)
+- **Fix**: Complete overhaul of PDF generation in both `server.py` and `auto_invoice.py`
+- **Changes Made**:
+  - Added Thryve logo image at top-left (fetched from URL and embedded)
+  - Added signature image in the signatory section
+  - TAX INVOICE box with border at top-right
+  - Orange "PAYMENT DUE BY" box matching web preview
+  - "Issued By" / "Bill To" sections with gray header backgrounds
+  - 7-column items table (S.No, Particulars, HSN/SAC, Qty, Rate, Per, Amount)
+  - Right-aligned totals table with Sub Total, CGST, SGST, Round-Off, Total Amount
+  - Amount Chargeable in words (gray background box)
+  - Bank Details section on left, Signature section on right
+  - Declaration text
+  - "Thank you for choosing Thryve Coworking!" footer
+  - "This is a Computer Generated Invoice" footer
+- **Validation**: All 34 text elements verified, 2 images embedded, single A4 page
+
+---
+
+## Previous Updates (March 14, 2026)
 
 ### Dynamic Credit Calculation (Fixed)
 - **Root Cause**: Dashboard was reading stale cached `credits_used` from company document

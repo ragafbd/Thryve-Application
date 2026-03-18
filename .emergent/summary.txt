@@ -1,36 +1,36 @@
-<analysis>**original_problem_statement**: The user wants to build a comprehensive coworking space management application, Thryve Coworking. The latest requests focused on migrating the meeting room booking system from a minute-based to a credit-based model, implementing a robust billing logic that recalculates charges at invoice time, adding a prorated billing feature, implementing GST-compliant invoice rounding, and adding a client lock-in period to the legal agreement.
+<analysis>**original_problem_statement**: The user wants to build a comprehensive coworking space management application, Thryve Coworking. The latest requests focused on migrating the meeting room booking system from a minute-based to a credit-based model, implementing a robust billing logic that recalculates charges at invoice time, adding a prorated billing feature, implementing GST-compliant invoice rounding, and adding a client lock-in period to the legal agreement. The most recent user requests involve fixing a variety of bugs and UI/UX issues related to credit calculations, invoice generation, member display, and ensuring the generated PDF invoice is a WYSIWYG replica of the web preview.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A comprehensive full-stack coworking management application with React, FastAPI, and MongoDB. It has separate portals for admins and members. Key features include client/member management (with primary contact logic), a sophisticated credit-based meeting room booking system (1 credit = Rs. 50), and a robust invoicing module that supports manual creation, auto-generation, prorated billing, and bundling of charges. A critical login issue from a previous session is on hold by user request, and there is an ongoing platform-level issue where changes are not syncing to the user's production deployment.
+A comprehensive full-stack coworking management application with a React frontend, FastAPI backend, and MongoDB database. It features separate portals for admins and members. Key functionalities include client/member management, a credit-based meeting room booking system (1 credit = Rs. 50), and a dynamic invoicing module that supports manual creation, auto-generation, prorated billing, GST rounding, and automatic bundling of excess credit charges. The system also implements a monthly credit reset on the 1st of each month.
+
+There are known outstanding issues:
+1.  A platform-level issue where changes are not syncing to the user's production deployment.
+2.  A critical login issue from a previous session, which is on hold by user request.
 
 **Last working item**:
--   **Last item agent was working**: Implementing a GST-compliant rounding system for invoices by adding a Round-Off Adjustment line item. The agent had partially implemented the logic on the frontend ( and ) and had started updating the backend invoice creation endpoint in .
+-   **Last item agent was working**: Fixing a discrepancy between the web invoice preview and the generated PDF. The user reported that the PDF was missing the company logo and had a broken layout, unlike the professional web preview. The agent was in the process of adding the logo and refactoring the layout in the PDF generation code.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: both. The frontend needs a screenshot to verify the Round-Off Adjustment and Grand Total are displayed correctly in the invoice preview. The backend requires testing via  to ensure the  and final  are saved correctly to the database upon invoice creation.
+-   **Which testing method agent to use?**: backend testing agent. The agent should use  to call the invoice download endpoint, save the PDF, and then use command-line tools (, ) to verify that the logo is embedded and the text layout has improved.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Production Deployment Sync Issue (P0)**:
-    -   **Description**: The user has repeatedly reported that changes implemented and verified in the dev/preview environment are not appearing in their production deployment, even after multiple redeployment attempts. This blocks the user from using any of the new features.
-    -   **Attempted fixes**: The agent confirmed the features work correctly in the dev environment, verified the correct logic is in place, and correctly identified this as a platform/infrastructure issue beyond their control. The agent advised the user to contact Emergent Support and provided a detailed message template to help them report the issue effectively.
-    -   **Next debug checklist**: This issue is outside the agent's scope. If the user brings it up again, the next agent must reinforce that this is an Emergent Support issue and avoid trying to fix it with more code changes. The agent should ask the user if they have an update from the support team.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is the highest priority issue for the user, as it prevents them from seeing any of the implemented work live. Resolution is critical for user satisfaction and project progression.
-    -   **Status**: BLOCKED (on Emergent Support).
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: N/A
+-   **Issue 1: Production Deployment Sync Issue (P1)**:
+    -   **Description**: The user has repeatedly reported that changes implemented and verified in the dev/preview environment are not appearing in their production deployment. This is a platform-level issue blocking the user from using new features.
+    -   **Status**: BLOCKED (on Emergent Support). The agent has correctly identified this as outside their scope and advised the user to contact support after confirming the feature works in the dev environment.
+    -   **Next action**: If the user mentions it again, reinforce the need to follow up with Emergent Support. Do not attempt code fixes for this.
 
 **In progress Task List**:
--   **Task 1: Complete GST Round-Off Implementation (P0)**:
+-   **Task 1: Complete PDF WYSIWYG Implementation (P0)**:
     -   **Where to resume**:
-        1.  Complete the modification of the  endpoint in  to accept and save  and the rounded  to the database.
-        2.  Update the auto-invoice generation logic in  to also calculate and include the .
-        3.  Test both manual (Create Invoice) and Auto Invoice Generation flows to confirm that the rounding is applied correctly and the final invoice total is always a whole number.
-    -   **What will be achieved with this?**: Invoices will be GST-compliant with whole rupee final totals, improving accounting accuracy and professionalism.
+        1.  In , continue refactoring the PDF generation logic. The logo has been added, but the layout for addresses, the items table, totals, and the footer needs to be adjusted with correct spacing, fonts, and brand colors to match the web preview in .
+        2.  Apply the same PDF layout and logo fixes to the auto-generated invoices in  to ensure consistency.
+        3.  Ensure the final invoice fits on a single A4 page, as requested by the user.
+    -   **What will be achieved with this?**: The downloaded PDF invoice will be a professional, brand-consistent, WYSIWYG replica of the web preview, improving the client-facing experience.
     -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Should Test frontend/backend/both after fix?**: backend
     -   **Blocked on something**: No.
 
 **Upcoming and Future Tasks**
@@ -45,17 +45,15 @@ A comprehensive full-stack coworking management application with React, FastAPI,
     -   Provide an option for companies to purchase extra credits.
 
 **Completed work in this session**
--   **Full Credit-Based System Migration**: Migrated the entire meeting room system from a minute-based to a credit-based model (1 credit = Rs. 50), updating all relevant backend models, booking/cancellation logic, and frontend components.
--   **Robust Meeting Room Billing Fix**: Re-architected the billing logic to recalculate all charges from raw booking data at the moment an invoice is generated. This was done by creating a new  endpoint, making the system resilient to historical data errors and eliminating the need for production database migrations.
--   **Prorated Billing Enhancement**: Upgraded the prorated billing feature in the Create Invoice form to automatically calculate the number of billable days based on the invoice issue date.
--   **48-Hour Cancellation Policy**: Implemented and tested a rule where meeting room credits are only restored if a booking is cancelled more than 48 hours in advance.
--   **Client Lock-in Period & LLA Formatting**: Added a Lock-in Period field to client records and updated the LLA (Leave and License Agreement) generator to improve formatting (bold headings, consistent spacing).
--   **Invoice Preview UI Fix**: The Bill To section of the invoice preview now correctly displays the client's full address and GSTIN.
--   **Upcoming Birthdays Feature Enhancement**: Improved the UI on the Upcoming Birthdays page to show a more user-friendly date format and in X days text.
--   **Minor UI Fixes**: Removed repetitive text on the admin login page and corrected a label in the client form from minutes per seat to credits per seat.
+-   **Credit Calculation & Monthly Reset**: Re-architected credit calculations to be dynamically computed from booking records for the current month only. This fixed multiple bugs related to mismatches on dashboards and incorrect pending charges.
+-   **Invoice Logic for Excess Credits**: Ensured that pending meeting room charges are only calculated when a client's used credits exceed their monthly allocation and that these charges are automatically added as a single, bundled line item during invoice creation.
+-   **Admin Booking Calendar UI Fix**: Fixed an issue where only the first slot of a multi-slot booking showed the booking party's details. The logic was updated to display the member's name across all consecutive booked slots.
+-   **Booking Cancellation Flow Fix**: Replaced the unreliable  with a robust React-based modal dialog, fixing the issue where the cancel button appeared unresponsive.
+-   **Member Bookings Page Overhaul**: Completely redesigned the My Bookings page to show credits instead of duration, display bookings from the last 30 days, and apply color-coding for past (orange) and upcoming (blue) bookings.
+-   **PDF Invoice Fixes (Partial)**: Fixed a Payment Dueby typo and began the larger task of fixing the overall PDF layout and adding the missing logo.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: Recurring Login Failures**: This was a critical issue from a previous fork. However, the user explicitly instructed the agent: Do not do anything for the login system. Work on this is paused until further notice. Status: **BLOCKED**.
+-   **Issue 1: Recurring Login Failures**: This is a known critical issue from a previous fork. The user has explicitly instructed the agent: Do not do anything for the login system. Work on this is paused until further notice. Status: **BLOCKED**.
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**: Recurring Login Failures
@@ -66,43 +64,43 @@ A comprehensive full-stack coworking management application with React, FastAPI,
 
 
 **Key Technical Concepts**
--   **Billing Logic Re-architecture**: The system was refactored to recalculate charges at invoice time via a dedicated endpoint (). This avoids reliance on potentially inconsistent historical data and makes the system more robust without needing production data migrations.
--   **Credit-Based Economy**: The entire meeting room system was migrated from minutes to an abstract credit unit with a defined monetary value (1 Credit = Rs. 50), costs per room type, and monthly allocations per client.
--   **State Management for Complex Forms**: The  page uses React's  and  hooks extensively to manage interdependent state, such as the invoice date affecting prorated day calculations, which in turn affects the final amount.
+-   **Dynamic Calculation over Stored State**: The session reinforced calculating credit usage dynamically from booking records at runtime for the current month. This avoids using stale, stored counter fields () and makes the system robust.
+-   **ReportLab PDF Generation**: The backend uses the ReportLab library to generate PDFs. The current task involves embedding a logo image fetched from a URL and refining element styling (tables, paragraphs, spacing) to create a WYSIWYG output.
+-   **React State Management for UI**: The agent successfully used  and  to implement a new confirmation dialog for booking cancellations, replacing a faulty  and improving user experience.
 
 **key DB schema**
--   **companies**:  has been repurposed as . A new  field has been added.
--   **meeting_rooms**: Now includes  and  ('hour' or 'half-hour').
--   **bookings**: Now stores  as the primary cost metric.
--   **invoices**: The schema is being updated to include  and a rounded .
+-   **companies**: The fields  and  are now considered stale. The source of truth for credit usage is a dynamic calculation from the  collection.
+-   **bookings**: This collection is the source of truth for all credit calculations. Key fields include , , , , and .
 
 **All files of reference**
--   **/app/backend/routes/management.py**: Contains the new, critical  endpoint.
--   **/app/backend/routes/member_portal.py**: Contains the credit-based booking and 48-hour cancellation logic.
--   **/app/backend/models/management.py**: Defines the new credit-based data models for rooms, companies, and bookings.
--   **/app/frontend/src/pages/CreateInvoice.jsx**: The hub for most new frontend logic, including prorated billing, credit charge display, and round-off calculations.
--   **/app/backend/server.py**: **In progress** for saving invoice round-off data.
--   **/app/backend/routes/auto_invoice.py**: Updated to use the new credit recalculation logic.
+-   **/app/backend/server.py**: **In progress** for the primary PDF layout and logo fix.
+-   **/app/backend/routes/auto_invoice.py**: Needs the same PDF fixes applied for consistency.
+-   **/app/backend/routes/companies.py**: Contains the new  helper for the admin portal.
+-   **/app/backend/routes/member_portal.py**: Contains the same helper function for the member portal and updated logic for pending charges.
+-   **/app/frontend/src/pages/Bookings.jsx**: Was modified to fix the display of consecutive booking slots.
+-   **/app/frontend/src/pages/portal/MemberBookings.jsx**: Was overhauled with a new UI and a working cancellation dialog.
+-   **/app/frontend/src/components/InvoicePreview.jsx**: The visual reference for what the final PDF should look like.
 
 **Critical Info for New Agent**
--   **PRODUCTION DEPLOYMENT ISSUE**: The user is facing a critical platform issue where their production deployment is not updating with the latest code. **DO NOT ATTEMPT TO FIX THIS.** If the user mentions it, politely redirect them back to Emergent Support, as this is an infrastructure problem you cannot solve.
--   **BILLING IS RECALCULATED AT INVOICE TIME**: A key architectural decision was to stop trusting the  stored with each booking. The system now recalculates all meeting room charges from scratch whenever an invoice is generated. You must maintain this pattern.
+-   **PRODUCTION DEPLOYMENT ISSUE**: The user is facing a platform issue where their production deployment is not updating. **DO NOT ATTEMPT TO FIX THIS.** If the user mentions it, politely redirect them back to Emergent Support.
+-   **CREDITS ARE CALCULATED DYNAMICALLY**: The source of truth for a company's credit usage is a real-time calculation from the  collection for the **current month**. Do not use the  or  fields on the  document.
 -   **LOGIN SYSTEM IS OFF-LIMITS**: The user has explicitly requested that no work be done on the recurring login issue. Do not attempt to address it unless the user reverses this instruction.
 
 **documents and test reports created in this job**
--   /app/memory/PRD.md (updated multiple times with feature completions)
+-   /app/memory/PRD.md
+-   /app/test_reports/iteration_13.json
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. **User**: Implement GST-compliant rounding for invoices. **(IN PROGRESS)**
-9.  **User**: Amend client form label from minutes per seat to credits per seat. **(COMPLETED)**
-8.  **User**: Perform a controlled migration from a minute-based to a credit-based meeting room system. **(COMPLETED)**
-7.  **User**: Frustrated that the dev fix for billing is not live in production. **(BLOCKED on Emergent Support)**
-6.  **User**: Stated a one-time migration script is not a real solution and the logic must work for production data. **(RESOLVED by re-architecting the billing logic to recalculate at invoice time)**
-5.  **User**: Pointed out that the invoice preview is missing address/GST and billing is still wrong in production. **(RESOLVED in dev environment)**
-4.  **User**: Implement auto-calculation for prorated billing days. **(COMPLETED)**
-3.  **User**: Re-stated that meeting room credit deduction is failing. **(RESOLVED in dev environment)**
-2.  **User**: Requested a full system audit to verify all features. **(COMPLETED)**
-1.  **User**: Restore and enhance the Upcoming Birthdays feature. **(COMPLETED)**
+1.  **User**: The invoice PDF layout doesn't match the web view (missing logo, bad formatting). (IN PROGRESS)
+2.  **User**: Confirms the members not showing issue is on production. (RESOLVED - advised to redeploy/contact support)
+3.  **User**: Members are not displaying for a company in the admin view, even though the count is correct. (RESOLVED - diagnosed as a production-only issue)
+4.  **User**: Verify that pending meeting room charges are automatically added to invoices. (VERIFIED & COMPLETED)
+5.  **User**: The member dashboard shows pending charges even when credits are remaining (in production). (RESOLVED - fixed the calculation logic in dev)
+6.  **User**: All consecutive booking slots should show the booking party's details. (RESOLVED)
+7.  **User**: The PDF invoice should fit on a single A4 page. (IN PROGRESS)
+8.  **User**: The Cancel button in the member portal doesn't work. (RESOLVED - replaced  with a modal dialog)
+9.  **User**: Credits should reset monthly, and cancellation isn't working. (RESOLVED - implemented monthly reset and fixed cancel button)
+10. **User**: Requested a complete overhaul of the member bookings page UI. (COMPLETED)
 
 **Project Health Check:**
 -   **Broken**:
@@ -114,16 +112,17 @@ A comprehensive full-stack coworking management application with React, FastAPI,
 **3rd Party Integrations**
 -   **xlsx, docxtemplater, pizzip**: Used for data import and document generation.
 -   **bcrypt**: Used for password hashing.
+-   **reportlab**: Used for backend PDF generation.
 
 **Testing status**
--   **Testing agent used after significant changes**: NO
+-   **Testing agent used after significant changes**: YES
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: []
--   **Known regressions**: None.
+-   **Known regressions**: None in the dev environment.
 
 **Credentials to test flow:**
 -   **Admin**:  / 
 -   **Member**:  / 
 
 **What agent forgot to execute**
--   The agent correctly identified all user requests but was unable to complete the final task (GST Round-Off) within the session. The implementation is partially done and needs to be completed on the backend.</analysis>
+-   The agent started the PDF layout fix in  but has not yet applied the same changes to  for auto-generated invoices, which will lead to inconsistent PDF outputs.</analysis>

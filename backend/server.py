@@ -758,22 +758,17 @@ async def generate_invoice_pdf(invoice_id: str):
     
     # Create PDF buffer
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=25, leftMargin=25, topMargin=20, bottomMargin=20)
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=25, leftMargin=25, topMargin=20, bottomMargin=15)
     
     # Styles - optimized for single page, matching web preview
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name='InvoiceTitle', fontSize=14, fontName='Helvetica-Bold', alignment=TA_CENTER, 
-                              borderWidth=1, borderColor=colors.HexColor('#1e293b'), borderPadding=5))
     styles.add(ParagraphStyle(name='CompanyName', fontSize=11, fontName='Helvetica-Bold', textColor=colors.HexColor('#2E375B')))
     styles.add(ParagraphStyle(name='Normal_Right', fontSize=9, alignment=TA_RIGHT))
     styles.add(ParagraphStyle(name='Normal_Center', fontSize=9, alignment=TA_CENTER))
     styles.add(ParagraphStyle(name='Small', fontSize=7, textColor=colors.grey))
     styles.add(ParagraphStyle(name='SmallBold', fontSize=8, fontName='Helvetica-Bold'))
-    styles.add(ParagraphStyle(name='TableHeader', fontSize=8, fontName='Helvetica-Bold', textColor=colors.white))
     styles.add(ParagraphStyle(name='Footer', fontSize=7, alignment=TA_CENTER, textColor=colors.grey))
     styles.add(ParagraphStyle(name='ThankYou', fontSize=9, fontName='Helvetica-Bold', alignment=TA_CENTER, textColor=colors.HexColor('#2E375B')))
-    styles.add(ParagraphStyle(name='SectionHeader', fontSize=9, fontName='Helvetica-Bold', backColor=colors.HexColor('#f1f5f9'), 
-                              leftIndent=5, rightIndent=5, spaceBefore=2, spaceAfter=2))
     
     elements = []
     
@@ -797,40 +792,11 @@ async def generate_invoice_pdf(invoice_id: str):
         response = requests.get(logo_url, timeout=5)
         if response.status_code == 200:
             img_buffer = BytesIO(response.content)
-            logo_image = RLImage(img_buffer, width=70, height=70)
+            logo_image = RLImage(img_buffer, width=60, height=60)
     except Exception as e:
         print(f"Could not load logo: {e}")
     
-    # Header with logo and TAX INVOICE box
-    if logo_image:
-        # Create TAX INVOICE box
-        invoice_title = Table([["TAX INVOICE"]], colWidths=[100])
-        invoice_title.setStyle(TableStyle([
-            ('BOX', (0, 0), (-1, -1), 1.5, slate_800),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 12),
-            ('TOPPADDING', (0, 0), (-1, -1), 6),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ]))
-        
-        header_data = [[logo_image, "", invoice_title]]
-        header_table = Table(header_data, colWidths=[80, 350, 110])
-    else:
-        header_data = [
-            [Paragraph(f"<b>{company.get('name', 'Thryve Coworking')}</b>", styles['CompanyName']), 
-             Paragraph("<b>TAX INVOICE</b>", styles['InvoiceTitle'])]
-        ]
-        header_table = Table(header_data, colWidths=[350, 180])
-    
-    header_table.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('ALIGN', (-1, 0), (-1, 0), 'RIGHT'),
-    ]))
-    elements.append(header_table)
-    elements.append(Spacer(1, 8))
-    
-    # Invoice details row
+    # Helper function for date formatting
     def format_date(date_str):
         if not date_str:
             return "-"
@@ -840,7 +806,6 @@ async def generate_invoice_pdf(invoice_id: str):
             months = ["January", "February", "March", "April", "May", "June", 
                 "July", "August", "September", "October", "November", "December"]
             
-            # Add ordinal suffix
             def get_ordinal(n):
                 if n > 3 and n < 21:
                     return 'th'
@@ -858,182 +823,200 @@ async def generate_invoice_pdf(invoice_id: str):
         except:
             return date_str
     
-    invoice_info = f"""
-    <b>Invoice No:</b> {invoice.get('invoice_number', '')}<br/>
-    <b>Invoice Date:</b> {format_date(invoice.get('invoice_date', ''))}<br/>
-    """
-    
-    due_date_text = ""
-    if invoice.get('due_date'):
-        due_date_text = f"<b>PAYMENT DUE BY</b><br/><font size='12'><b>{format_date(invoice.get('due_date'))}</b></font>"
-    
-    info_data = [[Paragraph(invoice_info, styles['Normal']), Paragraph(due_date_text, styles['Normal_Right'])]]
-    info_table = Table(info_data, colWidths=[350, 180])
-    info_table.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('BACKGROUND', (1, 0), (1, 0), thryve_orange),
-        ('TEXTCOLOR', (1, 0), (1, 0), thryve_blue),
-        ('ALIGN', (1, 0), (1, 0), 'CENTER'),
-        ('TOPPADDING', (1, 0), (1, 0), 8),
-        ('BOTTOMPADDING', (1, 0), (1, 0), 8),
-        ('LEFTPADDING', (1, 0), (1, 0), 10),
-        ('RIGHTPADDING', (1, 0), (1, 0), 10),
+    # ===== HEADER: Logo + TAX INVOICE Box =====
+    invoice_title_table = Table([["TAX INVOICE"]], colWidths=[100])
+    invoice_title_table.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 1.5, slate_800),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
     ]))
-    elements.append(info_table)
-    elements.append(Spacer(1, 10))
     
-    # Horizontal line separator (matching web border-b-2)
-    elements.append(Table([[""]], colWidths=[540]))
-    elements[-1].setStyle(TableStyle([('LINEBELOW', (0, 0), (-1, -1), 1.5, slate_800)]))
+    if logo_image:
+        header_data = [[logo_image, "", invoice_title_table]]
+        header_table = Table(header_data, colWidths=[70, 360, 110])
+    else:
+        header_data = [[Paragraph(f"<b>{company.get('name', 'Thryve Coworking')}</b>", styles['CompanyName']), "", invoice_title_table]]
+        header_table = Table(header_data, colWidths=[200, 230, 110])
+    
+    header_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (-1, 0), (-1, 0), 'RIGHT'),
+    ]))
+    elements.append(header_table)
+    elements.append(Spacer(1, 6))
+    
+    # ===== Invoice Info Row with Due Date Box =====
+    invoice_info = f"<b>Invoice No:</b> {invoice.get('invoice_number', '')}<br/><b>Invoice Date:</b> {format_date(invoice.get('invoice_date', ''))}"
+    
+    if invoice.get('due_date'):
+        due_date_content = f"<b>PAYMENT DUE BY</b><br/><font size='11'><b>{format_date(invoice.get('due_date'))}</b></font>"
+        info_data = [[Paragraph(invoice_info, styles['Normal']), Paragraph(due_date_content, styles['Normal_Center'])]]
+        info_table = Table(info_data, colWidths=[380, 160])
+        info_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('BACKGROUND', (1, 0), (1, 0), thryve_orange),
+            ('TEXTCOLOR', (1, 0), (1, 0), thryve_blue),
+            ('TOPPADDING', (1, 0), (1, 0), 6),
+            ('BOTTOMPADDING', (1, 0), (1, 0), 6),
+        ]))
+    else:
+        info_data = [[Paragraph(invoice_info, styles['Normal'])]]
+        info_table = Table(info_data, colWidths=[540])
+    
+    elements.append(info_table)
     elements.append(Spacer(1, 8))
     
-    # Issued By / Bill To - matching web preview layout
-    # Create section headers with gray background like web
-    issued_by_header = Table([["Issued By"]], colWidths=[260])
-    issued_by_header.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), slate_100),
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 9),
-        ('LEFTPADDING', (0, 0), (-1, -1), 6),
-        ('TOPPADDING', (0, 0), (-1, -1), 4),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-    ]))
+    # Separator line
+    sep_table = Table([[""]], colWidths=[540])
+    sep_table.setStyle(TableStyle([('LINEBELOW', (0, 0), (-1, -1), 1.5, slate_800)]))
+    elements.append(sep_table)
+    elements.append(Spacer(1, 6))
     
-    bill_to_header = Table([["Bill To"]], colWidths=[260])
-    bill_to_header.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), slate_100),
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 9),
-        ('LEFTPADDING', (0, 0), (-1, -1), 6),
-        ('TOPPADDING', (0, 0), (-1, -1), 4),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-    ]))
-    
-    # Company address formatted properly
+    # ===== Issued By / Bill To Section =====
     company_state = company.get('state', 'Haryana')
-    issued_by_content = f"""
-    <b>{company.get('name', '')}</b><br/>
-    {company.get('address', '')}<br/>
-    <font color='gray'>State Name:</font> {company_state}<br/>
-    <font color='gray'>GSTIN:</font> {company.get('gstin', '')}
-    """
+    issued_by_text = f"""<b>{company.get('name', '')}</b><br/>
+{company.get('address', '')}<br/>
+<font color='#6b7280'>State Name:</font> {company_state}<br/>
+<font color='#6b7280'>GSTIN:</font> {company.get('gstin', '')}"""
     
-    # Client address formatted properly  
     client_state = client.get('state', 'Haryana')
-    bill_to_content = f"""
-    <b>{client.get('company_name', '')}</b><br/>
-    {client.get('address', '')}<br/>
-    <font color='gray'>State Name:</font> {client_state}<br/>
-    <font color='gray'>GSTIN:</font> {client.get('gstin', '')}
-    """
+    bill_to_text = f"""<b>{client.get('company_name', '')}</b><br/>
+{client.get('address', '')}<br/>
+<font color='#6b7280'>State Name:</font> {client_state}<br/>
+<font color='#6b7280'>GSTIN:</font> {client.get('gstin', '')}"""
     
-    # Create the two-column layout
-    issued_by_cell = [[issued_by_header], [Paragraph(issued_by_content, styles['Normal'])]]
-    bill_to_cell = [[bill_to_header], [Paragraph(bill_to_content, styles['Normal'])]]
-    
-    issued_by_table = Table(issued_by_cell, colWidths=[260])
-    issued_by_table.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('LEFTPADDING', (0, 1), (-1, -1), 8),
-        ('TOPPADDING', (0, 1), (-1, -1), 6),
+    # Create Issued By cell
+    issued_header = Table([["Issued By"]], colWidths=[260])
+    issued_header.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), slate_100),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
     ]))
     
-    bill_to_table = Table(bill_to_cell, colWidths=[260])
-    bill_to_table.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('LEFTPADDING', (0, 1), (-1, -1), 8),
-        ('TOPPADDING', (0, 1), (-1, -1), 6),
+    bill_header = Table([["Bill To"]], colWidths=[260])
+    bill_header.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), slate_100),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
     ]))
     
-    party_data = [[issued_by_table, bill_to_table]]
-    party_table = Table(party_data, colWidths=[270, 270])
+    issued_cell = Table([[issued_header], [Paragraph(issued_by_text, styles['Normal'])]], colWidths=[260])
+    issued_cell.setStyle(TableStyle([('LEFTPADDING', (0, 1), (-1, -1), 6), ('TOPPADDING', (0, 1), (-1, -1), 4)]))
+    
+    bill_cell = Table([[bill_header], [Paragraph(bill_to_text, styles['Normal'])]], colWidths=[260])
+    bill_cell.setStyle(TableStyle([('LEFTPADDING', (0, 1), (-1, -1), 6), ('TOPPADDING', (0, 1), (-1, -1), 4)]))
+    
+    party_table = Table([[issued_cell, bill_cell]], colWidths=[270, 270])
     party_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('LINEAFTER', (0, 0), (0, 0), 0.5, slate_300),
         ('LINEBELOW', (0, 0), (-1, -1), 0.5, slate_300),
     ]))
     elements.append(party_table)
-    elements.append(Spacer(1, 10))
+    elements.append(Spacer(1, 8))
     
-    # Line items table
+    # ===== Line Items Table (Matching Web: 7 columns) =====
     line_items = invoice.get('line_items', [])
     
-    # Table header
-    table_data = [['S.No.', 'Particulars', 'HSN/SAC', 'Qty', 'Rate', 'Amount', 'CGST', 'SGST', 'Total']]
+    # Table header - matching web preview columns
+    table_data = [['S.No.', 'Particulars', 'HSN/SAC', 'Qty', 'Rate', 'Per', 'Amount (Rs.)']]
     
     for idx, item in enumerate(line_items, 1):
+        amount = item.get('amount', item.get('quantity', 1) * item.get('rate', 0))
         table_data.append([
             str(idx),
             item.get('description', ''),
-            item.get('hsn_sac', '997212'),
+            item.get('hsn_sac', '997212') if item.get('is_taxable', True) else '',
             str(item.get('quantity', 1)),
-            f"Rs. {item.get('rate', 0):,.2f}",
-            f"Rs. {item.get('amount', 0):,.2f}",
-            f"Rs. {item.get('cgst', 0):,.2f}" if item.get('is_taxable') else '-',
-            f"Rs. {item.get('sgst', 0):,.2f}" if item.get('is_taxable') else '-',
-            f"Rs. {item.get('total', 0):,.2f}"
+            f"{item.get('rate', 0):,.2f}",
+            item.get('unit', 'Units'),
+            f"{amount:,.2f}"
         ])
     
-    items_table = Table(table_data, colWidths=[30, 140, 50, 35, 60, 60, 50, 50, 60])
+    # Add empty rows if needed for visual consistency
+    if len(line_items) < 2:
+        for _ in range(2 - len(line_items)):
+            table_data.append(['', '', '', '', '', '', ''])
+    
+    items_table = Table(table_data, colWidths=[35, 195, 55, 40, 70, 45, 100])
     items_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), thryve_blue),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('BACKGROUND', (0, 0), (-1, 0), slate_100),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('ALIGN', (0, 1), (0, -1), 'CENTER'),
         ('ALIGN', (1, 1), (1, -1), 'LEFT'),
+        ('ALIGN', (2, 1), (5, -1), 'CENTER'),
+        ('ALIGN', (6, 1), (6, -1), 'RIGHT'),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 0.5, slate_300),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
     ]))
     elements.append(items_table)
-    elements.append(Spacer(1, 5))
     
-    # Totals with GST-compliant rounding
+    # ===== Totals Table (Right-aligned) =====
     round_off = invoice.get('round_off_adjustment', 0)
     grand_total = invoice.get('grand_total', 0)
     
-    totals_data = [
+    totals_rows = [
         ['Sub Total', f"Rs. {invoice.get('subtotal', 0):,.2f}"],
         ['CGST (9%)', f"Rs. {invoice.get('total_cgst', 0):,.2f}"],
         ['SGST (9%)', f"Rs. {invoice.get('total_sgst', 0):,.2f}"],
     ]
     
-    # Add round-off row if non-zero
     if round_off != 0:
         round_off_str = f"+Rs. {round_off:,.2f}" if round_off >= 0 else f"-Rs. {abs(round_off):,.2f}"
-        totals_data.append(['Round-Off Adj.', round_off_str])
+        totals_rows.append(['Round-Off Adj.', round_off_str])
     
-    # Grand total is always whole rupee
-    totals_data.append(['Total Amount', f"Rs. {int(grand_total):,}"])
+    totals_rows.append(['Total Amount', f"Rs. {int(grand_total):,}"])
     
-    totals_table = Table(totals_data, colWidths=[100, 80])
-    totals_table.setStyle(TableStyle([
+    totals_table = Table(totals_rows, colWidths=[90, 100])
+    
+    # Style for totals - last row is highlighted
+    totals_style = [
         ('ALIGN', (0, 0), (0, -1), 'LEFT'),
         ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
         ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
-        ('BACKGROUND', (0, -1), (-1, -1), thryve_blue),
-        ('TEXTCOLOR', (0, -1), (-1, -1), colors.white),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('GRID', (0, 0), (-1, -1), 0.5, slate_300),
         ('TOPPADDING', (0, 0), (-1, -1), 4),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ('LEFTPADDING', (0, 0), (-1, -1), 6),
         ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-    ]))
+        ('BACKGROUND', (0, 0), (-1, -2), colors.white),
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+        ('BACKGROUND', (0, -1), (-1, -1), thryve_blue),
+        ('TEXTCOLOR', (0, -1), (-1, -1), colors.white),
+    ]
+    totals_table.setStyle(TableStyle(totals_style))
     
-    # Right align totals table
-    totals_wrapper = Table([[None, totals_table]], colWidths=[360, 180])
+    # Right-align totals
+    totals_wrapper = Table([[None, totals_table]], colWidths=[350, 190])
     elements.append(totals_wrapper)
-    elements.append(Spacer(1, 5))
+    elements.append(Spacer(1, 4))
     
-    # Amount in words (always whole rupee)
+    # ===== Amount in Words =====
     amount_words = number_to_words(int(grand_total))
-    elements.append(Paragraph(f"<b>Amount in words:</b> {amount_words}", styles['Normal']))
-    elements.append(Spacer(1, 10))
+    amount_box = Table([[Paragraph(f"<b>Amount Chargeable (in words):</b><br/><b><font color='#2E375B'>{amount_words}</font></b>", styles['Normal'])]], colWidths=[540])
+    amount_box.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), slate_100),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    elements.append(amount_box)
+    elements.append(Spacer(1, 8))
     
-    # Bank details and signature
+    # ===== Bank Details & Signature Section =====
     bank = company.get('bank', {
         'name': 'HDFC Bank',
         'account_name': company.get('name', 'Thryve Coworking'),
@@ -1042,72 +1025,59 @@ async def generate_invoice_pdf(invoice_id: str):
         'ifsc': 'HDFC0000279'
     })
     
-    bank_info = f"""
-    <b>Company's Bank Details</b><br/>
-    A/c Name: {bank.get('account_name', '')}<br/>
-    Bank Name: {bank.get('name', '')}<br/>
-    A/c No: {bank.get('account_no', '')}<br/>
-    Branch: {bank.get('branch', '')}<br/>
-    IFSC: {bank.get('ifsc', '')}
-    """
+    bank_text = f"""<b>Company's Bank Details</b><br/>
+<font color='#6b7280'>A/c Name:</font> {bank.get('account_name', company.get('name', ''))}<br/>
+<font color='#6b7280'>Bank Name:</font> {bank.get('name', '')}<br/>
+<font color='#6b7280'>Current A/c No.:</font> {bank.get('account_no', '')}<br/>
+<font color='#6b7280'>Branch:</font> {bank.get('branch', '')}<br/>
+<font color='#6b7280'>IFSC:</font> {bank.get('ifsc', '')}"""
     
-    # Signature section with image
+    # Try to load signature image
     signature_image_url = "https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/x6h984ax_Untitled%20design.jpg"
-    
-    # Try to download and embed signature image
     signature_image = None
     try:
         import requests
         from reportlab.platypus import Image as RLImage
-        
         response = requests.get(signature_image_url, timeout=5)
         if response.status_code == 200:
             img_buffer = BytesIO(response.content)
-            signature_image = RLImage(img_buffer, width=80, height=40)
+            signature_image = RLImage(img_buffer, width=70, height=35)
     except Exception as e:
         print(f"Could not load signature image: {e}")
-        signature_image = None
     
-    # Create signature paragraph
-    signature_text = f"""
-    <para align='right'>
-    <font size='8' color='gray'>E. &amp; O.E.</font><br/><br/><br/><br/><br/>
-    <b>for {company.get('name', 'Thryve Coworking')}</b><br/><br/><br/><br/>
-    Authorised Signatory
-    </para>
-    """
-    
-    # If we have a signature image, create a custom layout
+    # Create signature section
     if signature_image:
-        # Create a table for signature section with image
-        sig_table_data = [
-            [Paragraph(f"<para align='right'><font size='8' color='gray'>E. &amp; O.E.</font></para>", styles['Normal'])],
+        sig_content = [
+            [Paragraph("<font size='7' color='#9ca3af'>E. &amp; O.E.</font>", styles['Normal_Right'])],
             [signature_image],
-            [Paragraph(f"<para align='right'><b>for {company.get('name', 'Thryve Coworking')}</b></para>", styles['Normal'])],
-            [Paragraph("<para align='right'>Authorised Signatory</para>", styles['Normal'])],
+            [Paragraph(f"<b>for {company.get('name', 'Thryve Coworking')}</b>", styles['Normal_Right'])],
+            [Paragraph("<font size='8' color='#6b7280'>Authorised Signatory</font>", styles['Normal_Right'])],
         ]
-        sig_table = Table(sig_table_data, colWidths=[230])
-        sig_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ]))
-        
-        footer_data = [[Paragraph(bank_info, styles['Small']), sig_table]]
+        sig_table = Table(sig_content, colWidths=[200])
+        sig_table.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'RIGHT'), ('VALIGN', (0, 0), (-1, -1), 'TOP')]))
     else:
-        footer_data = [[Paragraph(bank_info, styles['Small']), Paragraph(signature_text, styles['Normal_Right'])]]
+        sig_text = f"""<para align='right'><font size='7' color='#9ca3af'>E. &amp; O.E.</font><br/><br/><br/><br/>
+<b>for {company.get('name', 'Thryve Coworking')}</b><br/><br/>
+<font size='8' color='#6b7280'>Authorised Signatory</font></para>"""
+        sig_table = Paragraph(sig_text, styles['Normal_Right'])
     
-    footer_table = Table(footer_data, colWidths=[300, 230])
+    footer_table = Table([[Paragraph(bank_text, styles['Normal']), sig_table]], colWidths=[290, 250])
     footer_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('LINEABOVE', (0, 0), (-1, 0), 0.5, colors.grey),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('LINEABOVE', (0, 0), (-1, 0), 0.5, slate_300),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
     ]))
     elements.append(footer_table)
-    elements.append(Spacer(1, 8))
+    elements.append(Spacer(1, 6))
     
-    # Thank you message
-    elements.append(Paragraph("Thank you for choosing Thryve Coworking!", styles['ThankYou']))
-    elements.append(Spacer(1, 3))
+    # ===== Declaration =====
+    declaration = Paragraph("<font size='7' color='#6b7280'><b>Declaration:</b> We declare that this invoice shows the actual price of the Services described and that all particulars are true and correct.</font>", styles['Normal'])
+    elements.append(declaration)
+    elements.append(Spacer(1, 6))
+    
+    # ===== Footer =====
+    elements.append(Paragraph("<b>Thank you for choosing Thryve Coworking!</b>", styles['ThankYou']))
+    elements.append(Spacer(1, 2))
     elements.append(Paragraph("This is a Computer Generated Invoice", styles['Footer']))
     
     # Build PDF
@@ -1117,10 +1087,9 @@ async def generate_invoice_pdf(invoice_id: str):
     buffer.seek(0)
     pdf_content = buffer.getvalue()
     
-    # Create filename from invoice number and client name (replace special chars)
+    # Create filename
     invoice_num = invoice.get('invoice_number', 'invoice').replace('/', '-')
     client_name = invoice.get('client', {}).get('company_name', '').replace(' ', '_').replace('/', '-').replace('\\', '-')
-    # Remove any other special characters
     client_name = ''.join(c for c in client_name if c.isalnum() or c in ['_', '-'])
     filename = f"{invoice_num}_{client_name}.pdf"
     
