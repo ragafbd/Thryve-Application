@@ -760,10 +760,11 @@ async def generate_invoice_pdf(invoice_id: str):
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=25, leftMargin=25, topMargin=20, bottomMargin=20)
     
-    # Styles - optimized for single page
+    # Styles - optimized for single page, matching web preview
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name='InvoiceTitle', fontSize=16, fontName='Helvetica-Bold', alignment=TA_RIGHT))
-    styles.add(ParagraphStyle(name='CompanyName', fontSize=12, fontName='Helvetica-Bold', textColor=colors.HexColor('#2E375B')))
+    styles.add(ParagraphStyle(name='InvoiceTitle', fontSize=14, fontName='Helvetica-Bold', alignment=TA_CENTER, 
+                              borderWidth=1, borderColor=colors.HexColor('#1e293b'), borderPadding=5))
+    styles.add(ParagraphStyle(name='CompanyName', fontSize=11, fontName='Helvetica-Bold', textColor=colors.HexColor('#2E375B')))
     styles.add(ParagraphStyle(name='Normal_Right', fontSize=9, alignment=TA_RIGHT))
     styles.add(ParagraphStyle(name='Normal_Center', fontSize=9, alignment=TA_CENTER))
     styles.add(ParagraphStyle(name='Small', fontSize=7, textColor=colors.grey))
@@ -771,29 +772,63 @@ async def generate_invoice_pdf(invoice_id: str):
     styles.add(ParagraphStyle(name='TableHeader', fontSize=8, fontName='Helvetica-Bold', textColor=colors.white))
     styles.add(ParagraphStyle(name='Footer', fontSize=7, alignment=TA_CENTER, textColor=colors.grey))
     styles.add(ParagraphStyle(name='ThankYou', fontSize=9, fontName='Helvetica-Bold', alignment=TA_CENTER, textColor=colors.HexColor('#2E375B')))
+    styles.add(ParagraphStyle(name='SectionHeader', fontSize=9, fontName='Helvetica-Bold', backColor=colors.HexColor('#f1f5f9'), 
+                              leftIndent=5, rightIndent=5, spaceBefore=2, spaceAfter=2))
     
     elements = []
     
-    # Colors
+    # Colors - matching web preview
     thryve_blue = colors.HexColor('#2E375B')
     thryve_orange = colors.HexColor('#FFA14A')
+    slate_800 = colors.HexColor('#1e293b')
+    slate_300 = colors.HexColor('#cbd5e1')
+    slate_100 = colors.HexColor('#f1f5f9')
     
     # Company info
     company = invoice.get('company', COMPANY_DETAILS)
     client = invoice.get('client', {})
     
-    # Header with logo placeholder and TAX INVOICE
-    header_data = [
-        [Paragraph(f"<b>{company.get('name', 'Thryve Coworking')}</b>", styles['CompanyName']), 
-         Paragraph("<b>TAX INVOICE</b>", styles['InvoiceTitle'])]
-    ]
-    header_table = Table(header_data, colWidths=[350, 180])
+    # Try to load logo image
+    logo_url = "https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/jqltfue2_Gemini_Generated_Image_xy33ixy33ixy33ix.png"
+    logo_image = None
+    try:
+        import requests
+        from reportlab.platypus import Image as RLImage
+        response = requests.get(logo_url, timeout=5)
+        if response.status_code == 200:
+            img_buffer = BytesIO(response.content)
+            logo_image = RLImage(img_buffer, width=70, height=70)
+    except Exception as e:
+        print(f"Could not load logo: {e}")
+    
+    # Header with logo and TAX INVOICE box
+    if logo_image:
+        # Create TAX INVOICE box
+        invoice_title = Table([["TAX INVOICE"]], colWidths=[100])
+        invoice_title.setStyle(TableStyle([
+            ('BOX', (0, 0), (-1, -1), 1.5, slate_800),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 12),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        
+        header_data = [[logo_image, "", invoice_title]]
+        header_table = Table(header_data, colWidths=[80, 350, 110])
+    else:
+        header_data = [
+            [Paragraph(f"<b>{company.get('name', 'Thryve Coworking')}</b>", styles['CompanyName']), 
+             Paragraph("<b>TAX INVOICE</b>", styles['InvoiceTitle'])]
+        ]
+        header_table = Table(header_data, colWidths=[350, 180])
+    
     header_table.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (-1, 0), (-1, 0), 'RIGHT'),
     ]))
     elements.append(header_table)
-    elements.append(Spacer(1, 5))
+    elements.append(Spacer(1, 8))
     
     # Invoice details row
     def format_date(date_str):
