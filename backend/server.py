@@ -880,36 +880,80 @@ async def generate_invoice_pdf(invoice_id: str):
         ('RIGHTPADDING', (1, 0), (1, 0), 10),
     ]))
     elements.append(info_table)
+    elements.append(Spacer(1, 10))
+    
+    # Horizontal line separator (matching web border-b-2)
+    elements.append(Table([[""]], colWidths=[540]))
+    elements[-1].setStyle(TableStyle([('LINEBELOW', (0, 0), (-1, -1), 1.5, slate_800)]))
     elements.append(Spacer(1, 8))
     
-    # Issued By / Bill To
-    issued_by = f"""
-    <b>Issued By</b><br/>
+    # Issued By / Bill To - matching web preview layout
+    # Create section headers with gray background like web
+    issued_by_header = Table([["Issued By"]], colWidths=[260])
+    issued_by_header.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), slate_100),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]))
+    
+    bill_to_header = Table([["Bill To"]], colWidths=[260])
+    bill_to_header.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), slate_100),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]))
+    
+    # Company address formatted properly
+    company_state = company.get('state', 'Haryana')
+    issued_by_content = f"""
     <b>{company.get('name', '')}</b><br/>
     {company.get('address', '')}<br/>
-    <font size='8'>GSTIN: {company.get('gstin', '')}</font>
+    <font color='gray'>State Name:</font> {company_state}<br/>
+    <font color='gray'>GSTIN:</font> {company.get('gstin', '')}
     """
     
-    bill_to = f"""
-    <b>Bill To</b><br/>
+    # Client address formatted properly  
+    client_state = client.get('state', 'Haryana')
+    bill_to_content = f"""
     <b>{client.get('company_name', '')}</b><br/>
     {client.get('address', '')}<br/>
-    <font size='8'>GSTIN: {client.get('gstin', '')}</font>
+    <font color='gray'>State Name:</font> {client_state}<br/>
+    <font color='gray'>GSTIN:</font> {client.get('gstin', '')}
     """
     
-    party_data = [[Paragraph(issued_by, styles['Normal']), Paragraph(bill_to, styles['Normal'])]]
+    # Create the two-column layout
+    issued_by_cell = [[issued_by_header], [Paragraph(issued_by_content, styles['Normal'])]]
+    bill_to_cell = [[bill_to_header], [Paragraph(bill_to_content, styles['Normal'])]]
+    
+    issued_by_table = Table(issued_by_cell, colWidths=[260])
+    issued_by_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 1), (-1, -1), 8),
+        ('TOPPADDING', (0, 1), (-1, -1), 6),
+    ]))
+    
+    bill_to_table = Table(bill_to_cell, colWidths=[260])
+    bill_to_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 1), (-1, -1), 8),
+        ('TOPPADDING', (0, 1), (-1, -1), 6),
+    ]))
+    
+    party_data = [[issued_by_table, bill_to_table]]
     party_table = Table(party_data, colWidths=[270, 270])
     party_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('BOX', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('LINEAFTER', (0, 0), (0, 0), 0.5, colors.grey),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ('LEFTPADDING', (0, 0), (-1, -1), 8),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('LINEAFTER', (0, 0), (0, 0), 0.5, slate_300),
+        ('LINEBELOW', (0, 0), (-1, -1), 0.5, slate_300),
     ]))
     elements.append(party_table)
-    elements.append(Spacer(1, 8))
+    elements.append(Spacer(1, 10))
     
     # Line items table
     line_items = invoice.get('line_items', [])
