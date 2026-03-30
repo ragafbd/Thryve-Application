@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Calendar, Clock, Users, Building2, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Calendar, Clock, Users, Building2, ChevronLeft, ChevronRight, Plus, Power, PowerOff, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import axios from "axios";
@@ -45,6 +46,16 @@ export default function Bookings() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isRoomDisabled, setIsRoomDisabled] = useState(false);
+  const [roomDisabledMessage, setRoomDisabledMessage] = useState("");
+  
+  // Room toggle dialog
+  const [toggleDialogOpen, setToggleDialogOpen] = useState(false);
+  const [toggleRoom, setToggleRoom] = useState(null);
+  const [toggleAction, setToggleAction] = useState("disable"); // "disable" or "enable"
+  const [disableFromDate, setDisableFromDate] = useState("");
+  const [disableReason, setDisableReason] = useState("");
+  const [toggling, setToggling] = useState(false);
   
   // Booking dialog
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
@@ -142,9 +153,63 @@ export default function Bookings() {
         `${API}/management/bookings/availability?room_id=${selectedRoom.id}&date=${selectedDate}`
       );
       setSlots(response.data.slots || []);
+      setIsRoomDisabled(response.data.is_room_disabled || false);
+      setRoomDisabledMessage(response.data.message || "");
     } catch (error) {
       console.error("Failed to fetch availability");
       setSlots([]);
+      setIsRoomDisabled(false);
+      setRoomDisabledMessage("");
+    }
+  };
+
+  // Check if a room is disabled for a specific date
+  const isRoomDisabledForDate = (room, dateStr) => {
+    if (!room.disabled_from) return false;
+    return dateStr >= room.disabled_from;
+  };
+
+  // Open toggle dialog
+  const openToggleDialog = (room, action) => {
+    setToggleRoom(room);
+    setToggleAction(action);
+    if (action === "disable") {
+      setDisableFromDate(getLocalDateString(new Date())); // Default to today
+      setDisableReason("");
+    }
+    setToggleDialogOpen(true);
+  };
+
+  // Handle room toggle
+  const handleToggleRoom = async () => {
+    if (!toggleRoom) return;
+    
+    if (toggleAction === "disable" && !disableFromDate) {
+      toast.error("Please select a date from which to disable bookings");
+      return;
+    }
+    
+    setToggling(true);
+    try {
+      const token = localStorage.getItem("token");
+      const payload = toggleAction === "disable" 
+        ? { disabled_from: disableFromDate, disabled_reason: disableReason || null }
+        : { disabled_from: null, disabled_reason: null };
+      
+      await axios.patch(
+        `${API}/management/rooms/${toggleRoom.id}/toggle-booking`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      toast.success(`Room bookings ${toggleAction === "disable" ? "disabled" : "enabled"} successfully`);
+      setToggleDialogOpen(false);
+      fetchRooms(); // Refresh rooms to get updated status
+      fetchAvailability(); // Refresh availability
+    } catch (error) {
+      toast.error(error.response?.data?.detail || `Failed to ${toggleAction} room bookings`);
+    } finally {
+      setToggling(false);
     }
   };
 
@@ -362,22 +427,79 @@ export default function Bookings() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {rooms.map(room => (
-                <button
-                  key={room.id}
-                  onClick={() => setSelectedRoom(room)}
-                  className={`w-full text-left p-3 rounded-lg border transition-all ${
-                    selectedRoom?.id === room.id
-                      ? "border-[#FFA14A] bg-[#FFA14A]/10"
-                      : "border-[#2E375B]/10 hover:border-[#2E375B]/30"
-                  }`}
-                >
-                  <p className="font-medium text-[#2E375B]">{room.display_name}</p>
-                  <p className="text-sm text-[#2E375B]">
-                    {room.capacity} seats • ₹{room.hourly_rate}/hr
-                  </p>
-                </button>
-              ))}
+              {rooms.map(room => {
+                const roomDisabledForSelectedDate = isRoomDisabledForDate(room, selectedDate);
+                
+                return (
+                  <div key={room.id} className="space-y-1">
+                    <button
+                      onClick={() => setSelectedRoom(room)}
+                      className={`w-full text-left p-3 rounded-lg border transition-all ${
+                        roomDisabledForSelectedDate
+                          ? "border-gray-200 bg-gray-100 opacity-60"
+                          : selectedRoom?.id === room.id
+                          ? "border-[#FFA14A] bg-[#FFA14A]/10"
+                          : "border-[#2E375B]/10 hover:border-[#2E375B]/30"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className={`font-medium ${roomDisabledForSelectedDate ? "text-gray-500" : "text-[#2E375B]"}`}>
+                            {room.display_name}
+                          </p>
+                          <p className={`text-sm ${roomDisabledForSelectedDate ? "text-gray-400" : "text-[#2E375B]"}`}>
+                            {room.capacity} seats • ₹{room.hourly_rate}/hr
+                          </p>
+                        </div>
+                        {roomDisabledForSelectedDate && (
+                          <Badge variant="secondary" className="bg-gray-200 text-gray-600 text-xs">
+                            Disabled
+                          </Badge>
+                        )}
+                      </div>
+                      {room.disabled_from && (
+                        <p className="text-xs text-amber-600 mt-1">
+                          Bookings disabled from {room.disabled_from}
+                          {room.disabled_reason && ` - ${room.disabled_reason}`}
+                        </p>
+                      )}
+                    </button>
+                    
+                    {/* Room Toggle Controls */}
+                    <div className="flex gap-1 px-1">
+                      {room.disabled_from ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full text-xs h-7 text-green-600 border-green-200 hover:bg-green-50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openToggleDialog(room, "enable");
+                          }}
+                          data-testid={`enable-room-${room.id}`}
+                        >
+                          <Power className="w-3 h-3 mr-1" />
+                          Enable Bookings
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full text-xs h-7 text-red-600 border-red-200 hover:bg-red-50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openToggleDialog(room, "disable");
+                          }}
+                          data-testid={`disable-room-${room.id}`}
+                        >
+                          <PowerOff className="w-3 h-3 mr-1" />
+                          Disable Bookings
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
 
@@ -390,9 +512,20 @@ export default function Bookings() {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Room Disabled Warning */}
+              {isRoomDisabled && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-amber-800 font-medium">Bookings Disabled</p>
+                    <p className="text-amber-700 text-sm">{roomDisabledMessage}</p>
+                  </div>
+                </div>
+              )}
+              
               {slots.length === 0 ? (
                 <p className="text-center py-8 text-[#2E375B]">
-                  {loading ? "Loading slots..." : "No slots available"}
+                  {loading ? "Loading slots..." : isRoomDisabled ? "Bookings not available" : "No slots available"}
                 </p>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -734,6 +867,84 @@ export default function Bookings() {
               className="bg-[#2E375B] hover:bg-[#232B47]"
             >
               {saving ? "Booking..." : "Confirm Booking"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Room Toggle Dialog */}
+      <Dialog open={toggleDialogOpen} onOpenChange={setToggleDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-[#2E375B]">
+              {toggleAction === "disable" ? "Disable Room Bookings" : "Enable Room Bookings"}
+            </DialogTitle>
+            <DialogDescription>
+              {toggleAction === "disable" 
+                ? `Disable bookings for ${toggleRoom?.display_name}. Select a date from which bookings will be blocked.`
+                : `Re-enable bookings for ${toggleRoom?.display_name}. All dates will be available for booking again.`
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
+          {toggleAction === "disable" && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label className="text-[#2E375B]">Disable bookings from *</Label>
+                <Input
+                  type="date"
+                  value={disableFromDate}
+                  onChange={(e) => setDisableFromDate(e.target.value)}
+                  min={getLocalDateString(new Date())}
+                  data-testid="disable-from-date"
+                />
+                <p className="text-xs text-gray-500">
+                  All dates from this date onwards will be unavailable for booking
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-[#2E375B]">Reason (optional)</Label>
+                <Input
+                  value={disableReason}
+                  onChange={(e) => setDisableReason(e.target.value)}
+                  placeholder="e.g., Maintenance, Renovation, etc."
+                  data-testid="disable-reason"
+                />
+              </div>
+            </div>
+          )}
+          
+          {toggleAction === "enable" && (
+            <div className="py-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-green-700 text-sm">
+                  This will re-enable bookings for <strong>{toggleRoom?.display_name}</strong>. 
+                  Members and admins will be able to book this room again.
+                </p>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setToggleDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleToggleRoom} 
+              disabled={toggling}
+              className={toggleAction === "disable" 
+                ? "bg-red-600 hover:bg-red-700" 
+                : "bg-green-600 hover:bg-green-700"
+              }
+              data-testid="confirm-toggle-btn"
+            >
+              {toggling 
+                ? "Processing..." 
+                : toggleAction === "disable" 
+                ? "Disable Bookings" 
+                : "Enable Bookings"
+              }
             </Button>
           </DialogFooter>
         </DialogContent>

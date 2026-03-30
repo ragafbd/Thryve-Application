@@ -41,6 +41,9 @@ class MeetingRoom(BaseModel):
     room_type: str = "meeting_room"  # "conference_room" or "meeting_room"
     credit_cost_per_slot: int = 5  # Credits per slot (20 for CR, 5 for MR)
     is_active: bool = True
+    # Booking disabled from this date onwards (None = bookings enabled)
+    disabled_from: Optional[str] = None  # Format: YYYY-MM-DD
+    disabled_reason: Optional[str] = None  # Optional reason for disabling
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class MeetingRoomCreate(BaseModel):

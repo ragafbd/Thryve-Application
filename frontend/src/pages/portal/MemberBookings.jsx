@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Calendar, Clock, Users, Building2, X, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
+import { Calendar, Clock, Users, Building2, X, ChevronLeft, ChevronRight, AlertCircle, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +46,8 @@ export default function MemberBookings() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({ purpose: "" });
+  const [isRoomDisabled, setIsRoomDisabled] = useState(false);
+  const [roomDisabledMessage, setRoomDisabledMessage] = useState("");
   
   // Cancel confirmation dialog state
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -115,16 +117,28 @@ export default function MemberBookings() {
   const fetchAvailability = async () => {
     if (!selectedRoom || isBlockedDate(selectedDate)) {
       setSlots([]);
+      setIsRoomDisabled(false);
+      setRoomDisabledMessage("");
       return;
     }
     try {
       const response = await axios.get(`${API}/rooms/${selectedRoom.id}/availability?date=${selectedDate}`);
       setSlots(response.data.slots || []);
+      setIsRoomDisabled(response.data.is_room_disabled || false);
+      setRoomDisabledMessage(response.data.message || "");
       setSelectedSlots([]);
     } catch (error) {
       console.error("Failed to fetch availability:", error);
       setSlots([]);
+      setIsRoomDisabled(false);
+      setRoomDisabledMessage("");
     }
+  };
+
+  // Check if a room is disabled for a specific date
+  const isRoomDisabledForDate = (room, dateStr) => {
+    if (!room.disabled_from) return false;
+    return dateStr >= room.disabled_from;
   };
 
   useEffect(() => {
@@ -428,20 +442,34 @@ export default function MemberBookings() {
 
       {/* Room Selection */}
       <div className="flex gap-2 overflow-x-auto pb-2">
-        {rooms.map(room => (
-          <Button
-            key={room.id}
-            variant={selectedRoom?.id === room.id ? "default" : "outline"}
-            className={selectedRoom?.id === room.id 
-              ? "bg-[#2E375B] hover:bg-[#232B47]" 
-              : "border-[#2E375B]/20 text-[#2E375B] hover:bg-[#2E375B]/10"}
-            onClick={() => setSelectedRoom(room)}
-          >
-            <Building2 className="w-4 h-4 mr-2" />
-            {room.name}
-            <span className="ml-2 text-xs opacity-70">({room.capacity} seats)</span>
-          </Button>
-        ))}
+        {rooms.map(room => {
+          const roomDisabledForSelectedDate = isRoomDisabledForDate(room, selectedDate);
+          
+          return (
+            <Button
+              key={room.id}
+              variant={selectedRoom?.id === room.id ? "default" : "outline"}
+              className={`${
+                roomDisabledForSelectedDate
+                  ? "opacity-50 bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                  : selectedRoom?.id === room.id 
+                  ? "bg-[#2E375B] hover:bg-[#232B47]" 
+                  : "border-[#2E375B]/20 text-[#2E375B] hover:bg-[#2E375B]/10"
+              }`}
+              onClick={() => !roomDisabledForSelectedDate && setSelectedRoom(room)}
+              disabled={currentDateBlocked}
+            >
+              <Building2 className="w-4 h-4 mr-2" />
+              {room.name}
+              <span className="ml-2 text-xs opacity-70">({room.capacity} seats)</span>
+              {roomDisabledForSelectedDate && (
+                <Badge variant="secondary" className="ml-2 bg-gray-200 text-gray-600 text-xs">
+                  Disabled
+                </Badge>
+              )}
+            </Button>
+          );
+        })}
       </div>
 
       {/* Room Info & Slots */}
@@ -481,7 +509,7 @@ export default function MemberBookings() {
                 <Clock className="w-5 h-5" />
                 Available Slots (10 AM - 7 PM)
               </CardTitle>
-              {selectedSlots.length > 0 && (
+              {selectedSlots.length > 0 && !isRoomDisabled && (
                 <div className="flex items-center gap-2">
                   <Badge className="bg-[#FFA14A] text-white">
                     {selectedSlots.length} slot{selectedSlots.length > 1 ? 's' : ''} ({totalMinutes} min)
@@ -505,6 +533,23 @@ export default function MemberBookings() {
               )}
             </CardHeader>
             <CardContent>
+              {/* Room Disabled Warning */}
+              {isRoomDisabled && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-amber-800 font-medium">Bookings Not Available</p>
+                    <p className="text-amber-700 text-sm">{roomDisabledMessage}</p>
+                  </div>
+                </div>
+              )}
+              
+              {isRoomDisabled ? (
+                <p className="text-center py-8 text-gray-500">
+                  Please select a different room or date
+                </p>
+              ) : (
+              <>
               <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
                 {slots.map((slot, idx) => {
                   const isSelected = selectedSlots.includes(slot.start_time);
@@ -556,6 +601,8 @@ export default function MemberBookings() {
                   <span>Past</span>
                 </div>
               </div>
+              </>
+              )}
             </CardContent>
           </Card>
         </div>

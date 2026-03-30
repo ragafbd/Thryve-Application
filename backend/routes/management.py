@@ -172,6 +172,81 @@ async def update_room(room_id: str, room_data: MeetingRoomCreate, current_user: 
     updated = await db.meeting_rooms.find_one({"id": room_id}, {"_id": 0})
     return updated
 
+
+from pydantic import BaseModel as PydanticBaseModel
+
+class RoomBookingToggle(PydanticBaseModel):
+    """Toggle room booking availability"""
+    disabled_from: Optional[str] = None  # YYYY-MM-DD format, None to enable
+    disabled_reason: Optional[str] = None
+
+
+@router.patch("/rooms/{room_id}/toggle-booking")
+async def toggle_room_booking(room_id: str, toggle_data: RoomBookingToggle, current_user: dict = Depends(get_current_user)):
+    """
+    Enable or disable bookings for a room from a specific date onwards.
+    
+    - To disable: Set disabled_from to a date (YYYY-MM-DD). All dates from that date onwards will be blocked.
+    - To enable: Set disabled_from to None (null).
+    """
+    check_permission(current_user, "all")
+    
+    room = await db.meeting_rooms.find_one({"id": room_id}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    # Validate date format if provided
+    if toggle_data.disabled_from:
+        try:
+            datetime.strptime(toggle_data.disabled_from, "%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    
+    update_data = {
+        "disabled_from": toggle_data.disabled_from,
+        "disabled_reason": toggle_data.disabled_reason if toggle_data.disabled_from else None
+    }
+    
+    await db.meeting_rooms.update_one({"id": room_id}, {"$set": update_data})
+    
+    updated = await db.meeting_rooms.find_one({"id": room_id}, {"_id": 0})
+    
+    action = "disabled" if toggle_data.disabled_from else "enabled"
+    return {
+        "message": f"Room bookings {action} successfully",
+        "room": updated
+    }
+
+
+@router.get("/rooms/{room_id}/booking-status")
+async def get_room_booking_status(room_id: str, date: Optional[str] = None):
+    """
+    Check if a room is available for booking on a specific date.
+    Returns the room's disabled_from date and whether the given date is blocked.
+    """
+    room = await db.meeting_rooms.find_one({"id": room_id}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    disabled_from = room.get("disabled_from")
+    is_disabled = False
+    
+    if date and disabled_from:
+        is_disabled = date >= disabled_from
+    elif disabled_from and not date:
+        # If no date provided, check against today
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        is_disabled = today >= disabled_from
+    
+    return {
+        "room_id": room_id,
+        "room_name": room.get("display_name"),
+        "disabled_from": disabled_from,
+        "disabled_reason": room.get("disabled_reason"),
+        "is_disabled_for_date": is_disabled,
+        "checked_date": date
+    }
+
 # ==================== MEMBERS ====================
 
 @router.get("/members", response_model=List[Member])
@@ -450,6 +525,18 @@ async def check_availability(room_id: str, date: str):
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
     
+    # Check if room bookings are disabled from a certain date
+    disabled_from = room.get("disabled_from")
+    if disabled_from and date >= disabled_from:
+        return {
+            "room": room,
+            "date": date,
+            "slots": [],
+            "is_room_disabled": True,
+            "disabled_from": disabled_from,
+            "message": f"Bookings disabled for this room from {disabled_from}" + (f" - {room.get('disabled_reason')}" if room.get('disabled_reason') else "")
+        }
+    
     # Check if date is a Sunday
     date_obj = datetime.strptime(date, "%Y-%m-%d")
     if date_obj.weekday() == 6:  # Sunday
@@ -510,7 +597,8 @@ async def check_availability(room_id: str, date: str):
     return {
         "room": room,
         "date": date,
-        "slots": slots
+        "slots": slots,
+        "is_room_disabled": False
     }
 
 # Booking rules
@@ -542,6 +630,15 @@ async def create_booking(booking_data: BookingCreate, current_user: dict = Depen
     room = await db.meeting_rooms.find_one({"id": booking_data.room_id}, {"_id": 0})
     if not room:
         raise HTTPException(status_code=400, detail="Invalid room")
+    
+    # Check if room bookings are disabled for this date
+    disabled_from = room.get("disabled_from")
+    if disabled_from and booking_data.date >= disabled_from:
+        reason = room.get("disabled_reason", "")
+        msg = f"Bookings are disabled for this room from {disabled_from}"
+        if reason:
+            msg += f" ({reason})"
+        raise HTTPException(status_code=400, detail=msg)
     
     # Calculate duration in minutes
     start = datetime.strptime(booking_data.start_time, "%H:%M")

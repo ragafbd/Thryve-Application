@@ -549,6 +549,15 @@ async def create_member_booking(booking_data: MemberBookingCreate, current_membe
     if not room:
         raise HTTPException(status_code=400, detail="Invalid room")
     
+    # Check if room bookings are disabled for this date
+    disabled_from = room.get("disabled_from")
+    if disabled_from and booking_data.date >= disabled_from:
+        reason = room.get("disabled_reason", "")
+        msg = f"Bookings are disabled for this room from {disabled_from}"
+        if reason:
+            msg += f" ({reason})"
+        raise HTTPException(status_code=400, detail=msg)
+    
     # Get room type and credit cost
     room_type = room.get("room_type", "meeting_room")
     slot_duration = room.get("slot_duration", 30)  # 60 for CR, 30 for MR
@@ -744,6 +753,18 @@ async def check_room_availability_member(room_id: str, date: str):
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
     
+    # Check if room bookings are disabled from a certain date
+    disabled_from = room.get("disabled_from")
+    if disabled_from and date >= disabled_from:
+        return {
+            "room": room,
+            "date": date,
+            "slots": [],
+            "is_room_disabled": True,
+            "disabled_from": disabled_from,
+            "message": f"Bookings disabled for this room from {disabled_from}" + (f" - {room.get('disabled_reason')}" if room.get('disabled_reason') else "")
+        }
+    
     # Check if date is a Sunday
     date_obj = datetime.strptime(date, "%Y-%m-%d")
     if date_obj.weekday() == 6:
@@ -751,6 +772,7 @@ async def check_room_availability_member(room_id: str, date: str):
             "room": room,
             "date": date,
             "slots": [],
+            "is_room_disabled": False,
             "message": "Bookings not available on Sundays"
         }
     
@@ -761,6 +783,7 @@ async def check_room_availability_member(room_id: str, date: str):
             "room": room,
             "date": date,
             "slots": [],
+            "is_room_disabled": False,
             "message": f"Bookings not available on {holiday['name']}"
         }
     
@@ -795,4 +818,4 @@ async def check_room_availability_member(room_id: str, date: str):
         
         current_time += timedelta(minutes=slot_duration)
     
-    return {"room": room, "date": date, "slots": slots}
+    return {"room": room, "date": date, "slots": slots, "is_room_disabled": False}
