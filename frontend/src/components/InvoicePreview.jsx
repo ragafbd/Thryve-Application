@@ -166,8 +166,7 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
           <div className="text-sm space-y-1 px-2">
             <p className="font-semibold">{company.name}</p>
             <p className="text-slate-600">{company.address}</p>
-            <p><span className="text-slate-500">State Name:</span> {company.state || "Haryana"}</p>
-            <p><span className="text-slate-500">GSTIN:</span> <span className="font-numbers">{company.gstin}</span></p>
+            <p><span className="text-slate-500">State:</span> {company.state || "Haryana"} | <span className="text-slate-500">GSTIN:</span> <span className="font-numbers">{company.gstin}</span></p>
           </div>
         </div>
         
@@ -178,8 +177,7 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
             <div className="text-sm space-y-1 px-2">
               <p className="font-semibold">{invoice.client.company_name}</p>
               <p className="text-slate-600">{invoice.client.address}</p>
-              <p><span className="text-slate-500">State Name:</span> Haryana</p>
-              <p><span className="text-slate-500">GSTIN:</span> <span className="font-numbers">{invoice.client.gstin}</span></p>
+              <p><span className="text-slate-500">State:</span> Haryana | <span className="text-slate-500">GSTIN:</span> <span className="font-numbers">{invoice.client.gstin || '-'}</span></p>
             </div>
           ) : (
             <p className="text-sm text-slate-400 italic px-2">Select a client</p>
@@ -321,22 +319,20 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
           <h3 className="font-bold text-sm mb-2">Company's Bank Details</h3>
           <div className="text-sm space-y-1">
             <p><span className="text-slate-500">A/c Name:</span> {company.bank?.account_name || company.name}</p>
-            <p><span className="text-slate-500">Bank Name:</span> {company.bank?.name || "HDFC Bank"}</p>
-            <p><span className="text-slate-500">Current A/c No.:</span> <span className="font-numbers">{company.bank?.account_no || "50200115952448"}</span></p>
-            <p><span className="text-slate-500">Branch:</span> {company.bank?.branch || "Sector 16, Faridabad"}</p>
-            <p><span className="text-slate-500">IFSC:</span> <span className="font-numbers">{company.bank?.ifsc || "HDFC0000279"}</span></p>
+            <p><span className="text-slate-500">Bank:</span> {company.bank?.name || "HDFC Bank"} | <span className="text-slate-500">A/c No.:</span> <span className="font-numbers">{company.bank?.account_no || "50200115952448"}</span></p>
+            <p><span className="text-slate-500">Branch:</span> {company.bank?.branch || "Sector 16, Faridabad"} | <span className="text-slate-500">IFSC:</span> <span className="font-numbers">{company.bank?.ifsc || "HDFC0000279"}</span></p>
           </div>
         </div>
         
         {/* Signature */}
         <div className="p-4 text-right">
-          <p className="text-xs text-slate-400 mb-12">E. & O.E.</p>
-          <p className="font-semibold">for {company.name}</p>
+          <p className="text-xs text-slate-400 mb-8">E. & O.E.</p>
           <img 
             src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/x6h984ax_Untitled%20design.jpg" 
             alt="Signature" 
-            className="h-16 w-auto ml-auto my-2"
+            className="h-12 w-auto ml-auto my-1"
           />
+          <p className="font-semibold">for {company.name}</p>
           <p className="text-sm text-slate-500">Authorised Signatory</p>
         </div>
       </div>
