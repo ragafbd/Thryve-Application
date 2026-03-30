@@ -944,9 +944,23 @@ async def generate_invoice_pdf(invoice_id: str):
     
     for idx, item in enumerate(line_items, 1):
         amount = item.get('amount', item.get('quantity', 1) * item.get('rate', 0))
+        
+        # Build description with subscription text for monthly_rental
+        description = item.get('description', '')
+        service_type = item.get('service_type', '')
+        
+        if service_type == 'monthly_rental':
+            description_text = f"{description}<br/><font size='6' color='#64748b'>Workspace subscription</font>"
+        elif service_type == 'security_deposit':
+            description_text = f"{description}<br/><font size='6' color='#64748b'>No GST Applicable</font>"
+        elif item.get('is_prorated') and item.get('prorate_days'):
+            description_text = f"{description}<br/><font size='6' color='#d97706'>Prorated: {item.get('prorate_days')} of {item.get('prorate_total_days')} days</font>"
+        else:
+            description_text = description
+        
         table_data.append([
             str(idx),
-            item.get('description', ''),
+            Paragraph(description_text, styles['Normal']),
             item.get('hsn_sac', '997212') if item.get('is_taxable', True) else '',
             str(item.get('quantity', 1)),
             f"{item.get('rate', 0):,.2f}",

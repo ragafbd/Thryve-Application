@@ -313,7 +313,7 @@ export default function Dashboard() {
                   <tr key={invoice.id}>
                     <td className="font-mono text-sm text-[#2E375B]">
                       <Link 
-                        to={`/invoices/${invoice.id}`}
+                        to={`/admin/invoices/${invoice.id}`}
                         className="hover:underline"
                         data-testid={`invoice-link-${invoice.invoice_number}`}
                       >
