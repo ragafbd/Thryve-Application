@@ -206,7 +206,7 @@ export default function InvoiceView() {
     try {
       await axios.delete(`${API}/invoices/${id}`);
       toast.success("Invoice deleted successfully");
-      navigate("/invoices");
+      navigate("/admin/invoices");
     } catch (error) {
       toast.error("Failed to delete invoice");
     }
@@ -234,7 +234,7 @@ export default function InvoiceView() {
     return (
       <div className="text-center py-12">
         <p className="text-slate-500">Invoice not found</p>
-        <Link to="/invoices">
+        <Link to="/admin/invoices">
           <Button className="mt-4">Back to Invoices</Button>
         </Link>
       </div>
@@ -249,7 +249,7 @@ export default function InvoiceView() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/invoices")}
+            onClick={() => navigate("/admin/invoices")}
             className="hover:bg-slate-100"
             data-testid="back-btn"
           >

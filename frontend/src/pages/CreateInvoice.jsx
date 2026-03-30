@@ -438,7 +438,7 @@ export default function CreateInvoice() {
         notes: notes
       });
       toast.success("Invoice created successfully!");
-      navigate(`/invoices/${response.data.id}`);
+      navigate(`/admin/invoices/${response.data.id}`);
     } catch (error) {
       toast.error("Failed to create invoice");
     } finally {
@@ -841,7 +841,7 @@ export default function CreateInvoice() {
             <Button
               variant="outline"
               className="flex-1"
-              onClick={() => navigate("/invoices")}
+              onClick={() => navigate("/admin/invoices")}
             >
               Cancel
             </Button>

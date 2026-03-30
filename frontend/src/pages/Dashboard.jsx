@@ -275,7 +275,7 @@ export default function Dashboard() {
             <CardTitle className="text-lg font-semibold text-slate-900 font-[Manrope]">
               Recent Invoices
             </CardTitle>
-            <Link to="/invoices">
+            <Link to="/admin/invoices">
               <Button variant="ghost" className="text-[#2E375B] hover:text-[#232B47]">
                 View All
                 <ArrowRight className="w-4 h-4 ml-2" />
