@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FileText, Play, Download, CheckCircle, XCircle, AlertCircle, Calendar, Users, IndianRupee } from "lucide-react";
+import { FileText, Play, Download, CheckCircle, XCircle, AlertCircle, Calendar, Users, IndianRupee, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Table,
@@ -32,6 +33,11 @@ export default function AutoInvoice() {
   const [companies, setCompanies] = useState([]);
   const [resultDialogOpen, setResultDialogOpen] = useState(false);
   const [lastResult, setLastResult] = useState(null);
+  
+  // Delete confirmation dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null); // null for all, or run object for single
+  const [deleting, setDeleting] = useState(false);
   
   // Form state
   const [billingMonth, setBillingMonth] = useState(() => {
@@ -60,6 +66,41 @@ export default function AutoInvoice() {
       setCompanies(activeCompanies);
     } catch (error) {
       console.error("Failed to fetch companies");
+    }
+  };
+
+  // Open delete confirmation dialog
+  const openDeleteDialog = (run = null) => {
+    setDeleteTarget(run);
+    setDeleteDialogOpen(true);
+  };
+
+  // Handle delete
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const token = localStorage.getItem("token");
+      
+      if (deleteTarget) {
+        // Delete single run
+        await axios.delete(`${API}/auto-invoice/runs/${deleteTarget.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        toast.success(`Deleted ${formatMonth(deleteTarget.billing_month)} invoice run`);
+      } else {
+        // Delete all runs
+        await axios.delete(`${API}/auto-invoice/runs`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        toast.success("All auto-invoice history deleted");
+      }
+      
+      setDeleteDialogOpen(false);
+      fetchRuns(); // Refresh the list
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to delete");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -270,11 +311,23 @@ export default function AutoInvoice() {
 
       {/* Generation History */}
       <Card className="border border-[#2E375B]/10">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg font-semibold font-[Manrope] flex items-center gap-2 text-[#2E375B]">
             <Calendar className="w-5 h-5" />
             Generation History
           </CardTitle>
+          {runs.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-red-600 border-red-200 hover:bg-red-50"
+              onClick={() => openDeleteDialog(null)}
+              data-testid="delete-all-runs-btn"
+            >
+              <Trash2 className="w-4 h-4 mr-1" />
+              Clear All History
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -291,6 +344,7 @@ export default function AutoInvoice() {
                   <TableHead className="text-[#2E375B] text-center">Success</TableHead>
                   <TableHead className="text-[#2E375B] text-center">Failed</TableHead>
                   <TableHead className="text-[#2E375B] text-right">Amount</TableHead>
+                  <TableHead className="text-[#2E375B] text-center w-20">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -317,6 +371,17 @@ export default function AutoInvoice() {
                     </TableCell>
                     <TableCell className="text-right font-medium text-[#2E375B]">
                       ₹{run.total_amount?.toLocaleString('en-IN', {maximumFractionDigits: 0}) || 0}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
+                        onClick={() => openDeleteDialog(run)}
+                        data-testid={`delete-run-${run.id}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -428,6 +493,54 @@ export default function AutoInvoice() {
           <DialogFooter>
             <Button onClick={() => setResultDialogOpen(false)} className="bg-[#2E375B] hover:bg-[#232B47]">
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600 flex items-center gap-2">
+              <Trash2 className="w-5 h-5" />
+              {deleteTarget ? "Delete Invoice Run" : "Clear All History"}
+            </DialogTitle>
+            <DialogDescription>
+              {deleteTarget ? (
+                <>
+                  Are you sure you want to delete the invoice run for <strong>{formatMonth(deleteTarget.billing_month)}</strong>?
+                  This will also delete <strong>{deleteTarget.total_invoices}</strong> associated invoice(s).
+                </>
+              ) : (
+                <>
+                  Are you sure you want to delete <strong>all</strong> auto-invoice generation history?
+                  This will delete <strong>{runs.length}</strong> run(s) and all their associated invoices.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-red-700 text-sm">
+                <AlertCircle className="w-4 h-4 inline mr-1" />
+                This action cannot be undone. The invoices will be permanently deleted.
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleDelete} 
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700"
+              data-testid="confirm-delete-btn"
+            >
+              {deleting ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

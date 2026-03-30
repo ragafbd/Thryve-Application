@@ -847,6 +847,62 @@ async def get_auto_invoice_runs(current_user: dict = Depends(get_current_user)):
     return runs
 
 
+@router.delete("/runs/{run_id}")
+async def delete_auto_invoice_run(run_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete an auto-invoice generation run and optionally its associated invoices"""
+    check_permission(current_user, "all")
+    
+    # Find the run
+    run = await db.auto_invoice_runs.find_one({"id": run_id}, {"_id": 0})
+    if not run:
+        raise HTTPException(status_code=404, detail="Auto-invoice run not found")
+    
+    # Delete associated invoices if they exist
+    invoice_ids = run.get("invoice_ids", [])
+    deleted_invoices = 0
+    if invoice_ids:
+        result = await db.invoices.delete_many({"id": {"$in": invoice_ids}})
+        deleted_invoices = result.deleted_count
+    
+    # Delete the run record
+    await db.auto_invoice_runs.delete_one({"id": run_id})
+    
+    return {
+        "message": "Auto-invoice run deleted successfully",
+        "run_id": run_id,
+        "deleted_invoices": deleted_invoices
+    }
+
+
+@router.delete("/runs")
+async def delete_all_auto_invoice_runs(current_user: dict = Depends(get_current_user)):
+    """Delete all auto-invoice generation runs and their associated invoices"""
+    check_permission(current_user, "all")
+    
+    # Get all runs to find invoice IDs
+    runs = await db.auto_invoice_runs.find({}, {"_id": 0}).to_list(1000)
+    
+    all_invoice_ids = []
+    for run in runs:
+        all_invoice_ids.extend(run.get("invoice_ids", []))
+    
+    # Delete all associated invoices
+    deleted_invoices = 0
+    if all_invoice_ids:
+        result = await db.invoices.delete_many({"id": {"$in": all_invoice_ids}})
+        deleted_invoices = result.deleted_count
+    
+    # Delete all run records
+    result = await db.auto_invoice_runs.delete_many({})
+    deleted_runs = result.deleted_count
+    
+    return {
+        "message": "All auto-invoice runs deleted successfully",
+        "deleted_runs": deleted_runs,
+        "deleted_invoices": deleted_invoices
+    }
+
+
 @router.get("/invoice/{invoice_id}/pdf")
 async def download_auto_generated_pdf(invoice_id: str):
     """Download PDF for an auto-generated invoice"""
