@@ -783,16 +783,30 @@ async def generate_invoice_pdf(invoice_id: str):
     company = invoice.get('company', COMPANY_DETAILS)
     client = invoice.get('client', {})
     
-    # Try to load logo image
+    # Try to load logo image with proper aspect ratio
     logo_url = "https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/jqltfue2_Gemini_Generated_Image_xy33ixy33ixy33ix.png"
     logo_image = None
     try:
         import requests
         from reportlab.platypus import Image as RLImage
+        from PIL import Image as PILImage
+        
         response = requests.get(logo_url, timeout=5)
         if response.status_code == 200:
             img_buffer = BytesIO(response.content)
-            logo_image = RLImage(img_buffer, width=50, height=50)
+            
+            # Get actual image dimensions to maintain aspect ratio
+            pil_img = PILImage.open(img_buffer)
+            orig_width, orig_height = pil_img.size
+            
+            # Set desired width and calculate height to maintain aspect ratio
+            desired_width = 55
+            aspect_ratio = orig_height / orig_width
+            desired_height = desired_width * aspect_ratio
+            
+            # Reset buffer position for ReportLab
+            img_buffer.seek(0)
+            logo_image = RLImage(img_buffer, width=desired_width, height=desired_height)
     except Exception as e:
         print(f"Could not load logo: {e}")
     
