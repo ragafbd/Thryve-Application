@@ -209,7 +209,7 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
                   <td className="border border-slate-300 px-2 py-2">
                     <p className="font-medium">{item.description || SERVICE_TYPE_LABELS[item.service_type]}</p>
                     {item.service_type === 'monthly_rental' && (
-                      <p className="text-xs text-slate-500">Workspace subscription for {item.quantity} month{item.quantity > 1 ? 's' : ''}</p>
+                      <p className="text-xs text-slate-500">Workspace subscription</p>
                     )}
                     {item.service_type === 'security_deposit' && (
                       <p className="text-xs text-slate-500">No GST Applicable</p>
