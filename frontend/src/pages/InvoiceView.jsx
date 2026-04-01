@@ -171,20 +171,6 @@ export default function InvoiceView() {
     window.print();
   };
 
-  const handleDownloadPDF = () => {
-    // Use an iframe to trigger download without opening a new tab
-    const pdfUrl = `${API}/invoices/${id}/pdf`;
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = pdfUrl;
-    document.body.appendChild(iframe);
-    // Remove iframe after download starts
-    setTimeout(() => {
-      try { document.body.removeChild(iframe); } catch(e) {}
-    }, 5000);
-    toast.success("Downloading PDF...");
-  };
-
   const handleDelete = async () => {
     try {
       await axios.delete(`${API}/invoices/${id}`);
@@ -280,14 +266,14 @@ export default function InvoiceView() {
               Mark as Paid
             </Button>
           )}
-          <Button
-            onClick={handleDownloadPDF}
-            className="bg-[#FFA14A] hover:bg-[#E8923E] text-[#2E375B]"
+          <a
+            href={`${API}/invoices/${id}/pdf`}
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-[#FFA14A] hover:bg-[#E8923E] text-[#2E375B]"
             data-testid="download-pdf-btn"
           >
             <FileDown className="w-4 h-4 mr-2" />
             Download PDF
-          </Button>
+          </a>
           <Button
             variant="outline"
             onClick={handlePrint}
