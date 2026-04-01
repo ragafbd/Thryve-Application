@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import axios from "axios";
+import { saveAs } from "file-saver";
 import InvoicePreview from "@/components/InvoicePreview";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -167,8 +168,40 @@ export default function InvoiceView() {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    // Open window immediately to avoid popup blocker (must be synchronous with click)
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error("Popup blocked — please allow popups for this site, then try again");
+      return;
+    }
+    printWindow.document.write('<p>Loading invoice PDF...</p>');
+    try {
+      const response = await fetch(`${API}/invoices/${id}/pdf`);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      printWindow.location.href = blobUrl;
+      setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 1500);
+    } catch (error) {
+      printWindow.close();
+      toast.error("Failed to print invoice");
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      toast.info("Generating PDF...");
+      const response = await fetch(`${API}/invoices/${id}/pdf`);
+      const blob = await response.blob();
+      const invoiceNum = (invoice?.invoice_number || 'invoice').replace(/\//g, '-');
+      const clientName = (invoice?.client?.company_name || 'Client').replace(/\s+/g, '_');
+      saveAs(blob, `${invoiceNum}_${clientName}.pdf`);
+    } catch (error) {
+      toast.error("Failed to download PDF");
+    }
   };
 
   const handleDelete = async () => {
@@ -266,14 +299,14 @@ export default function InvoiceView() {
               Mark as Paid
             </Button>
           )}
-          <a
-            href={`${API}/invoices/${id}/pdf`}
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-[#FFA14A] hover:bg-[#E8923E] text-[#2E375B]"
+          <Button
+            onClick={handleDownloadPDF}
+            className="bg-[#FFA14A] hover:bg-[#E8923E] text-[#2E375B]"
             data-testid="download-pdf-btn"
           >
             <FileDown className="w-4 h-4 mr-2" />
             Download PDF
-          </a>
+          </Button>
           <Button
             variant="outline"
             onClick={handlePrint}
