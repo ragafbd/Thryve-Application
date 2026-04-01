@@ -60,27 +60,6 @@ let webpackConfig = {
   },
 };
 
-webpackConfig.devServer = (devServerConfig) => {
-  // Add health check endpoints if enabled
-  if (config.enableHealthCheck && setupHealthEndpoints && healthPluginInstance) {
-    const originalSetupMiddlewares = devServerConfig.setupMiddlewares;
-
-    devServerConfig.setupMiddlewares = (middlewares, devServer) => {
-      // Call original setup if exists
-      if (originalSetupMiddlewares) {
-        middlewares = originalSetupMiddlewares(middlewares, devServer);
-      }
-
-      // Setup health endpoints
-      setupHealthEndpoints(devServer, healthPluginInstance);
-
-      return middlewares;
-    };
-  }
-
-  return devServerConfig;
-};
-
 // Wrap with visual edits (automatically adds babel plugin, dev server, and overlay in dev mode)
 if (isDevServer) {
   try {
@@ -95,6 +74,28 @@ if (isDevServer) {
       throw err;
     }
   }
+}
+
+// Apply health check AFTER visual edits wrapper so it doesn't get overridden
+if (config.enableHealthCheck && setupHealthEndpoints && healthPluginInstance) {
+  const existingDevServer = webpackConfig.devServer;
+  webpackConfig.devServer = (devServerConfig) => {
+    // Apply any existing devServer config first (from visual edits or original)
+    if (typeof existingDevServer === 'function') {
+      devServerConfig = existingDevServer(devServerConfig);
+    }
+
+    const originalSetupMiddlewares = devServerConfig.setupMiddlewares;
+    devServerConfig.setupMiddlewares = (middlewares, devServer) => {
+      if (originalSetupMiddlewares) {
+        middlewares = originalSetupMiddlewares(middlewares, devServer);
+      }
+      setupHealthEndpoints(devServer, healthPluginInstance);
+      return middlewares;
+    };
+
+    return devServerConfig;
+  };
 }
 
 module.exports = webpackConfig;
