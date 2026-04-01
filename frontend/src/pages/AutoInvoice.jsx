@@ -79,7 +79,7 @@ export default function AutoInvoice() {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("thryve_token");
       
       if (deleteTarget) {
         // Delete single run
