@@ -172,14 +172,17 @@ export default function InvoiceView() {
   };
 
   const handleDownloadPDF = () => {
+    // Use an iframe to trigger download without opening a new tab
     const pdfUrl = `${API}/invoices/${id}/pdf`;
-    const a = document.createElement('a');
-    a.href = pdfUrl;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = pdfUrl;
+    document.body.appendChild(iframe);
+    // Remove iframe after download starts
+    setTimeout(() => {
+      try { document.body.removeChild(iframe); } catch(e) {}
+    }, 5000);
+    toast.success("Downloading PDF...");
   };
 
   const handleDelete = async () => {
