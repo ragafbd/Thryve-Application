@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Download, Printer, Trash2, CheckCircle, Clock, AlertTriangle, FileDown, Edit, X, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,6 @@ import {
 import { toast } from "sonner";
 import axios from "axios";
 import InvoicePreview from "@/components/InvoicePreview";
-import { useReactToPrint } from "react-to-print";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -55,7 +54,6 @@ const StatusBadge = ({ status }) => {
 export default function InvoiceView() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const printRef = useRef(null);
   
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -169,37 +167,13 @@ export default function InvoiceView() {
     }
   };
 
-  const handlePrint = useReactToPrint({
-    contentRef: printRef,
-    documentTitle: invoice ? `Invoice-${invoice.invoice_number}` : 'Invoice',
-    onAfterPrint: () => toast.success("Invoice printed/saved as PDF"),
-  });
+  const handlePrint = () => {
+    window.print();
+  };
 
-  const handleDownloadPDF = async () => {
-    try {
-      const response = await axios.get(`${API}/invoices/${id}/pdf`, {
-        responseType: 'blob'
-      });
-      
-      // Get filename from invoice number and client name
-      const invoiceNum = invoice.invoice_number.replace(/\//g, '-');
-      const clientName = invoice.client?.company_name?.replace(/\s+/g, '_').replace(/[\/\\]/g, '-') || 'Client';
-      const filename = `${invoiceNum}_${clientName}.pdf`;
-      
-      // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success(`Downloaded ${filename}`);
-    } catch (error) {
-      toast.error("Failed to download PDF");
-    }
+  const handleDownloadPDF = () => {
+    const pdfUrl = `${API}/invoices/${id}/pdf`;
+    window.open(pdfUrl, '_blank');
   };
 
   const handleDelete = async () => {
@@ -307,7 +281,7 @@ export default function InvoiceView() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => handlePrint()}
+            onClick={handlePrint}
             className="border-[#2E375B] text-[#2E375B] hover:bg-[#FFD4B0]"
             data-testid="print-invoice-btn"
           >
@@ -356,7 +330,6 @@ export default function InvoiceView() {
       {/* Invoice Preview */}
       <div className="flex justify-center">
         <div 
-          ref={printRef} 
           className="w-full max-w-4xl bg-white rounded-xl shadow-lg overflow-hidden print:shadow-none print:rounded-none"
         >
           <InvoicePreview invoice={invoice} isPreview={false} />

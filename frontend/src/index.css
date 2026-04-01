@@ -156,6 +156,17 @@ h1, h2, h3, h4, h5, h6 {
     body {
         background: white !important;
     }
+
+    /* Full width for invoice during print */
+    .app-container {
+        display: block !important;
+    }
+    .app-container > main,
+    .app-container > div > main {
+        margin-left: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
 }
 
 @layer base {

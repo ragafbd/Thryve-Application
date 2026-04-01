@@ -251,7 +251,7 @@ export default function Layout() {
       )}
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-[#2E375B] z-50 flex items-center px-4 gap-3">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-[#2E375B] z-50 flex items-center px-4 gap-3 no-print">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="text-white p-2 hover:bg-white/10 rounded-lg"
@@ -275,7 +275,7 @@ export default function Layout() {
       {/* Sidebar */}
       <aside 
         className={cn(
-          "fixed left-0 top-0 z-40 flex flex-col transition-transform duration-300 bg-[#2E375B] w-[220px]",
+          "fixed left-0 top-0 z-40 flex flex-col transition-transform duration-300 bg-[#2E375B] w-[220px] no-print",
           "lg:translate-x-0 lg:h-screen",
           "h-[calc(100vh-56px)] top-14 lg:top-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -453,7 +453,8 @@ export default function Layout() {
         className={cn(
           "min-h-screen bg-[#F8FAFC] p-4 lg:p-6",
           "pt-[70px] lg:pt-0", // Account for mobile header
-          "lg:ml-[220px]" // Sidebar width on desktop only
+          "lg:ml-[220px]", // Sidebar width on desktop only
+          "print:ml-0 print:p-0 print:pt-0 print:bg-white"
         )}
       >
         {/* Top Bar - Hidden on mobile (we have mobile header) */}
