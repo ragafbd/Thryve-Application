@@ -1,15 +1,22 @@
 """
-Test PDF Generation - WeasyPrint based PDF generation
+Test PDF Generation - fpdf2 based PDF generation
 Tests:
-1. PDF download endpoint returns valid PDF
-2. Backend starts without import errors (no ReportLab)
-3. Auto invoice PDF generation using WeasyPrint
+1. PDF download endpoint returns valid PDF with correct headers
+2. Backend starts without import errors (no WeasyPrint/ReportLab)
+3. PDF generator uses fpdf2 (pure Python, zero system deps)
+4. Frontend uses fetch+blob for download (not window.open)
+5. Frontend print handler opens PDF URL in new window
 """
 import pytest
 import requests
 import os
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
+
+# Test invoice IDs from test_credentials.md
+TEST_INVOICE_ID = "0174dd9e-4d94-4f53-a359-cca903a24217"  # Apex Legal Eagles
+FALLBACK_INVOICE_ID = "24eeb71a-5e22-4a42-99ee-5224e823520a"  # Last 2 Brain Cells
+
 
 class TestPDFGeneration:
     """PDF Generation endpoint tests"""
@@ -37,17 +44,21 @@ class TestPDFGeneration:
     
     def test_pdf_download_endpoint_returns_200(self):
         """Test PDF download endpoint returns HTTP 200"""
-        # Use the specific invoice ID from the test request
-        invoice_id = "24eeb71a-5e22-4a42-99ee-5224e823520a"
-        response = self.session.get(f"{BASE_URL}/api/invoices/{invoice_id}/pdf")
+        response = self.session.get(f"{BASE_URL}/api/invoices/{TEST_INVOICE_ID}/pdf")
+        
+        if response.status_code == 404:
+            # Try fallback invoice
+            response = self.session.get(f"{BASE_URL}/api/invoices/{FALLBACK_INVOICE_ID}/pdf")
         
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         print(f"✓ PDF endpoint returned HTTP 200")
     
     def test_pdf_download_content_type(self):
-        """Test PDF download returns correct content-type"""
-        invoice_id = "24eeb71a-5e22-4a42-99ee-5224e823520a"
-        response = self.session.get(f"{BASE_URL}/api/invoices/{invoice_id}/pdf")
+        """Test PDF download returns correct content-type: application/pdf"""
+        response = self.session.get(f"{BASE_URL}/api/invoices/{TEST_INVOICE_ID}/pdf")
+        
+        if response.status_code == 404:
+            response = self.session.get(f"{BASE_URL}/api/invoices/{FALLBACK_INVOICE_ID}/pdf")
         
         assert response.status_code == 200
         content_type = response.headers.get('Content-Type', '')
@@ -56,8 +67,10 @@ class TestPDFGeneration:
     
     def test_pdf_download_valid_pdf_header(self):
         """Test downloaded PDF has valid PDF header (%PDF)"""
-        invoice_id = "24eeb71a-5e22-4a42-99ee-5224e823520a"
-        response = self.session.get(f"{BASE_URL}/api/invoices/{invoice_id}/pdf")
+        response = self.session.get(f"{BASE_URL}/api/invoices/{TEST_INVOICE_ID}/pdf")
+        
+        if response.status_code == 404:
+            response = self.session.get(f"{BASE_URL}/api/invoices/{FALLBACK_INVOICE_ID}/pdf")
         
         assert response.status_code == 200
         # PDF files start with %PDF
@@ -65,10 +78,12 @@ class TestPDFGeneration:
         assert pdf_content[:4] == b'%PDF', f"PDF header invalid: {pdf_content[:10]}"
         print(f"✓ PDF has valid %PDF header")
     
-    def test_pdf_download_has_content_disposition(self):
-        """Test PDF download has Content-Disposition header for download"""
-        invoice_id = "24eeb71a-5e22-4a42-99ee-5224e823520a"
-        response = self.session.get(f"{BASE_URL}/api/invoices/{invoice_id}/pdf")
+    def test_pdf_download_has_content_disposition_attachment(self):
+        """Test PDF download has Content-Disposition: attachment header for auto-download"""
+        response = self.session.get(f"{BASE_URL}/api/invoices/{TEST_INVOICE_ID}/pdf")
+        
+        if response.status_code == 404:
+            response = self.session.get(f"{BASE_URL}/api/invoices/{FALLBACK_INVOICE_ID}/pdf")
         
         assert response.status_code == 200
         content_disposition = response.headers.get('Content-Disposition', '')
@@ -86,18 +101,20 @@ class TestPDFGeneration:
     
     def test_pdf_has_reasonable_size(self):
         """Test PDF has reasonable file size (not empty, not too small)"""
-        invoice_id = "24eeb71a-5e22-4a42-99ee-5224e823520a"
-        response = self.session.get(f"{BASE_URL}/api/invoices/{invoice_id}/pdf")
+        response = self.session.get(f"{BASE_URL}/api/invoices/{TEST_INVOICE_ID}/pdf")
+        
+        if response.status_code == 404:
+            response = self.session.get(f"{BASE_URL}/api/invoices/{FALLBACK_INVOICE_ID}/pdf")
         
         assert response.status_code == 200
         content_length = len(response.content)
-        # PDF should be at least 10KB for a proper invoice
+        # PDF should be at least 10KB for a proper invoice with fpdf2
         assert content_length > 10000, f"PDF too small: {content_length} bytes"
         print(f"✓ PDF size is reasonable: {content_length} bytes ({content_length/1024:.1f} KB)")
 
 
 class TestBackendImports:
-    """Test backend starts without import errors"""
+    """Test backend uses fpdf2 (not WeasyPrint/ReportLab)"""
     
     def test_server_imports_no_reportlab(self):
         """Verify server.py doesn't have ReportLab imports"""
@@ -108,82 +125,116 @@ class TestBackendImports:
         assert 'reportlab' not in content.lower(), "ReportLab import found in server.py"
         print("✓ No ReportLab imports in server.py")
     
-    def test_auto_invoice_imports_no_reportlab(self):
-        """Verify auto_invoice.py doesn't have ReportLab imports"""
-        auto_invoice_path = "/app/backend/routes/auto_invoice.py"
-        with open(auto_invoice_path, 'r') as f:
+    def test_server_imports_no_weasyprint(self):
+        """Verify server.py doesn't have WeasyPrint imports"""
+        server_path = "/app/backend/server.py"
+        with open(server_path, 'r') as f:
             content = f.read()
         
-        assert 'reportlab' not in content.lower(), "ReportLab import found in auto_invoice.py"
-        print("✓ No ReportLab imports in auto_invoice.py")
+        assert 'weasyprint' not in content.lower(), "WeasyPrint import found in server.py"
+        print("✓ No WeasyPrint imports in server.py")
     
-    def test_pdf_generator_uses_weasyprint(self):
-        """Verify pdf_generator.py uses WeasyPrint"""
+    def test_pdf_generator_uses_fpdf2(self):
+        """Verify pdf_generator.py uses fpdf2 (FPDF class)"""
         pdf_gen_path = "/app/backend/utils/pdf_generator.py"
         with open(pdf_gen_path, 'r') as f:
             content = f.read()
         
-        assert 'weasyprint' in content.lower(), "WeasyPrint not found in pdf_generator.py"
-        assert 'from weasyprint import' in content, "WeasyPrint import not found"
-        print("✓ pdf_generator.py uses WeasyPrint")
+        assert 'from fpdf import FPDF' in content, "fpdf2 import not found in pdf_generator.py"
+        assert 'weasyprint' not in content.lower(), "WeasyPrint found in pdf_generator.py - should use fpdf2"
+        print("✓ pdf_generator.py uses fpdf2 (FPDF)")
     
-    def test_auto_invoice_uses_pdf_generator(self):
-        """Verify auto_invoice.py uses generate_pdf_from_html from pdf_generator"""
-        auto_invoice_path = "/app/backend/routes/auto_invoice.py"
-        with open(auto_invoice_path, 'r') as f:
+    def test_pdf_generator_has_generate_pdf_from_html(self):
+        """Verify pdf_generator.py has generate_pdf_from_html function"""
+        pdf_gen_path = "/app/backend/utils/pdf_generator.py"
+        with open(pdf_gen_path, 'r') as f:
             content = f.read()
         
-        assert 'from utils.pdf_generator import generate_pdf_from_html' in content, \
-            "auto_invoice.py should import generate_pdf_from_html from utils.pdf_generator"
-        print("✓ auto_invoice.py imports generate_pdf_from_html from pdf_generator")
-    
-    def test_auto_invoice_generate_pdf_content_is_sync(self):
-        """Verify generate_pdf_content in auto_invoice.py calls WeasyPrint synchronously"""
-        auto_invoice_path = "/app/backend/routes/auto_invoice.py"
-        with open(auto_invoice_path, 'r') as f:
-            content = f.read()
-        
-        # Check that generate_pdf_content is defined and calls generate_pdf_from_html directly
-        assert 'def generate_pdf_content' in content, "generate_pdf_content function not found"
-        # Should NOT have asyncio.get_event_loop() or run_in_executor for PDF generation
-        # The function should be synchronous
-        assert 'asyncio.get_event_loop' not in content or 'generate_pdf_from_html' not in content.split('asyncio.get_event_loop')[0], \
-            "generate_pdf_content should not use asyncio event loop"
-        print("✓ generate_pdf_content calls WeasyPrint synchronously")
+        assert 'def generate_pdf_from_html' in content, "generate_pdf_from_html function not found"
+        print("✓ pdf_generator.py has generate_pdf_from_html function")
 
 
-class TestInvoiceViewFrontend:
-    """Test InvoiceView.jsx has correct react-to-print v3 implementation"""
+class TestFrontendPDFHandlers:
+    """Test InvoiceView.jsx has correct PDF download and print handlers"""
     
-    def test_print_button_onclick_syntax(self):
-        """Verify Print button uses onClick={() => handlePrint()} syntax for react-to-print v3"""
+    def test_download_uses_fetch_blob_approach(self):
+        """Verify handleDownloadPDF uses fetch+blob+createObjectURL (not window.open)"""
         invoice_view_path = "/app/frontend/src/pages/InvoiceView.jsx"
         with open(invoice_view_path, 'r') as f:
             content = f.read()
         
-        # Check for correct onClick syntax: onClick={() => handlePrint()}
-        assert 'onClick={() => handlePrint()}' in content, \
-            "Print button should use onClick={() => handlePrint()} for react-to-print v3"
-        print("✓ Print button uses correct onClick={() => handlePrint()} syntax")
+        # Check for fetch-based download approach
+        assert 'fetch(' in content, "fetch() not found - should use fetch for PDF download"
+        assert '.blob()' in content, ".blob() not found - should convert response to blob"
+        assert 'createObjectURL' in content, "createObjectURL not found - should create blob URL"
+        assert 'a.download' in content or 'download =' in content, "download attribute not set on anchor"
+        print("✓ handleDownloadPDF uses fetch+blob+createObjectURL approach")
     
-    def test_use_react_to_print_with_content_ref(self):
-        """Verify useReactToPrint is used with contentRef"""
+    def test_print_uses_window_open(self):
+        """Verify handlePrint opens PDF URL in new window for printing"""
         invoice_view_path = "/app/frontend/src/pages/InvoiceView.jsx"
         with open(invoice_view_path, 'r') as f:
             content = f.read()
         
-        assert 'useReactToPrint' in content, "useReactToPrint hook not found"
-        assert 'contentRef' in content, "contentRef not found in useReactToPrint"
-        print("✓ useReactToPrint is used with contentRef")
+        # Check for window.open approach for print
+        assert 'window.open' in content, "window.open not found - should open PDF in new window for print"
+        print("✓ handlePrint uses window.open approach")
     
-    def test_print_ref_attached_to_invoice_preview(self):
-        """Verify printRef is attached to the invoice preview container"""
+    def test_download_button_has_testid(self):
+        """Verify Download PDF button has data-testid attribute"""
         invoice_view_path = "/app/frontend/src/pages/InvoiceView.jsx"
         with open(invoice_view_path, 'r') as f:
             content = f.read()
         
-        assert 'ref={printRef}' in content, "printRef not attached to any element"
-        print("✓ printRef is attached to invoice preview container")
+        assert 'data-testid="download-pdf-btn"' in content, "Download PDF button missing data-testid"
+        print("✓ Download PDF button has data-testid")
+    
+    def test_print_button_has_testid(self):
+        """Verify Print button has data-testid attribute"""
+        invoice_view_path = "/app/frontend/src/pages/InvoiceView.jsx"
+        with open(invoice_view_path, 'r') as f:
+            content = f.read()
+        
+        assert 'data-testid="print-invoice-btn"' in content, "Print button missing data-testid"
+        print("✓ Print button has data-testid")
+
+
+class TestPDFContent:
+    """Test PDF content structure (basic validation)"""
+    
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup - get auth token"""
+        self.session = requests.Session()
+        self.session.headers.update({"Content-Type": "application/json"})
+        
+        login_response = self.session.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "admin@thryve.in",
+            "password": "password"
+        })
+        if login_response.status_code == 200:
+            token = login_response.json().get("access_token")
+            self.session.headers.update({"Authorization": f"Bearer {token}"})
+    
+    def test_pdf_is_valid_and_complete(self):
+        """Test PDF is valid and has proper structure (header, trailer, objects)"""
+        response = self.session.get(f"{BASE_URL}/api/invoices/{TEST_INVOICE_ID}/pdf")
+        
+        if response.status_code == 404:
+            response = self.session.get(f"{BASE_URL}/api/invoices/{FALLBACK_INVOICE_ID}/pdf")
+        
+        assert response.status_code == 200
+        pdf_content = response.content
+        
+        # Check PDF structure markers
+        assert pdf_content[:4] == b'%PDF', "PDF should start with %PDF header"
+        assert b'%%EOF' in pdf_content[-100:], "PDF should end with %%EOF marker"
+        assert b'/Type /Page' in pdf_content, "PDF should contain page objects"
+        
+        # Check PDF has reasonable size (fpdf2 generates ~700KB+ for invoice with images)
+        assert len(pdf_content) > 50000, f"PDF too small: {len(pdf_content)} bytes"
+        
+        print(f"✓ PDF is valid and complete ({len(pdf_content)/1024:.1f} KB)")
 
 
 if __name__ == "__main__":

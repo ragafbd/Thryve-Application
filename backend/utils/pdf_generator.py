@@ -1,23 +1,20 @@
 """
 PDF Generator for WYSIWYG invoice PDFs.
-Uses fpdf2 (pure Python, no system dependencies) for reliable production deployment.
+Uses fpdf2 (pure Python, zero system dependencies) for production deployment.
+Layout matches InvoicePreview.jsx exactly.
 """
 
-from io import BytesIO
-from fpdf import FPDF
 import urllib.request
 import tempfile
 import os
+from fpdf import FPDF
 
-# Company details for invoice
 COMPANY_DETAILS = {
     "name": "Thryve Coworking",
     "address": "18/1, Plot no. 3, Azad Colony, Mathura Road, Sector 15 A, Faridabad, Haryana 121007",
     "state": "Haryana",
     "gstin": "06AAYFT8213A1Z2",
     "pan": "AAYFT8213A",
-    "phone": "+91 9876543210",
-    "email": "info@thryve.in",
     "bank": {
         "name": "HDFC Bank",
         "account_name": "Thryve Coworking",
@@ -30,16 +27,13 @@ COMPANY_DETAILS = {
 LOGO_URL = "https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/jqltfue2_Gemini_Generated_Image_xy33ixy33ixy33ix.png"
 SIGNATURE_URL = "https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/x6h984ax_Untitled%20design.jpg"
 
-# Cache downloaded images
 _image_cache = {}
 
-
 def _download_image(url):
-    """Download image to temp file and cache it"""
     if url in _image_cache and os.path.exists(_image_cache[url]):
         return _image_cache[url]
     try:
-        suffix = ".png" if url.endswith(".png") else ".jpg"
+        suffix = ".png" if ".png" in url else ".jpg"
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
         urllib.request.urlretrieve(url, tmp.name)
         _image_cache[url] = tmp.name
@@ -49,167 +43,175 @@ def _download_image(url):
 
 
 def format_date(date_str):
-    """Format date string to display format"""
     if not date_str:
         return "-"
     try:
         from datetime import datetime
-        date_obj = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
-        day = date_obj.day
-        months = ["January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"]
-        
-        def get_ordinal(n):
-            if 3 < n < 21:
-                return 'th'
-            remainder = n % 10
-            if remainder == 1:
-                return 'st'
-            elif remainder == 2:
-                return 'nd'
-            elif remainder == 3:
-                return 'rd'
-            return 'th'
-        
-        return f"{months[date_obj.month - 1]} {day}{get_ordinal(day)}, {date_obj.year}"
+        d = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        months = ["January","February","March","April","May","June",
+                   "July","August","September","October","November","December"]
+        day = d.day
+        s = 'th' if 4 <= day <= 20 else {1:'st',2:'nd',3:'rd'}.get(day%10,'th')
+        return f"{months[d.month-1]} {day}{s}, {d.year}"
     except Exception:
         return date_str
 
 
 def number_to_words(num):
-    """Convert number to words for invoice amount"""
-    ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
-            'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
-            'Seventeen', 'Eighteen', 'Nineteen']
-    tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety']
-    
+    ones = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine',
+            'Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen',
+            'Seventeen','Eighteen','Nineteen']
+    tens = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety']
     if num == 0:
-        return 'Zero Rupees Only'
-    
-    def convert_chunk(n):
-        if n < 20:
-            return ones[n]
-        elif n < 100:
-            return tens[n // 10] + (' ' + ones[n % 10] if n % 10 else '')
-        else:
-            return ones[n // 100] + ' Hundred' + (' ' + convert_chunk(n % 100) if n % 100 else '')
-    
-    if num >= 10000000:
-        return convert_chunk(num // 10000000) + ' Crore ' + number_to_words(num % 10000000).replace(' Only', '') + ' Only'
-    elif num >= 100000:
-        return convert_chunk(num // 100000) + ' Lakh ' + number_to_words(num % 100000).replace(' Only', '') + ' Only'
-    elif num >= 1000:
-        return convert_chunk(num // 1000) + ' Thousand ' + number_to_words(num % 1000).replace(' Only', '') + ' Only'
+        return 'Rupees Zero Only'
+    def chunk(n):
+        if n < 20: return ones[n]
+        if n < 100: return tens[n//10] + (' '+ones[n%10] if n%10 else '')
+        return ones[n//100] + ' Hundred' + (' '+chunk(n%100) if n%100 else '')
+    def convert(n):
+        if n >= 10000000: return chunk(n//10000000)+' Crore '+convert(n%10000000)
+        if n >= 100000: return chunk(n//100000)+' Lakh '+convert(n%100000)
+        if n >= 1000: return chunk(n//1000)+' Thousand '+convert(n%1000)
+        return chunk(n)
+    return 'Rupees ' + convert(int(num)).strip() + ' Only'
+
+
+def fmt_currency(amount):
+    """Format as Rs. X,XX,XXX.XX (Indian numbering)"""
+    if amount is None:
+        return "Rs. 0.00"
+    n = float(amount)
+    sign = "-" if n < 0 else ""
+    n = abs(n)
+    integer_part = int(n)
+    decimal_part = f"{n - integer_part:.2f}"[1:]  # .XX
+    s = str(integer_part)
+    if len(s) > 3:
+        last3 = s[-3:]
+        rest = s[:-3]
+        groups = []
+        while rest:
+            groups.insert(0, rest[-2:])
+            rest = rest[:-2]
+        result = ','.join(groups) + ',' + last3
     else:
-        return convert_chunk(num) + ' Rupees Only'
+        result = s
+    return f"Rs. {sign}{result}{decimal_part}"
 
 
-class InvoicePDF(FPDF):
-    """Custom FPDF class for invoice generation"""
-    
-    # Color constants
-    DARK_BLUE = (46, 55, 91)       # #2E375B
-    SLATE_800 = (30, 41, 59)       # #1e293b
-    SLATE_500 = (100, 116, 139)    # #64748b
-    SLATE_400 = (148, 163, 184)    # #94a3b8
-    SLATE_200 = (203, 213, 225)    # #cbd5e1
-    SLATE_100 = (241, 245, 249)    # #f1f5f9
-    ORANGE = (255, 161, 74)        # #FFA14A
-    AMBER = (217, 119, 6)          # #d97706
-    WHITE = (255, 255, 255)
-    
-    def __init__(self):
-        super().__init__(orientation='P', unit='mm', format='A4')
-        self.set_auto_page_break(auto=True, margin=12)
-        self.add_page()
-        self.set_margins(12, 12, 12)
-        self.set_x(12)
-        self.set_y(12)
+# Color tuples
+C_DARK_BLUE = (46, 55, 91)
+C_SLATE_800 = (30, 41, 59)
+C_SLATE_600 = (71, 85, 105)
+C_SLATE_500 = (100, 116, 139)
+C_SLATE_400 = (148, 163, 184)
+C_SLATE_300 = (203, 213, 225)
+C_SLATE_200 = (226, 232, 240)
+C_SLATE_100 = (241, 245, 249)
+C_SLATE_50 = (248, 250, 252)
+C_ORANGE = (255, 161, 74)
+C_AMBER = (217, 119, 6)
+C_WHITE = (255, 255, 255)
+
+# A4 dimensions
+PW = 210  # page width mm
+PH = 297
+M = 15    # margin mm
+CW = PW - 2*M  # content width
 
 
 def generate_pdf_from_html(invoice: dict) -> bytes:
-    """Generate PDF from invoice data using fpdf2"""
-    
+    """Generate a WYSIWYG PDF matching InvoicePreview.jsx"""
+
     company = invoice.get('company', COMPANY_DETAILS)
     client = invoice.get('client', {})
-    line_items = invoice.get('line_items', [])
-    
+    items = invoice.get('line_items', [])
     subtotal = invoice.get('subtotal', 0)
-    total_cgst = invoice.get('total_cgst', 0)
-    total_sgst = invoice.get('total_sgst', 0)
+    cgst = invoice.get('total_cgst', 0)
+    sgst = invoice.get('total_sgst', 0)
     round_off = invoice.get('round_off_adjustment', 0)
     grand_total = invoice.get('grand_total', 0)
-    
-    pdf = InvoicePDF()
-    page_w = 210 - 24  # A4 width minus margins
-    
-    # === HEADER: Logo + TAX INVOICE ===
-    y_start = pdf.get_y()
-    logo_path = _download_image(LOGO_URL)
-    if logo_path:
+
+    pdf = FPDF(orientation='P', unit='mm', format='A4')
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_margins(M, M, M)
+
+    y = M
+
+    # ────────────────────────────────────────────
+    # HEADER: Logo + TAX INVOICE
+    # ────────────────────────────────────────────
+    logo = _download_image(LOGO_URL)
+    if logo:
         try:
-            pdf.image(logo_path, x=12, y=y_start, h=14)
+            pdf.image(logo, x=M, y=y, h=18)
         except Exception:
             pass
-    
-    # TAX INVOICE box (right side)
-    box_w = 38
-    box_h = 9
-    box_x = 210 - 12 - box_w
-    pdf.set_xy(box_x, y_start + 2)
-    pdf.set_draw_color(*InvoicePDF.SLATE_800)
+
+    # TAX INVOICE box
+    pdf.set_font("Helvetica", "B", 16)
+    tw = pdf.get_string_width("TAX INVOICE") + 10
+    th = 10
+    tx = PW - M - tw
+    pdf.set_draw_color(*C_SLATE_800)
     pdf.set_line_width(0.6)
-    pdf.rect(box_x, y_start + 2, box_w, box_h)
-    pdf.set_font("Helvetica", "B", 11)
-    pdf.set_text_color(*InvoicePDF.SLATE_800)
-    pdf.cell(box_w, box_h, "TAX INVOICE", align="C")
-    
-    pdf.set_y(y_start + 18)
-    
-    # === INVOICE INFO ROW ===
-    y_info = pdf.get_y()
-    pdf.set_font("Helvetica", "", 9)
-    pdf.set_text_color(*InvoicePDF.SLATE_800)
-    
-    # Left: Invoice No & Date
-    pdf.set_xy(12, y_info)
-    pdf.set_font("Helvetica", "B", 9)
-    pdf.cell(20, 5, "Invoice No:", ln=0)
-    pdf.set_font("Helvetica", "", 9)
-    pdf.cell(60, 5, f" {invoice.get('invoice_number', '')}", ln=1)
-    pdf.set_font("Helvetica", "B", 9)
-    pdf.cell(23, 5, "Invoice Date:", ln=0)
-    pdf.set_font("Helvetica", "", 9)
-    pdf.cell(60, 5, f" {format_date(invoice.get('invoice_date', ''))}", ln=1)
-    
-    # Right: Due date orange box
-    due_box_w = 52
-    due_box_h = 14
-    due_box_x = 210 - 12 - due_box_w
-    pdf.set_fill_color(*InvoicePDF.ORANGE)
-    pdf.rect(due_box_x, y_info, due_box_w, due_box_h, style="F")
-    
-    pdf.set_xy(due_box_x, y_info + 1)
-    pdf.set_font("Helvetica", "B", 8)
-    pdf.set_text_color(*InvoicePDF.DARK_BLUE)
-    pdf.cell(due_box_w, 5, "PAYMENT DUE BY", align="C", ln=1)
-    pdf.set_x(due_box_x)
+    pdf.rect(tx, y + 4, tw, th)
+    pdf.set_xy(tx, y + 4)
+    pdf.set_text_color(*C_SLATE_800)
+    pdf.cell(tw, th, "TAX INVOICE", align="C")
+
+    y += 22
+
+    # ────────────────────────────────────────────
+    # INVOICE INFO: Number, Date | Due Date Box
+    # ────────────────────────────────────────────
+    pdf.set_xy(M, y)
     pdf.set_font("Helvetica", "B", 10)
-    pdf.cell(due_box_w, 5, format_date(invoice.get('due_date', '')), align="C")
-    
-    pdf.set_y(y_info + due_box_h + 4)
-    
-    # === SEPARATOR ===
-    pdf.set_draw_color(*InvoicePDF.SLATE_800)
+    pdf.set_text_color(*C_SLATE_800)
+    pdf.cell(22, 5, "Invoice No: ", ln=0)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.cell(80, 5, invoice.get('invoice_number', ''), ln=1)
+
+    pdf.set_x(M)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.cell(26, 5, "Invoice Date: ", ln=0)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.cell(80, 5, format_date(invoice.get('invoice_date', '')), ln=1)
+
+    # Due date orange box
+    if invoice.get('due_date'):
+        bw, bh = 50, 16
+        bx = PW - M - bw
+        by = y
+        pdf.set_fill_color(*C_ORANGE)
+        # Rounded rectangle
+        pdf.set_draw_color(*C_ORANGE)
+        r = 2.5
+        pdf.rect(bx, by, bw, bh, style='F')
+
+        pdf.set_xy(bx, by + 2)
+        pdf.set_font("Helvetica", "B", 7)
+        pdf.set_text_color(*C_DARK_BLUE)
+        pdf.cell(bw, 4, "PAYMENT DUE BY", align="C", ln=1)
+        pdf.set_x(bx)
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.cell(bw, 7, format_date(invoice.get('due_date', '')), align="C")
+
+    y += 16
+
+    # Separator line (matching border-b-2 border-slate-800)
+    pdf.set_draw_color(*C_SLATE_800)
     pdf.set_line_width(0.5)
-    sep_y = pdf.get_y()
-    pdf.line(12, sep_y, 198, sep_y)
-    pdf.set_y(sep_y + 3)
-    
-    # === ISSUED BY / BILL TO ===
-    y_parties = pdf.get_y()
-    half_w = page_w / 2
-    
+    pdf.line(M, y, PW - M, y)
+    y += 2
+
+    # ────────────────────────────────────────────
+    # ISSUED BY / BILL TO (two-column)
+    # ────────────────────────────────────────────
+    half = CW / 2
+    section_h = 32
+
     for i, (label, data) in enumerate([
         ("Issued By", {
             "name": company.get('name', ''),
@@ -224,265 +226,283 @@ def generate_pdf_from_html(invoice: dict) -> bytes:
             "gstin": client.get('gstin', '-')
         })
     ]):
-        x_start = 12 + i * half_w
-        
-        # Header background
-        pdf.set_fill_color(*InvoicePDF.SLATE_100)
-        pdf.set_xy(x_start, y_parties)
-        pdf.cell(half_w - (2 if i == 0 else 0), 5.5, "", fill=True)
-        pdf.set_xy(x_start + 2, y_parties + 0.5)
-        pdf.set_font("Helvetica", "B", 8)
-        pdf.set_text_color(*InvoicePDF.SLATE_800)
-        pdf.cell(half_w - 4, 4.5, label)
-        
-        # Content
-        content_y = y_parties + 7
-        pdf.set_xy(x_start + 2, content_y)
+        x0 = M + i * half
+
+        # Gray header
+        pdf.set_fill_color(*C_SLATE_100)
+        pdf.set_xy(x0, y)
         pdf.set_font("Helvetica", "B", 9)
-        pdf.set_text_color(*InvoicePDF.SLATE_800)
-        pdf.cell(half_w - 4, 4.5, data["name"], ln=1)
-        
-        pdf.set_x(x_start + 2)
-        pdf.set_font("Helvetica", "", 8)
-        pdf.set_text_color(*InvoicePDF.SLATE_500)
-        pdf.multi_cell(half_w - 4, 3.5, data["address"])
-        
-        pdf.set_x(x_start + 2)
-        pdf.set_text_color(*InvoicePDF.SLATE_500)
-        pdf.set_font("Helvetica", "", 8)
-        pdf.cell(0, 4, f"State: ", ln=0)
-        pdf.set_text_color(*InvoicePDF.SLATE_800)
-        pdf.cell(0, 4, f"{data['state']}", ln=0)
-        pdf.set_text_color(*InvoicePDF.SLATE_500)
-        pdf.cell(0, 4, f" | GSTIN: ", ln=0)
-        pdf.set_font("Courier", "", 8)
-        pdf.set_text_color(*InvoicePDF.SLATE_800)
-        # Compute remaining space — just print on same line
-        gstin_text = data['gstin']
-        pdf.set_xy(x_start + 2, pdf.get_y())
-        pdf.set_font("Helvetica", "", 8)
-        pdf.set_text_color(*InvoicePDF.SLATE_500)
-        state_gstin = f"State: {data['state']} | GSTIN: {gstin_text}"
-        pdf.cell(half_w - 4, 4, state_gstin)
-    
-    # Vertical separator between parties
-    party_bottom = y_parties + 30
-    pdf.set_draw_color(*InvoicePDF.SLATE_200)
+        pdf.set_text_color(*C_SLATE_800)
+        pdf.cell(half, 6, "  " + label, fill=True, ln=0)
+
+        # Company/Client name
+        pdf.set_xy(x0 + 3, y + 8)
+        pdf.set_font("Helvetica", "B", 10)
+        pdf.set_text_color(*C_SLATE_800)
+        pdf.cell(half - 6, 5, data['name'])
+
+        # Address
+        pdf.set_xy(x0 + 3, y + 13)
+        pdf.set_font("Helvetica", "", 9)
+        pdf.set_text_color(*C_SLATE_600)
+        # Multi-line address
+        pdf.multi_cell(half - 6, 4, data['address'])
+
+        # State | GSTIN
+        addr_lines = len(data['address']) // 45 + 1
+        gstin_y = y + 13 + addr_lines * 4 + 1
+        pdf.set_xy(x0 + 3, gstin_y)
+        pdf.set_font("Helvetica", "", 9)
+        pdf.set_text_color(*C_SLATE_500)
+        pdf.cell(0, 4, f"State: {data['state']} | GSTIN: {data['gstin']}")
+
+    # Vertical divider between columns
+    pdf.set_draw_color(*C_SLATE_300)
     pdf.set_line_width(0.2)
-    pdf.line(12 + half_w, y_parties, 12 + half_w, party_bottom)
-    # Bottom separator
-    pdf.line(12, party_bottom, 198, party_bottom)
-    
-    pdf.set_y(party_bottom + 3)
-    
-    # === ITEMS TABLE ===
-    col_widths = [10, page_w - 10 - 15 - 12 - 20 - 12 - 24, 15, 12, 20, 12, 24]
-    headers = ["S.No.", "Particulars", "HSN/SAC", "Qty", "Rate", "Per", "Amount"]
+    pdf.line(M + half, y, M + half, y + section_h)
+
+    # Bottom border
+    pdf.line(M, y + section_h, PW - M, y + section_h)
+    y += section_h + 2
+
+    # ────────────────────────────────────────────
+    # ITEMS TABLE
+    # ────────────────────────────────────────────
+    # Column widths matching web: S.No(10), Particulars(flex), HSN(17), Qty(14), Rate(22), Per(14), Amount(25)
+    c = [10, CW - 10 - 17 - 14 - 22 - 14 - 25, 17, 14, 22, 14, 25]  # total = CW
+    headers = ["S.No.", "Particulars", "HSN/SAC", "Qty", "Rate", "Per", "Amount (Rs.)"]
     aligns = ["C", "L", "C", "C", "R", "C", "R"]
-    
-    y_table = pdf.get_y()
-    
-    # Table header
-    pdf.set_fill_color(*InvoicePDF.SLATE_100)
-    pdf.set_draw_color(*InvoicePDF.SLATE_200)
+
+    rh = 7  # row height
+
+    # Header row
+    pdf.set_fill_color(*C_SLATE_100)
+    pdf.set_draw_color(*C_SLATE_300)
     pdf.set_line_width(0.2)
-    pdf.set_font("Helvetica", "B", 8)
-    pdf.set_text_color(*InvoicePDF.SLATE_800)
-    
-    x = 12
-    for j, (w, h_text, align) in enumerate(zip(col_widths, headers, aligns)):
-        pdf.set_xy(x, y_table)
-        pdf.cell(w, 6, h_text, border=1, align=align, fill=True)
-        x += w
-    
-    pdf.set_y(y_table + 6)
-    
-    # Table rows
-    for idx, item in enumerate(line_items, 1):
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_text_color(*C_SLATE_800)
+
+    x = M
+    for j in range(7):
+        pdf.set_xy(x, y)
+        pdf.cell(c[j], rh, headers[j], border=1, align=aligns[j], fill=True)
+        x += c[j]
+    y += rh
+
+    # Data rows
+    for idx, item in enumerate(items, 1):
         amount = item.get('amount', item.get('quantity', 1) * item.get('rate', 0))
-        service_type = item.get('service_type', '')
-        
-        # Calculate row height based on description length
+        stype = item.get('service_type', '')
         desc = item.get('description', '')
-        sub_desc = ""
-        if service_type == 'monthly_rental':
-            sub_desc = "Workspace subscription"
-        elif service_type == 'security_deposit':
-            sub_desc = "No GST Applicable"
+        sub = ""
+        sub_color = C_SLATE_500
+        if stype == 'monthly_rental':
+            sub = "Workspace subscription"
+        elif stype == 'security_deposit':
+            sub = "No GST Applicable"
         elif item.get('is_prorated') and item.get('prorate_days'):
-            sub_desc = f"Prorated: {item.get('prorate_days')} of {item.get('prorate_total_days')} days"
-        
-        row_h = 7 if not sub_desc else 10
-        y_row = pdf.get_y()
-        
-        row_data = [
+            sub = f"Prorated: {item['prorate_days']} of {item.get('prorate_total_days',30)} days"
+            sub_color = C_AMBER
+
+        drh = 10 if sub else rh  # taller row when sub-description exists
+
+        vals = [
             str(idx),
-            "",  # handled separately
-            item.get('hsn_sac', '997212') if item.get('is_taxable', True) else "",
+            None,  # special handling
+            item.get('hsn_sac', '997212') if item.get('is_taxable', True) else '',
             str(item.get('quantity', 1)),
-            f"Rs. {item.get('rate', 0):,.2f}",
+            fmt_currency(item.get('rate', 0)),
             item.get('unit', 'Month'),
-            f"Rs. {amount:,.2f}"
+            fmt_currency(amount)
         ]
-        
-        x = 12
-        pdf.set_font("Helvetica", "", 8)
-        pdf.set_text_color(*InvoicePDF.SLATE_800)
-        
-        for j, (w, val, align) in enumerate(zip(col_widths, row_data, aligns)):
-            pdf.set_xy(x, y_row)
+
+        x = M
+        for j in range(7):
+            pdf.set_xy(x, y)
             if j == 1:
-                # Description column: multi-line
-                pdf.rect(x, y_row, w, row_h)
-                pdf.set_xy(x + 1, y_row + 1)
-                pdf.set_font("Helvetica", "B", 8)
-                pdf.cell(w - 2, 3.5, desc[:60], ln=1)
-                if sub_desc:
-                    pdf.set_x(x + 1)
-                    if "Prorated" in sub_desc:
-                        pdf.set_text_color(*InvoicePDF.AMBER)
-                    else:
-                        pdf.set_text_color(*InvoicePDF.SLATE_500)
+                # Particulars column with sub-description
+                pdf.rect(x, y, c[j], drh)
+                pdf.set_xy(x + 1.5, y + 1)
+                pdf.set_font("Helvetica", "B", 9)
+                pdf.set_text_color(*C_SLATE_800)
+                pdf.cell(c[j] - 3, 4, desc[:55])
+                if sub:
+                    pdf.set_xy(x + 1.5, y + 5.5)
                     pdf.set_font("Helvetica", "", 7)
-                    pdf.cell(w - 2, 3, sub_desc)
-                    pdf.set_text_color(*InvoicePDF.SLATE_800)
+                    pdf.set_text_color(*sub_color)
+                    pdf.cell(c[j] - 3, 3.5, sub)
             else:
-                font_name = "Courier" if j in [4, 6] else "Helvetica"
-                pdf.set_font(font_name, "", 8)
-                pdf.cell(w, row_h, val, border=1, align=align)
-            x += w
-        
-        pdf.set_y(y_row + row_h)
-    
-    pdf.set_y(pdf.get_y() + 3)
-    
-    # === TOTALS TABLE (right-aligned) ===
-    totals_w = 60
-    totals_x = 210 - 12 - totals_w
-    col1_w = totals_w * 0.55
-    col2_w = totals_w * 0.45
-    
-    y_totals = pdf.get_y()
-    pdf.set_draw_color(*InvoicePDF.SLATE_200)
-    
-    totals_rows = [
-        ("Sub Total", f"Rs. {subtotal:,.2f}", False),
-        ("CGST (9%)", f"Rs. {total_cgst:,.2f}", False),
-        ("SGST (9%)", f"Rs. {total_sgst:,.2f}", False),
+                pdf.set_font("Helvetica", "", 9)
+                pdf.set_text_color(*C_SLATE_800)
+                pdf.cell(c[j], drh, vals[j], border=1, align=aligns[j])
+            x += c[j]
+        y += drh
+
+    # Empty rows for visual consistency (like web preview shows up to 3 minimum)
+    empty_needed = max(0, 3 - len(items))
+    for _ in range(empty_needed):
+        x = M
+        pdf.set_font("Helvetica", "", 9)
+        for j in range(7):
+            pdf.set_xy(x, y)
+            pdf.cell(c[j], rh, "", border=1)
+            x += c[j]
+        y += rh
+
+    # ────────────────────────────────────────────
+    # TOTALS TABLE (right-aligned, matching web w-80 = ~70mm)
+    # ────────────────────────────────────────────
+    tw_total = 70
+    tx_start = PW - M - tw_total
+    c1 = tw_total * 0.57
+    c2 = tw_total * 0.43
+    trh = 6
+
+    rows = [
+        ("Sub Total", fmt_currency(subtotal), False, True),
+        ("CGST (9%) on Plan fee", fmt_currency(cgst), False, False),
+        ("SGST (9%) on Plan fee", fmt_currency(sgst), False, False),
     ]
-    
-    if round_off != 0:
-        round_off_str = f"+Rs. {round_off:,.2f}" if round_off >= 0 else f"-Rs. {abs(round_off):,.2f}"
-        totals_rows.append(("Round-Off", round_off_str, False))
-    
-    totals_rows.append(("Total Amount", f"Rs. {int(grand_total):,}", True))
-    
-    for label, value, is_total in totals_rows:
+    if round_off is not None:
+        ro_str = fmt_currency(round_off) if round_off >= 0 else fmt_currency(round_off)
+        if round_off > 0:
+            ro_str = "+" + fmt_currency(round_off)
+        rows.append(("Round-Off Adjustment", ro_str, False, False))
+    rows.append(("Total Amount", f"Rs. {int(grand_total):,}", True, False))
+
+    for label, value, is_total, is_sub in rows:
         if is_total:
-            pdf.set_fill_color(*InvoicePDF.DARK_BLUE)
-            pdf.set_text_color(*InvoicePDF.WHITE)
+            pdf.set_fill_color(*C_DARK_BLUE)
+            pdf.set_text_color(*C_WHITE)
+            pdf.set_font("Helvetica", "B", 10)
+            h = 7
+        elif is_sub:
+            pdf.set_fill_color(*C_SLATE_50)
+            pdf.set_text_color(*C_SLATE_800)
             pdf.set_font("Helvetica", "B", 9)
+            h = trh
         else:
-            pdf.set_fill_color(*InvoicePDF.WHITE)
-            pdf.set_text_color(*InvoicePDF.SLATE_800)
-            pdf.set_font("Helvetica", "", 8)
-        
-        pdf.set_xy(totals_x, y_totals)
-        pdf.cell(col1_w, 6, label, border=1, fill=is_total)
-        pdf.set_font("Courier" if not is_total else "Helvetica", "B" if is_total else "", 8 if not is_total else 9)
-        pdf.cell(col2_w, 6, value, border=1, align="R", fill=is_total)
-        y_totals += 6
-    
-    pdf.set_text_color(*InvoicePDF.SLATE_800)
-    pdf.set_y(y_totals + 3)
-    
-    # === AMOUNT IN WORDS ===
-    y_words = pdf.get_y()
-    pdf.set_fill_color(*InvoicePDF.SLATE_100)
-    pdf.set_xy(12, y_words)
-    pdf.set_font("Helvetica", "B", 8)
-    words_text = f"Amount Chargeable (in words): {number_to_words(int(grand_total))}"
-    pdf.cell(page_w, 7, words_text, fill=True, ln=1)
-    
-    pdf.set_y(pdf.get_y() + 4)
-    
-    # === FOOTER: Bank Details + Signature ===
-    y_footer = pdf.get_y()
-    
-    # Top border
-    pdf.set_draw_color(*InvoicePDF.SLATE_200)
-    pdf.line(12, y_footer, 198, y_footer)
-    y_footer += 3
-    
+            pdf.set_fill_color(*C_WHITE)
+            pdf.set_text_color(*C_SLATE_600)
+            pdf.set_font("Helvetica", "", 9)
+            h = trh
+
+        pdf.set_xy(tx_start, y)
+        pdf.cell(c1, h, " " + label, border=1, fill=is_total or is_sub)
+
+        if is_total:
+            pdf.set_font("Helvetica", "B", 10)
+        else:
+            pdf.set_font("Helvetica", "" if not is_sub else "B", 9)
+        pdf.cell(c2, h, value + " ", border=1, align="R", fill=is_total or is_sub)
+        y += h
+
+    y += 4
+
+    # ────────────────────────────────────────────
+    # AMOUNT IN WORDS
+    # ────────────────────────────────────────────
+    pdf.set_fill_color(*C_SLATE_50)
+    pdf.set_draw_color(*C_SLATE_200)
+    pdf.set_xy(M, y)
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_text_color(*C_SLATE_800)
+    pdf.cell(CW, 5, "  Amount Chargeable (in words):", fill=True, border="LTR", ln=1)
+    pdf.set_x(M)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(*C_DARK_BLUE)
+    pdf.cell(CW, 6, "  " + number_to_words(int(grand_total)), fill=True, border="LBR", ln=1)
+    y = pdf.get_y() + 5
+
+    # ────────────────────────────────────────────
+    # BANK DETAILS + SIGNATURE
+    # ────────────────────────────────────────────
+    pdf.set_draw_color(*C_SLATE_300)
+    pdf.set_line_width(0.2)
+    pdf.line(M, y, PW - M, y)
+    y += 3
+
     bank = company.get('bank', COMPANY_DETAILS['bank'])
-    
-    # Bank Details (left)
-    pdf.set_xy(12, y_footer)
-    pdf.set_font("Helvetica", "B", 8)
-    pdf.set_text_color(*InvoicePDF.SLATE_800)
-    pdf.cell(half_w, 4, "Company's Bank Details", ln=1)
-    
-    pdf.set_x(12)
-    pdf.set_font("Helvetica", "", 8)
-    pdf.set_text_color(*InvoicePDF.SLATE_500)
-    pdf.cell(14, 3.5, "A/c Name: ", ln=0)
-    pdf.set_text_color(*InvoicePDF.SLATE_800)
-    pdf.cell(60, 3.5, bank.get('account_name', company.get('name', '')), ln=1)
-    
-    pdf.set_x(12)
-    pdf.set_text_color(*InvoicePDF.SLATE_500)
-    pdf.cell(half_w - 2, 3.5, f"Bank: {bank.get('name', '')} | A/c No.: {bank.get('account_no', '')}", ln=1)
-    
-    pdf.set_x(12)
-    pdf.cell(half_w - 2, 3.5, f"Branch: {bank.get('branch', '')} | IFSC: {bank.get('ifsc', '')}", ln=1)
-    
-    # Signature (right)
-    sig_x = 12 + half_w + 5
-    pdf.set_xy(sig_x, y_footer)
+
+    # Bank Details (left half)
+    pdf.set_xy(M, y)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(*C_SLATE_800)
+    pdf.cell(half, 5, "Company's Bank Details", ln=1)
+
+    pdf.set_x(M)
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_text_color(*C_SLATE_500)
+    line = f"A/c Name: {bank.get('account_name', company.get('name',''))}"
+    pdf.cell(half, 4.5, line, ln=1)
+
+    pdf.set_x(M)
+    line = f"Bank: {bank.get('name','')} | A/c No.: {bank.get('account_no','')}"
+    pdf.cell(half, 4.5, line, ln=1)
+
+    pdf.set_x(M)
+    line = f"Branch: {bank.get('branch','')} | IFSC: {bank.get('ifsc','')}"
+    pdf.cell(half, 4.5, line, ln=1)
+
+    # Signature (right half)
+    sig_x = M + half + 5
+    pdf.set_xy(sig_x, y)
     pdf.set_font("Helvetica", "", 7)
-    pdf.set_text_color(*InvoicePDF.SLATE_400)
-    pdf.cell(half_w - 5, 4, "E. & O.E.", align="R", ln=1)
-    
-    # Signature image
-    sig_path = _download_image(SIGNATURE_URL)
-    if sig_path:
+    pdf.set_text_color(*C_SLATE_400)
+    pdf.cell(half - 5, 4, "E. & O.E.", align="R", ln=1)
+
+    sig = _download_image(SIGNATURE_URL)
+    if sig:
         try:
-            pdf.image(sig_path, x=210 - 12 - 25, y=y_footer + 4, h=9)
+            pdf.image(sig, x=PW - M - 30, y=y + 5, h=10)
         except Exception:
             pass
-    
-    pdf.set_xy(sig_x, y_footer + 14)
-    pdf.set_font("Helvetica", "B", 8)
-    pdf.set_text_color(*InvoicePDF.SLATE_800)
-    pdf.cell(half_w - 5, 4, f"for {company.get('name', 'Thryve Coworking')}", align="R", ln=1)
+
+    pdf.set_xy(sig_x, y + 16)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(*C_SLATE_800)
+    pdf.cell(half - 5, 4, f"for {company.get('name','Thryve Coworking')}", align="R", ln=1)
     pdf.set_x(sig_x)
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_text_color(*C_SLATE_500)
+    pdf.cell(half - 5, 4, "Authorised Signatory", align="R")
+
+    # Vertical divider
+    pdf.set_draw_color(*C_SLATE_300)
+    pdf.line(M + half, y, M + half, y + 22)
+
+    y = max(pdf.get_y() + 6, y + 24)
+
+    # ────────────────────────────────────────────
+    # DECLARATION
+    # ────────────────────────────────────────────
+    pdf.set_draw_color(*C_SLATE_300)
+    pdf.line(M, y, PW - M, y)
+    y += 2
+    pdf.set_xy(M, y)
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(*C_SLATE_600)
+    pdf.cell(18, 4, "Declaration: ", ln=0)
     pdf.set_font("Helvetica", "", 8)
-    pdf.set_text_color(*InvoicePDF.SLATE_500)
-    pdf.cell(half_w - 5, 4, "Authorised Signatory", align="R")
-    
-    # Vertical separator
-    pdf.set_draw_color(*InvoicePDF.SLATE_200)
-    pdf.line(12 + half_w, y_footer, 12 + half_w, y_footer + 22)
-    
-    pdf.set_y(max(pdf.get_y() + 6, y_footer + 24))
-    
-    # === DECLARATION ===
-    pdf.set_font("Helvetica", "B", 7)
-    pdf.set_text_color(*InvoicePDF.SLATE_500)
-    pdf.set_x(12)
-    pdf.cell(14, 3.5, "Declaration: ", ln=0)
-    pdf.set_font("Helvetica", "", 7)
-    pdf.cell(0, 3.5, "We declare that this invoice shows the actual price of the Services described and that all particulars are true and correct.", ln=1)
-    
-    pdf.set_y(pdf.get_y() + 5)
-    
-    # === THANK YOU ===
-    pdf.set_font("Helvetica", "B", 9)
-    pdf.set_text_color(*InvoicePDF.DARK_BLUE)
-    pdf.cell(page_w, 5, "Thank you for choosing Thryve Coworking!", align="C", ln=1)
-    pdf.set_font("Helvetica", "", 7)
-    pdf.set_text_color(*InvoicePDF.SLATE_400)
-    pdf.cell(page_w, 4, "This is a Computer Generated Invoice", align="C")
-    
-    # Return PDF bytes
+    pdf.cell(0, 4, "We declare that this invoice shows the actual price of the Services described and that all particulars are true and correct.", ln=1)
+
+    y = pdf.get_y() + 3
+
+    # ────────────────────────────────────────────
+    # FOOTER
+    # ────────────────────────────────────────────
+    pdf.set_draw_color(*C_SLATE_200)
+    pdf.line(M, y, PW - M, y)
+    pdf.set_fill_color(*C_SLATE_50)
+    pdf.rect(M, y, CW, 12, style='F')
+    y += 2
+    pdf.set_xy(M, y)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(*C_DARK_BLUE)
+    pdf.cell(CW, 5, "Thank you for choosing Thryve Coworking!", align="C", ln=1)
+    pdf.set_x(M)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_text_color(*C_SLATE_400)
+    pdf.cell(CW, 4, "This is a Computer Generated Invoice", align="C")
+
     return bytes(pdf.output())
