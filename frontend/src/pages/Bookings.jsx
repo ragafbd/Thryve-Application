@@ -191,7 +191,7 @@ export default function Bookings() {
     
     setToggling(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("thryve_token");
       const payload = toggleAction === "disable" 
         ? { disabled_from: disableFromDate, disabled_reason: disableReason || null }
         : { disabled_from: null, disabled_reason: null };
