@@ -155,17 +155,22 @@ h1, h2, h3, h4, h5, h6 {
     
     body {
         background: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
-    /* Full width for invoice during print */
-    .app-container {
-        display: block !important;
-    }
-    .app-container > main,
-    .app-container > div > main {
+    /* Remove sidebar margin and padding during print */
+    main {
         margin-left: 0 !important;
         padding: 0 !important;
         max-width: 100% !important;
+        background: white !important;
+    }
+    
+    /* Ensure invoice preview prints full width */
+    .space-y-6 {
+        padding: 0 !important;
+        margin: 0 !important;
     }
 }
 

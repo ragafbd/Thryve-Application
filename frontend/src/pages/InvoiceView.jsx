@@ -168,47 +168,18 @@ export default function InvoiceView() {
   };
 
   const handlePrint = () => {
-    // Open the PDF in a new window and trigger print from there
-    const pdfUrl = `${API}/invoices/${id}/pdf`;
-    const printWindow = window.open(pdfUrl, '_blank');
-    if (printWindow) {
-      printWindow.addEventListener('load', () => {
-        setTimeout(() => {
-          printWindow.print();
-        }, 500);
-      });
-    } else {
-      // Fallback: print current page
-      window.print();
-    }
+    window.print();
   };
 
-  const handleDownloadPDF = async () => {
-    try {
-      toast.info("Generating PDF...");
-      const response = await fetch(`${API}/invoices/${id}/pdf`);
-      if (!response.ok) throw new Error('Failed to fetch PDF');
-      const blob = await response.blob();
-      const invoiceNum = invoice.invoice_number.replace(/\//g, '-');
-      const clientName = (invoice.client?.company_name || 'Client').replace(/\s+/g, '_').replace(/[\/\\]/g, '-');
-      const filename = `${invoiceNum}_${clientName}.pdf`;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      // Small delay before cleanup to ensure download starts
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 1000);
-      toast.success(`Downloaded ${filename}`);
-    } catch (error) {
-      console.error('PDF download error:', error);
-      toast.error("Failed to download PDF. Try right-clicking 'Download PDF' and choosing 'Save link as...'");
-    }
+  const handleDownloadPDF = () => {
+    const pdfUrl = `${API}/invoices/${id}/pdf`;
+    const a = document.createElement('a');
+    a.href = pdfUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleDelete = async () => {
