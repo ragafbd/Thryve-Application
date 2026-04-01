@@ -11,7 +11,7 @@ from io import BytesIO
 import uuid
 import base64
 
-# PDF generation - uses WeasyPrint via utils.pdf_generator
+# PDF generation - uses fpdf2 via utils.pdf_generator
 from utils.pdf_generator import generate_pdf_from_html
 
 router = APIRouter(prefix="/api/auto-invoice", tags=["Auto Invoice"])
@@ -180,7 +180,7 @@ def number_to_words(num):
 
 
 def generate_pdf_content(invoice: dict) -> bytes:
-    """Generate PDF content for an invoice using WeasyPrint (synchronous)"""
+    """Generate PDF content for an invoice using fpdf2 (synchronous)"""
     return generate_pdf_from_html(invoice)
 async def generate_auto_invoices(
     request: AutoInvoiceRequest,

@@ -751,7 +751,7 @@ async def generate_invoice_pdf(invoice_id: str):
         raise HTTPException(status_code=404, detail="Invoice not found")
     
     try:
-        # Use WeasyPrint-based PDF generator (no browser needed, works in production)
+        # Use fpdf2-based PDF generator (pure Python, no system deps, works in production)
         from utils.pdf_generator import generate_pdf_from_html
         
         pdf_content = generate_pdf_from_html(invoice)
