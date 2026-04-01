@@ -10,9 +10,19 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Member self-service portal for viewing invoices, bookings, and tickets**
 - **Public holiday management for booking restrictions**
 
-## Recent Updates (March 18, 2026)
+## Recent Updates (April 1, 2026)
 
-### PDF Invoice WYSIWYG Implementation (COMPLETED)
+### WeasyPrint PDF Engine & Print Dialog Fix (COMPLETED)
+- **Issue**: PDF download failing in production (Playwright headless browser not available), Print button not opening dialog
+- **Fix**: Completed WeasyPrint integration (pure Python, no browser needed), fixed react-to-print v3 API usage
+- **Changes Made**:
+  - Replaced Playwright/ReportLab with WeasyPrint in `pdf_generator.py`, `server.py`, `auto_invoice.py`
+  - Removed all unused ReportLab imports from `server.py` and `auto_invoice.py`
+  - Fixed `auto_invoice.py` `generate_pdf_content()` to call WeasyPrint synchronously (removed broken asyncio event loop wrapper)
+  - Fixed Print button: `onClick={handlePrint}` -> `onClick={() => handlePrint()}` (react-to-print v3.3.0 requires explicit invocation)
+- **Validation**: 15/15 tests passed, valid PDF-1.7 output (758KB), all endpoints working
+
+### PDF Invoice WYSIWYG Implementation (COMPLETED - March 18, 2026)
 - **Issue**: PDF download did not match the professional web preview (missing logo, broken layout)
 - **Fix**: Complete overhaul of PDF generation in both `server.py` and `auto_invoice.py`
 - **Changes Made**:
