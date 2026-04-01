@@ -11,13 +11,8 @@ from io import BytesIO
 import uuid
 import base64
 
-# PDF generation imports
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER, TA_RIGHT
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.units import inch
+# PDF generation - uses WeasyPrint via utils.pdf_generator
+from utils.pdf_generator import generate_pdf_from_html
 
 router = APIRouter(prefix="/api/auto-invoice", tags=["Auto Invoice"])
 security = HTTPBearer()
@@ -185,18 +180,8 @@ def number_to_words(num):
 
 
 def generate_pdf_content(invoice: dict) -> bytes:
-    """Generate PDF content for an invoice - WYSIWYG matching web preview using Playwright"""
-    import asyncio
-    from utils.pdf_generator import generate_pdf_from_html
-    
-    # Run the async function synchronously
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        pdf_bytes = loop.run_until_complete(generate_pdf_from_html(invoice))
-        return pdf_bytes
-    finally:
-        loop.close()
+    """Generate PDF content for an invoice using WeasyPrint (synchronous)"""
+    return generate_pdf_from_html(invoice)
 async def generate_auto_invoices(
     request: AutoInvoiceRequest,
     background_tasks: BackgroundTasks,

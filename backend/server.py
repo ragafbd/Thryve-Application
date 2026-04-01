@@ -14,12 +14,6 @@ from datetime import datetime, timezone, timedelta
 from io import BytesIO
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch, mm
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 import urllib.request
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -757,11 +751,10 @@ async def generate_invoice_pdf(invoice_id: str):
         raise HTTPException(status_code=404, detail="Invoice not found")
     
     try:
-        # Use the new Playwright-based PDF generator for true WYSIWYG
+        # Use WeasyPrint-based PDF generator (no browser needed, works in production)
         from utils.pdf_generator import generate_pdf_from_html
-        import asyncio
         
-        pdf_content = await generate_pdf_from_html(invoice)
+        pdf_content = generate_pdf_from_html(invoice)
         
         # Create filename
         invoice_num = invoice.get('invoice_number', 'invoice').replace('/', '-')
@@ -779,7 +772,11 @@ async def generate_invoice_pdf(invoice_id: str):
         )
     except Exception as e:
         print(f"PDF generation error: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
+
+
 @api_router.patch("/invoices/{invoice_id}/status", response_model=Invoice)
 async def update_invoice_status(invoice_id: str, status_update: InvoiceStatusUpdate):
     invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})

@@ -307,7 +307,7 @@ export default function InvoiceView() {
           </Button>
           <Button
             variant="outline"
-            onClick={handlePrint}
+            onClick={() => handlePrint()}
             className="border-[#2E375B] text-[#2E375B] hover:bg-[#FFD4B0]"
             data-testid="print-invoice-btn"
           >

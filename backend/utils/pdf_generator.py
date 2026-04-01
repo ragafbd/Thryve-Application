@@ -1,11 +1,11 @@
 """
-PDF Generator using Playwright for true WYSIWYG invoice PDFs.
-Renders the same HTML/CSS as the web preview for pixel-perfect output.
+PDF Generator for true WYSIWYG invoice PDFs.
+Uses WeasyPrint (pure Python, no browser needed) for reliable production deployment.
 """
 
-from playwright.async_api import async_playwright
 from io import BytesIO
-import asyncio
+from weasyprint import HTML, CSS
+from weasyprint.text.fonts import FontConfiguration
 
 # Company details for invoice
 COMPANY_DETAILS = {
@@ -25,12 +25,6 @@ COMPANY_DETAILS = {
     }
 }
 
-SERVICE_TYPE_LABELS = {
-    "monthly_rental": "Monthly Plan (GST)",
-    "security_deposit": "Security Deposit",
-    "meeting_room": "Meeting Room Charges",
-    "other": "Other Charges"
-}
 
 def format_date(date_str):
     """Format date string to display format"""
@@ -60,6 +54,7 @@ def format_date(date_str):
     except:
         return date_str
 
+
 def number_to_words(num):
     """Convert number to words for invoice amount"""
     ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
@@ -78,24 +73,23 @@ def number_to_words(num):
         else:
             return ones[n // 100] + ' Hundred' + (' ' + convert_chunk(n % 100) if n % 100 else '')
     
-    if num >= 10000000:  # Crore
+    if num >= 10000000:
         return convert_chunk(num // 10000000) + ' Crore ' + number_to_words(num % 10000000).replace(' Only', '') + ' Only'
-    elif num >= 100000:  # Lakh
+    elif num >= 100000:
         return convert_chunk(num // 100000) + ' Lakh ' + number_to_words(num % 100000).replace(' Only', '') + ' Only'
-    elif num >= 1000:  # Thousand
+    elif num >= 1000:
         return convert_chunk(num // 1000) + ' Thousand ' + number_to_words(num % 1000).replace(' Only', '') + ' Only'
     else:
         return convert_chunk(num) + ' Rupees Only'
 
 
 def generate_invoice_html(invoice: dict) -> str:
-    """Generate HTML that matches the React InvoicePreview component exactly"""
+    """Generate HTML that matches the React InvoicePreview component"""
     
     company = invoice.get('company', COMPANY_DETAILS)
     client = invoice.get('client', {})
     line_items = invoice.get('line_items', [])
     
-    # Calculate totals
     subtotal = invoice.get('subtotal', 0)
     total_cgst = invoice.get('total_cgst', 0)
     total_sgst = invoice.get('total_sgst', 0)
@@ -108,238 +102,218 @@ def generate_invoice_html(invoice: dict) -> str:
         amount = item.get('amount', item.get('quantity', 1) * item.get('rate', 0))
         service_type = item.get('service_type', '')
         
-        # Sub-description based on service type
         sub_desc = ""
         if service_type == 'monthly_rental':
-            sub_desc = '<p class="text-xs text-slate-500">Workspace subscription</p>'
+            sub_desc = '<p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0;">Workspace subscription</p>'
         elif service_type == 'security_deposit':
-            sub_desc = '<p class="text-xs text-slate-500">No GST Applicable</p>'
+            sub_desc = '<p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0;">No GST Applicable</p>'
         elif item.get('is_prorated') and item.get('prorate_days'):
-            sub_desc = f'<p class="text-xs text-amber-600">Prorated: {item.get("prorate_days")} of {item.get("prorate_total_days")} days</p>'
+            sub_desc = f'<p style="font-size: 10px; color: #d97706; margin: 2px 0 0 0;">Prorated: {item.get("prorate_days")} of {item.get("prorate_total_days")} days</p>'
         
         items_html += f'''
         <tr>
-            <td class="border border-slate-300 px-2 py-2 text-center">{idx}</td>
-            <td class="border border-slate-300 px-2 py-2">
-                <p class="font-medium">{item.get('description', '')}</p>
+            <td style="border: 1px solid #cbd5e1; padding: 6px 8px; text-align: center;">{idx}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 6px 8px;">
+                <p style="font-weight: 500; margin: 0;">{item.get('description', '')}</p>
                 {sub_desc}
             </td>
-            <td class="border border-slate-300 px-2 py-2 text-center font-mono text-xs">{item.get('hsn_sac', '997212') if item.get('is_taxable', True) else ''}</td>
-            <td class="border border-slate-300 px-2 py-2 text-center">{item.get('quantity', 1)}</td>
-            <td class="border border-slate-300 px-2 py-2 text-right font-mono">Rs. {item.get('rate', 0):,.2f}</td>
-            <td class="border border-slate-300 px-2 py-2 text-center">{item.get('unit', 'Month')}</td>
-            <td class="border border-slate-300 px-2 py-2 text-right font-mono">Rs. {amount:,.2f}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 6px 8px; text-align: center; font-family: monospace; font-size: 11px;">{item.get('hsn_sac', '997212') if item.get('is_taxable', True) else ''}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 6px 8px; text-align: center;">{item.get('quantity', 1)}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 6px 8px; text-align: right; font-family: monospace;">Rs. {item.get('rate', 0):,.2f}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 6px 8px; text-align: center;">{item.get('unit', 'Month')}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 6px 8px; text-align: right; font-family: monospace;">Rs. {amount:,.2f}</td>
         </tr>
         '''
     
-    # Round-off row
     round_off_html = ""
     if round_off != 0:
         round_off_str = f"+Rs. {round_off:,.2f}" if round_off >= 0 else f"-Rs. {abs(round_off):,.2f}"
         round_off_html = f'''
         <tr>
-            <td class="border border-slate-300 px-3 py-1 text-sm">Round-Off Adjustment</td>
-            <td class="border border-slate-300 px-3 py-1 text-right font-mono text-sm">{round_off_str}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 4px 10px; font-size: 11px;">Round-Off Adjustment</td>
+            <td style="border: 1px solid #cbd5e1; padding: 4px 10px; text-align: right; font-family: monospace; font-size: 11px;">{round_off_str}</td>
         </tr>
         '''
     
-    html = f'''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdn.tailwindcss.com"></script>
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
-            
-            body {{
-                font-family: 'Manrope', system-ui, sans-serif;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }}
-            
-            .font-mono {{
-                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            }}
-            
-            @page {{
-                size: A4;
-                margin: 10mm;
-            }}
-            
-            @media print {{
-                body {{
-                    -webkit-print-color-adjust: exact !important;
-                    print-color-adjust: exact !important;
-                }}
-            }}
-        </style>
-    </head>
-    <body class="bg-white p-0 m-0">
-        <div class="max-w-[210mm] mx-auto bg-white text-slate-800 text-sm">
-            
-            <!-- Header: Logo + TAX INVOICE Box -->
-            <div class="flex justify-between items-start mb-4">
-                <img src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/jqltfue2_Gemini_Generated_Image_xy33ixy33ixy33ix.png" 
-                     alt="Thryve Coworking" class="h-16 w-auto" />
-                <div class="border-2 border-slate-800 px-6 py-2">
-                    <span class="font-bold text-lg">TAX INVOICE</span>
-                </div>
-            </div>
-            
-            <!-- Invoice Info Row -->
-            <div class="flex justify-between items-center mb-4">
-                <div class="text-sm">
-                    <p><span class="font-semibold">Invoice No:</span> {invoice.get('invoice_number', '')}</p>
-                    <p><span class="font-semibold">Invoice Date:</span> {format_date(invoice.get('invoice_date', ''))}</p>
-                </div>
-                <div class="bg-[#FFA14A] px-4 py-2 text-center">
-                    <p class="font-bold text-[#2E375B] text-sm">PAYMENT DUE BY</p>
-                    <p class="font-bold text-[#2E375B] text-lg">{format_date(invoice.get('due_date', ''))}</p>
-                </div>
-            </div>
-            
-            <!-- Separator -->
-            <div class="border-b-2 border-slate-800 mb-4"></div>
-            
-            <!-- Issued By / Bill To Section -->
-            <div class="grid grid-cols-2 border-b border-slate-300 mb-4">
-                <!-- Issued By -->
-                <div class="pr-4 border-r border-slate-300 pb-3">
-                    <h3 class="font-bold text-sm mb-2 bg-slate-100 px-2 py-1">Issued By</h3>
-                    <div class="text-sm space-y-1 px-2">
-                        <p class="font-semibold">{company.get('name', '')}</p>
-                        <p class="text-slate-600">{company.get('address', '')}</p>
-                        <p><span class="text-slate-500">State:</span> {company.get('state', 'Haryana')} | <span class="text-slate-500">GSTIN:</span> <span class="font-mono">{company.get('gstin', '')}</span></p>
-                    </div>
-                </div>
-                
-                <!-- Bill To -->
-                <div class="pl-4 pb-3">
-                    <h3 class="font-bold text-sm mb-2 bg-slate-100 px-2 py-1">Bill To</h3>
-                    <div class="text-sm space-y-1 px-2">
-                        <p class="font-semibold">{client.get('company_name', '')}</p>
-                        <p class="text-slate-600">{client.get('address', '')}</p>
-                        <p><span class="text-slate-500">State:</span> Haryana | <span class="text-slate-500">GSTIN:</span> <span class="font-mono">{client.get('gstin', '-')}</span></p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Line Items Table -->
-            <table class="w-full text-sm mb-2">
-                <thead>
-                    <tr class="bg-slate-100">
-                        <th class="border border-slate-300 px-2 py-2 text-left font-semibold w-12">S. No.</th>
-                        <th class="border border-slate-300 px-2 py-2 text-left font-semibold">Particulars</th>
-                        <th class="border border-slate-300 px-2 py-2 text-center font-semibold w-20">HSN/SAC</th>
-                        <th class="border border-slate-300 px-2 py-2 text-center font-semibold w-16">Quantity</th>
-                        <th class="border border-slate-300 px-2 py-2 text-right font-semibold w-24">Rate</th>
-                        <th class="border border-slate-300 px-2 py-2 text-center font-semibold w-16">Per</th>
-                        <th class="border border-slate-300 px-2 py-2 text-right font-semibold w-28">Amount (Rs.)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {items_html}
-                </tbody>
-            </table>
-            
-            <!-- Totals Table (Right Aligned) -->
-            <div class="flex justify-end mb-2">
-                <table class="text-sm w-64">
-                    <tr>
-                        <td class="border border-slate-300 px-3 py-1">Sub Total</td>
-                        <td class="border border-slate-300 px-3 py-1 text-right font-mono">Rs. {subtotal:,.2f}</td>
-                    </tr>
-                    <tr>
-                        <td class="border border-slate-300 px-3 py-1 text-sm">CGST (9%) on Plan fee</td>
-                        <td class="border border-slate-300 px-3 py-1 text-right font-mono text-sm">Rs. {total_cgst:,.2f}</td>
-                    </tr>
-                    <tr>
-                        <td class="border border-slate-300 px-3 py-1 text-sm">SGST (9%) on Plan fee</td>
-                        <td class="border border-slate-300 px-3 py-1 text-right font-mono text-sm">Rs. {total_sgst:,.2f}</td>
-                    </tr>
-                    {round_off_html}
-                    <tr class="bg-[#2E375B] text-white font-bold">
-                        <td class="border border-slate-300 px-3 py-2">Total Amount</td>
-                        <td class="border border-slate-300 px-3 py-2 text-right font-mono">Rs. {int(grand_total):,}</td>
-                    </tr>
-                </table>
-            </div>
-            
-            <!-- Amount in Words -->
-            <div class="bg-slate-100 px-3 py-2 mb-4">
-                <p class="text-sm"><span class="font-semibold">Amount Chargeable (in words):</span> <span class="font-semibold text-[#2E375B]">{number_to_words(int(grand_total))}</span></p>
-            </div>
-            
-            <!-- Bank Details & Signature -->
-            <div class="grid grid-cols-2 border-t border-slate-300 pt-3">
-                <!-- Bank Details -->
-                <div class="pr-4 border-r border-slate-300">
-                    <h3 class="font-bold text-sm mb-2">Company's Bank Details</h3>
-                    <div class="text-sm space-y-1">
-                        <p><span class="text-slate-500">A/c Name:</span> {company.get('bank', {}).get('account_name', company.get('name', ''))}</p>
-                        <p><span class="text-slate-500">Bank:</span> {company.get('bank', {}).get('name', 'HDFC Bank')} | <span class="text-slate-500">A/c No.:</span> <span class="font-mono">{company.get('bank', {}).get('account_no', '50200115952448')}</span></p>
-                        <p><span class="text-slate-500">Branch:</span> {company.get('bank', {}).get('branch', 'Sector 16, Faridabad')} | <span class="text-slate-500">IFSC:</span> <span class="font-mono">{company.get('bank', {}).get('ifsc', 'HDFC0000279')}</span></p>
-                    </div>
-                </div>
-                
-                <!-- Signature -->
-                <div class="pl-4 text-right">
-                    <p class="text-xs text-slate-400 mb-2">E. & O.E.</p>
-                    <img src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/x6h984ax_Untitled%20design.jpg" 
-                         alt="Signature" class="h-10 w-auto ml-auto mb-1" />
-                    <p class="font-semibold text-sm">for {company.get('name', 'Thryve Coworking')}</p>
-                    <p class="text-sm text-slate-500">Authorised Signatory</p>
-                </div>
-            </div>
-            
-            <!-- Declaration -->
-            <div class="mt-3 text-xs text-slate-500">
-                <p><span class="font-semibold">Declaration:</span> We declare that this invoice shows the actual price of the Services described and that all particulars are true and correct.</p>
-            </div>
-            
-            <!-- Footer -->
-            <div class="mt-4 text-center">
-                <p class="font-semibold text-[#2E375B]">Thank you for choosing Thryve Coworking!</p>
-                <p class="text-xs text-slate-400">This is a Computer Generated Invoice</p>
-            </div>
-            
+    html = f'''<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {{
+            size: A4;
+            margin: 12mm;
+        }}
+        
+        * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+        
+        body {{
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            color: #1e293b;
+            line-height: 1.4;
+        }}
+        
+        .header {{ display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }}
+        .logo {{ height: 55px; width: auto; }}
+        .tax-invoice-box {{ border: 2px solid #1e293b; padding: 6px 20px; font-weight: bold; font-size: 14px; }}
+        
+        .info-row {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }}
+        .due-date-box {{ background-color: #FFA14A; padding: 8px 15px; text-align: center; }}
+        .due-date-box p {{ margin: 0; color: #2E375B; }}
+        
+        .separator {{ border-bottom: 2px solid #1e293b; margin-bottom: 12px; }}
+        
+        .parties {{ display: flex; border-bottom: 1px solid #cbd5e1; margin-bottom: 12px; }}
+        .party {{ flex: 1; padding-bottom: 10px; }}
+        .party:first-child {{ padding-right: 15px; border-right: 1px solid #cbd5e1; }}
+        .party:last-child {{ padding-left: 15px; }}
+        .party-header {{ background-color: #f1f5f9; padding: 4px 8px; font-weight: bold; font-size: 11px; margin-bottom: 6px; }}
+        .party-content {{ padding: 0 8px; font-size: 11px; }}
+        .party-content p {{ margin: 2px 0; }}
+        
+        .items-table {{ width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 8px; }}
+        .items-table th {{ background-color: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; font-weight: 600; }}
+        
+        .totals-container {{ display: flex; justify-content: flex-end; margin-bottom: 8px; }}
+        .totals-table {{ width: 220px; border-collapse: collapse; font-size: 11px; }}
+        .totals-table td {{ border: 1px solid #cbd5e1; padding: 4px 10px; }}
+        .total-row {{ background-color: #2E375B; color: white; font-weight: bold; }}
+        
+        .amount-words {{ background-color: #f1f5f9; padding: 8px 12px; margin-bottom: 12px; font-size: 11px; }}
+        
+        .footer-section {{ display: flex; border-top: 1px solid #cbd5e1; padding-top: 10px; }}
+        .bank-details {{ flex: 1; padding-right: 15px; border-right: 1px solid #cbd5e1; font-size: 11px; }}
+        .signature {{ flex: 1; padding-left: 15px; text-align: right; font-size: 11px; }}
+        .signature img {{ height: 35px; width: auto; margin: 5px 0; }}
+        
+        .declaration {{ margin-top: 10px; font-size: 10px; color: #64748b; }}
+        .thank-you {{ text-align: center; margin-top: 12px; }}
+        .thank-you p:first-child {{ font-weight: 600; color: #2E375B; }}
+        .thank-you p:last-child {{ font-size: 10px; color: #94a3b8; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/jqltfue2_Gemini_Generated_Image_xy33ixy33ixy33ix.png" alt="Thryve Coworking" class="logo" />
+            <div class="tax-invoice-box">TAX INVOICE</div>
         </div>
-    </body>
-    </html>
-    '''
+        
+        <div class="info-row">
+            <div>
+                <p><strong>Invoice No:</strong> {invoice.get('invoice_number', '')}</p>
+                <p><strong>Invoice Date:</strong> {format_date(invoice.get('invoice_date', ''))}</p>
+            </div>
+            <div class="due-date-box">
+                <p style="font-weight: bold; font-size: 11px;">PAYMENT DUE BY</p>
+                <p style="font-weight: bold; font-size: 14px;">{format_date(invoice.get('due_date', ''))}</p>
+            </div>
+        </div>
+        
+        <div class="separator"></div>
+        
+        <div class="parties">
+            <div class="party">
+                <div class="party-header">Issued By</div>
+                <div class="party-content">
+                    <p style="font-weight: 600;">{company.get('name', '')}</p>
+                    <p style="color: #64748b;">{company.get('address', '')}</p>
+                    <p><span style="color: #64748b;">State:</span> {company.get('state', 'Haryana')} | <span style="color: #64748b;">GSTIN:</span> <span style="font-family: monospace;">{company.get('gstin', '')}</span></p>
+                </div>
+            </div>
+            <div class="party">
+                <div class="party-header">Bill To</div>
+                <div class="party-content">
+                    <p style="font-weight: 600;">{client.get('company_name', '')}</p>
+                    <p style="color: #64748b;">{client.get('address', '')}</p>
+                    <p><span style="color: #64748b;">State:</span> Haryana | <span style="color: #64748b;">GSTIN:</span> <span style="font-family: monospace;">{client.get('gstin', '-')}</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 40px; text-align: center;">S.No.</th>
+                    <th>Particulars</th>
+                    <th style="width: 60px; text-align: center;">HSN/SAC</th>
+                    <th style="width: 50px; text-align: center;">Qty</th>
+                    <th style="width: 70px; text-align: right;">Rate</th>
+                    <th style="width: 45px; text-align: center;">Per</th>
+                    <th style="width: 85px; text-align: right;">Amount (Rs.)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {items_html}
+            </tbody>
+        </table>
+        
+        <div class="totals-container">
+            <table class="totals-table">
+                <tr>
+                    <td>Sub Total</td>
+                    <td style="text-align: right; font-family: monospace;">Rs. {subtotal:,.2f}</td>
+                </tr>
+                <tr>
+                    <td style="font-size: 10px;">CGST (9%) on Plan fee</td>
+                    <td style="text-align: right; font-family: monospace; font-size: 10px;">Rs. {total_cgst:,.2f}</td>
+                </tr>
+                <tr>
+                    <td style="font-size: 10px;">SGST (9%) on Plan fee</td>
+                    <td style="text-align: right; font-family: monospace; font-size: 10px;">Rs. {total_sgst:,.2f}</td>
+                </tr>
+                {round_off_html}
+                <tr class="total-row">
+                    <td style="padding: 6px 10px;">Total Amount</td>
+                    <td style="text-align: right; font-family: monospace; padding: 6px 10px;">Rs. {int(grand_total):,}</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="amount-words">
+            <strong>Amount Chargeable (in words):</strong> <span style="color: #2E375B; font-weight: 600;">{number_to_words(int(grand_total))}</span>
+        </div>
+        
+        <div class="footer-section">
+            <div class="bank-details">
+                <p style="font-weight: bold; margin-bottom: 4px;">Company's Bank Details</p>
+                <p><span style="color: #64748b;">A/c Name:</span> {company.get('bank', {}).get('account_name', company.get('name', ''))}</p>
+                <p><span style="color: #64748b;">Bank:</span> {company.get('bank', {}).get('name', 'HDFC Bank')} | <span style="color: #64748b;">A/c No.:</span> <span style="font-family: monospace;">{company.get('bank', {}).get('account_no', '50200115952448')}</span></p>
+                <p><span style="color: #64748b;">Branch:</span> {company.get('bank', {}).get('branch', 'Sector 16, Faridabad')} | <span style="color: #64748b;">IFSC:</span> <span style="font-family: monospace;">{company.get('bank', {}).get('ifsc', 'HDFC0000279')}</span></p>
+            </div>
+            <div class="signature">
+                <p style="font-size: 10px; color: #94a3b8;">E. & O.E.</p>
+                <img src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/x6h984ax_Untitled%20design.jpg" alt="Signature" />
+                <p style="font-weight: 600;">for {company.get('name', 'Thryve Coworking')}</p>
+                <p style="color: #64748b;">Authorised Signatory</p>
+            </div>
+        </div>
+        
+        <div class="declaration">
+            <strong>Declaration:</strong> We declare that this invoice shows the actual price of the Services described and that all particulars are true and correct.
+        </div>
+        
+        <div class="thank-you">
+            <p>Thank you for choosing Thryve Coworking!</p>
+            <p>This is a Computer Generated Invoice</p>
+        </div>
+    </div>
+</body>
+</html>'''
     
     return html
 
 
-async def generate_pdf_from_html(invoice: dict) -> bytes:
-    """Generate PDF from HTML using Playwright for true WYSIWYG output"""
-    
+def generate_pdf_from_html(invoice: dict) -> bytes:
+    """Generate PDF from HTML using WeasyPrint (no browser needed)"""
     html_content = generate_invoice_html(invoice)
-    
-    async with async_playwright() as p:
-        browser = await p.chromium.launch()
-        page = await browser.new_page()
-        
-        # Set the HTML content
-        await page.set_content(html_content, wait_until='networkidle')
-        
-        # Wait for images to load
-        await page.wait_for_timeout(1000)
-        
-        # Generate PDF
-        pdf_bytes = await page.pdf(
-            format='A4',
-            print_background=True,
-            margin={
-                'top': '10mm',
-                'bottom': '10mm',
-                'left': '10mm',
-                'right': '10mm'
-            }
-        )
-        
-        await browser.close()
-        
-        return pdf_bytes
+    font_config = FontConfiguration()
+    html = HTML(string=html_content)
+    pdf_bytes = html.write_pdf(font_config=font_config, presentational_hints=True)
+    return pdf_bytes
+
+
+async def generate_pdf_from_html_async(invoice: dict) -> bytes:
+    """Async wrapper for PDF generation"""
+    return generate_pdf_from_html(invoice)
