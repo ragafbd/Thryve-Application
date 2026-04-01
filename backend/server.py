@@ -410,11 +410,11 @@ async def create_default_admin():
         default_admin = User(
             name="Admin",
             email="admin@thryve.in",
-            password_hash=get_password_hash("admin123"),
+            password_hash=get_password_hash("password"),
             role="admin"
         )
         await db.users.insert_one(default_admin.model_dump())
-        logger.info("Default admin user created: admin@thryve.in / admin123")
+        logger.info("Default admin user created: admin@thryve.in / password")
     
     # Seed default management data
     from routes.management import seed_default_data
