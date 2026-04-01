@@ -12,15 +12,17 @@ Build an automatic invoice generator and comprehensive management system for Thr
 
 ## Recent Updates (April 1, 2026)
 
-### WeasyPrint PDF Engine & Print Dialog Fix (COMPLETED)
-- **Issue**: PDF download failing in production (Playwright headless browser not available), Print button not opening dialog
-- **Fix**: Completed WeasyPrint integration (pure Python, no browser needed), fixed react-to-print v3 API usage
-- **Changes Made**:
-  - Replaced Playwright/ReportLab with WeasyPrint in `pdf_generator.py`, `server.py`, `auto_invoice.py`
-  - Removed all unused ReportLab imports from `server.py` and `auto_invoice.py`
-  - Fixed `auto_invoice.py` `generate_pdf_content()` to call WeasyPrint synchronously (removed broken asyncio event loop wrapper)
-  - Fixed Print button: `onClick={handlePrint}` -> `onClick={() => handlePrint()}` (react-to-print v3.3.0 requires explicit invocation)
-- **Validation**: 15/15 tests passed, valid PDF-1.7 output (758KB), all endpoints working
+### PDF Engine Swap: fpdf2 (Pure Python) — COMPLETED
+- **Issue**: WeasyPrint required system C libraries (libcairo, libpango, libgdk-pixbuf) not available in production Docker image, causing deployment failures and container crashes
+- **Fix**: Completely replaced WeasyPrint with fpdf2 (pure Python, zero system dependencies)
+- **Changes**:
+  - Rewrote `/app/backend/utils/pdf_generator.py` using fpdf2 with proper font sizes, colors, and layout matching InvoicePreview.jsx
+  - Removed all WeasyPrint/ReportLab imports from server.py and auto_invoice.py
+  - Updated requirements.txt (removed weasyprint, added fpdf2==2.8.7)
+- **PDF Download**: Changed from `window.open()` (opened blank tab) to `fetch()+blob+createObjectURL+anchor.click()` for direct file download
+- **Print**: Changed from `window.print()` (didn't open dialog) to `window.open(pdfUrl)+print()` which opens PDF in new window for printing
+- **Deployment Fixes**: Fixed corrupted .gitignore (100+ duplicate lines), enabled health check endpoint, fixed admin seed password
+- **Validation**: 16/16 tests passed, valid PDF-1.3 output (775KB)
 
 ### PDF Invoice WYSIWYG Implementation (COMPLETED - March 18, 2026)
 - **Issue**: PDF download did not match the professional web preview (missing logo, broken layout)
