@@ -19,7 +19,6 @@ import {
 import { toast } from "sonner";
 import DOMPurify from "dompurify";
 import axios from "axios";
-import { downloadFile } from "@/utils/downloadFile";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -375,15 +374,16 @@ export default function Agreement() {
               <FileText className="w-4 h-4 mr-2" />
               Preview
             </Button>
-            <Button
-              onClick={() => selectedCompany && downloadFile(`${API}/agreements/${selectedCompany.id}/docx`, `LLA_${selectedCompany.company_name}.docx`)}
-              disabled={!selectedCompany}
-              className={selectedCompany ? 'bg-[#2E375B] hover:bg-[#232B47] text-white' : ''}
+            <a
+              href={selectedCompany ? `${API}/agreements/${selectedCompany.id}/docx` : undefined}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`inline-flex items-center justify-center h-10 rounded-md px-4 text-sm font-medium ${selectedCompany ? 'bg-[#2E375B] hover:bg-[#232B47] text-white cursor-pointer' : 'bg-gray-300 text-gray-500 pointer-events-none'}`}
               data-testid="download-word-btn"
             >
               <Download className="w-4 h-4 mr-2" />
               Download Word
-            </Button>
+            </a>
           </div>
         </CardContent>
       </Card>
@@ -433,14 +433,15 @@ export default function Agreement() {
                           >
                             <FileText className="w-4 h-4" />
                           </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => downloadFile(`${API}/agreements/${company.id}/docx`, `LLA_${company.company_name}.docx`)}
-                            className="bg-[#2E375B] hover:bg-[#232B47] text-white"
+                          <a
+                            href={`${API}/agreements/${company.id}/docx`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center h-9 rounded-md px-3 bg-[#2E375B] hover:bg-[#232B47] text-white text-sm"
                             title="Download Word"
                           >
                             <Download className="w-4 h-4" />
-                          </Button>
+                          </a>
                         </div>
                       </td>
                     </tr>
@@ -468,13 +469,15 @@ export default function Agreement() {
               <Printer className="w-4 h-4 mr-2" />
               Print
             </Button>
-            <Button
-              onClick={() => selectedCompany && downloadFile(`${API}/agreements/${selectedCompany.id}/docx`, `LLA_${selectedCompany.company_name}.docx`)}
-              className="bg-[#2E375B] hover:bg-[#232B47] text-white"
+            <a
+              href={selectedCompany ? `${API}/agreements/${selectedCompany.id}/docx` : undefined}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center h-10 rounded-md px-4 bg-[#2E375B] hover:bg-[#232B47] text-white text-sm font-medium"
             >
               <Download className="w-4 h-4 mr-2" />
               Download Word
-            </Button>
+            </a>
           </div>
         </DialogContent>
       </Dialog>
