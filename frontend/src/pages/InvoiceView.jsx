@@ -167,37 +167,8 @@ export default function InvoiceView() {
     }
   };
 
-  const [showPdfViewer, setShowPdfViewer] = useState(false);
-  const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
-  const [pdfLoading, setPdfLoading] = useState(false);
-
-  const handleDownloadPDF = async () => {
-    try {
-      setPdfLoading(true);
-      toast.info("Generating PDF...");
-      const response = await fetch(`${API}/invoices/${id}/pdf`);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      // Navigate to the PDF — opens Chrome's full-page PDF viewer with working download/print
-      window.location.href = url;
-    } catch (error) {
-      toast.error("Failed to load PDF");
-      setPdfLoading(false);
-    }
-  };
-
-  const handlePrint = async () => {
-    try {
-      setPdfLoading(true);
-      toast.info("Loading invoice for print...");
-      const response = await fetch(`${API}/invoices/${id}/pdf`);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      window.location.href = url;
-    } catch (error) {
-      toast.error("Failed to load PDF");
-      setPdfLoading(false);
-    }
+  const handlePrint = () => {
+    window.print();
   };
 
   const handleDelete = async () => {
@@ -295,14 +266,15 @@ export default function InvoiceView() {
               Mark as Paid
             </Button>
           )}
-          <Button
-            onClick={handleDownloadPDF}
-            className="bg-[#FFA14A] hover:bg-[#E8923E] text-[#2E375B]"
+          <a
+            href={`${API}/invoices/${id}/pdf`}
+            download
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-[#FFA14A] hover:bg-[#E8923E] text-[#2E375B] transition-colors"
             data-testid="download-pdf-btn"
           >
-            <FileDown className="w-4 h-4 mr-2" />
+            <FileDown className="w-4 h-4" />
             Download PDF
-          </Button>
+          </a>
           <Button
             variant="outline"
             onClick={handlePrint}

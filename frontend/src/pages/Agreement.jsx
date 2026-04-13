@@ -18,15 +18,13 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import axios from "axios";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, TabStopType, TabStopPosition } from "docx";
-import { saveAs } from "file-saver";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Agreement() {
   const [companies, setCompanies] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
-  const [generating, setGenerating] = useState(false);
+  const [generating] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [agreementHtml, setAgreementHtml] = useState("");
 
@@ -310,317 +308,8 @@ export default function Agreement() {
     `;
   };
 
-  const generateWordDocument = async (company) => {
-    setGenerating(true);
-    
-    try {
-      const data = generateAgreementData(company);
-      
-      // Helper to create a paragraph with specific formatting
-      const createPara = (text, options = {}) => new Paragraph({
-        children: [new TextRun({ text, ...options })],
-        spacing: { after: 120 },
-        alignment: options.center ? AlignmentType.CENTER : AlignmentType.JUSTIFIED
-      });
-
-      const createBullet = (text) => new Paragraph({
-        children: [new TextRun({ text: `• ${text}` })],
-        spacing: { after: 80 },
-        indent: { left: 720 }
-      });
-
-      const createNumbered = (num, text) => new Paragraph({
-        children: [
-          new TextRun({ text: `${num} `, bold: true }),
-          new TextRun({ text })
-        ],
-        spacing: { after: 120 },
-        alignment: AlignmentType.JUSTIFIED
-      });
-
-      const createHeading = (text) => new Paragraph({
-        children: [new TextRun({ text, bold: true, font: "Calibri", size: 22 })],
-        spacing: { before: 240, after: 120 }
-      });
-      
-      const doc = new Document({
-        styles: {
-          default: {
-            document: {
-              run: {
-                font: "Calibri",
-                size: 22 // 11pt
-              }
-            }
-          }
-        },
-        sections: [{
-          properties: {
-            page: {
-              margin: { top: 1440, right: 1080, bottom: 1440, left: 1080 } // 1 inch top/bottom, 0.75 inch sides
-            }
-          },
-          children: [
-            // Title
-            new Paragraph({
-              children: [new TextRun({ text: "LEAVE & LICENSE AGREEMENT", bold: true, font: "Calibri", size: 28 })],
-              alignment: AlignmentType.CENTER,
-              spacing: { after: 400 }
-            }),
-            
-            // Opening
-            new Paragraph({
-              children: [
-                new TextRun({ text: `THIS LEAVE AND LICENSE AGREEMENT ("Agreement") is executed on this ` }),
-                new TextRun({ text: data.Day, bold: true }),
-                new TextRun({ text: ` day of ` }),
-                new TextRun({ text: data.Month_Year, bold: true }),
-                new TextRun({ text: `, at Faridabad, Haryana,` }),
-              ],
-              spacing: { after: 200 },
-              alignment: AlignmentType.JUSTIFIED
-            }),
-            
-            // BETWEEN
-            createPara("BETWEEN", { bold: true }),
-            
-            // Licensor
-            new Paragraph({
-              children: [
-                new TextRun({ text: "Thryve Coworking", bold: true }),
-                new TextRun({ text: `, (PAN AAYFT8213A & GSTIN 06AAYFT8213A1Z2) a business operating from: Plot No. 3, First Floor, Near Ajronda Metro Station, 18/1, Mathura Road, Faridabad, Haryana 121007, acting through its authorized representative, hereinafter referred to as the "` }),
-                new TextRun({ text: "Licensor", bold: true }),
-                new TextRun({ text: `", (which expression shall, unless repugnant to the context, include its successors, assigns, administrators, and representatives)` }),
-              ],
-              spacing: { after: 200 },
-              alignment: AlignmentType.JUSTIFIED
-            }),
-            
-            // AND
-            new Paragraph({
-              children: [new TextRun({ text: "AND", bold: true })],
-              alignment: AlignmentType.CENTER,
-              spacing: { before: 200, after: 200 }
-            }),
-            
-            // Licensee
-            new Paragraph({
-              children: [
-                new TextRun({ text: `M/s ${data.Companys_Name}`, bold: true }),
-                new TextRun({ text: `, (PAN ${data.PAN_No} & GSTIN ${data.GSTIN}) having its Regd. office at: ${data.Address}, through its authorized signatory ` }),
-                new TextRun({ text: data.Authorized_Signatory, bold: true }),
-                new TextRun({ text: `, hereinafter referred to as the "` }),
-                new TextRun({ text: "Licensee", bold: true }),
-                new TextRun({ text: `", (which expression shall, unless repugnant to the context, include its successors, permitted assigns, employees, and representatives)` }),
-              ],
-              spacing: { after: 200 },
-              alignment: AlignmentType.JUSTIFIED
-            }),
-            
-            createPara(`The Licensor and the Licensee are collectively referred to as the "Parties" and individually as a "Party."`),
-            
-            // WHEREAS
-            createHeading("WHEREAS"),
-            createNumbered("1.", `The Licensor is operating a coworking facility known as "Thryve Coworking" at Plot No. 3, First Floor, Near Ajronda Metro Station, 18/1, Mathura Road, Faridabad 121007 ("hereinafter referred to as Premises").`),
-            createNumbered("2.", "The Licensor is in lawful possession of the Premises and entitled to grant a license for the use of certain designated workspace(s), cabins, meeting rooms, and/or coworking desks."),
-            createNumbered("3.", "The Licensee has requested use of the Licensor's coworking facilities and services, and the Licensor has agreed to grant the Licensee a limited, non-exclusive, revocable license with rights to enter and strictly for business use on the terms and conditions set forth below:"),
-            
-            createPara("NOW, THEREFORE, THE PARTIES AGREE AS FOLLOWS:", { bold: true }),
-            
-            // Section 1
-            createHeading("1. LICENSED AREA & SERVICES"),
-            createNumbered("1.1", "The Licensor grants to the Licensee a non-exclusive, non-transferable, revocable license for right to enter and use the following workspace(s) at the Premises:"),
-            createBullet(data.Space_Description),
-            createBullet(`Number of Seats: ${data.Seats}`),
-            createBullet("Meeting Room Access: As per usage/plan"),
-            createBullet("Common Areas: Reception, Lounge, Pantry, Washrooms, Hallways, and such other areas as designated by the Licensor."),
-            createNumbered("1.2", "The License is limited to right to enter and use only, and no tenancy, lease, or rights of possession are created or transferred."),
-            createNumbered("1.3", "The following services are included (as applicable to the chosen plan):"),
-            createBullet("High-speed Internet"),
-            createBullet("Electricity & Air Conditioning during business hours"),
-            createBullet("Housekeeping of common spaces"),
-            createBullet("Power Backup"),
-            createBullet("Front Desk Assistance"),
-            createBullet("Access to Pantry Facilities"),
-            createBullet("Access to Conference Rooms (subject to availability and booking rules)"),
-            createBullet("CCTV Surveillance (excluding private cabins)"),
-            createNumbered("1.4", "The Licensor may modify or enhance services at its discretion."),
-            
-            // Section 2
-            createHeading("2. TERM"),
-            new Paragraph({
-              children: [
-                new TextRun({ text: "2.1 ", bold: true }),
-                new TextRun({ text: `The term of this Agreement shall be for 11 months, commencing from ` }),
-                new TextRun({ text: data.Start_Date, bold: true }),
-                new TextRun({ text: ` ("Start Date") until ` }),
-                new TextRun({ text: data.End_Date, bold: true }),
-                new TextRun({ text: ` ("End Date"), unless terminated earlier. There will be a lock-in period of ` }),
-                new TextRun({ text: `${data.Lock_in} months`, bold: true }),
-                new TextRun({ text: ` before which the Licensee will not terminate this Leave & License Deed.` }),
-              ],
-              spacing: { after: 120 },
-              alignment: AlignmentType.JUSTIFIED
-            }),
-            createNumbered("2.2", "Renewal shall be subject to discretion of the Licensor and a new Leave & License Deed will be executed."),
-            
-            // Section 3
-            createHeading("3. LICENSE FEES & PAYMENTS"),
-            createNumbered("3.1", "The Licensee agrees to pay:"),
-            createBullet(`Monthly License Fee per seat/member: Rs. ${data.License_fee.toLocaleString('en-IN')}/-`),
-            createBullet(`Security Deposit (interest-free): Rs. ${data.Security.toLocaleString('en-IN')}/-`),
-            createBullet(`Setup Charges (if any): ${typeof data.Setup_charges === 'number' ? `Rs. ${data.Setup_charges.toLocaleString('en-IN')}/-` : data.Setup_charges}`),
-            createBullet("GST/other applicable taxes/extra usage of facilities will be paid extra."),
-            createNumbered("3.2", "The License Fee shall be payable in advance on or before the 5th day of each English calendar month."),
-            createNumbered("3.3", "Delay in payment beyond the due date attracts a penalty of Rs. 500/- per day apart from the outstanding dues until the full outstanding payment is made."),
-            createNumbered("3.4", "Non-payment for two consecutive months constitutes a material breach, allowing the Licensor to terminate the Agreement without further notice."),
-            
-            // Section 4
-            createHeading("4. SECURITY DEPOSIT"),
-            createNumbered("4.1", "The Security Deposit shall be refunded within 30 working days from the date of vacating the Premises, after adjusting:"),
-            createBullet("Pending dues"),
-            createBullet("Damages (if any)"),
-            createBullet("Loss of property or assets"),
-            createBullet("Outstanding penalties"),
-            createNumbered("4.2", "The Security Deposit shall not be used by the Licensee towards monthly fees."),
-            
-            // Section 5
-            createHeading("5. USE OF PREMISES"),
-            createNumbered("5.1", "The Premises shall be used only for lawful business activities. Any illegal, immoral, or hazardous activities are strictly prohibited."),
-            createNumbered("5.2", "The Licensee shall not:"),
-            createBullet("Install permanent fixtures"),
-            createBullet("Alter or damage the Premises"),
-            createBullet("Store hazardous materials"),
-            createBullet("Conduct activities causing nuisance, noise, or disturbance"),
-            createBullet("Allow unauthorized persons to occupy the workspace"),
-            createNumbered("5.3", "The Licensee must maintain cleanliness and hygiene in its designated area."),
-            createNumbered("5.4", "Sub-licensing, assignment, or sharing of the workspace is strictly prohibited."),
-            
-            // Section 6
-            createHeading("6. MEETING ROOM & FACILITY RULES"),
-            createNumbered("6.1", "Meeting room usage is subject to prior booking and availability."),
-            createNumbered("6.2", "Overstay beyond the reserved slot may attract overtime charges."),
-            createNumbered("6.3", "Common area usage shall be respectful and non-disruptive. Any events or visitors should be notified in advance and are subject to approval & charges at the discretion of the Licensor."),
-            createNumbered("6.4", "Pantry use is for light refreshments only; cooking/heating heavy food items is prohibited."),
-            
-            // Section 7
-            createHeading("7. INTERNET, IT & ELECTRICAL USAGE"),
-            createNumbered("7.1", "The Licensee shall use the Licensor's internet responsibly and not engage in illegal downloads, hacking, or bandwidth abuse."),
-            createNumbered("7.2", "High electrical load equipment (servers, printers, etc.) requires prior approval."),
-            createNumbered("7.3", "The Licensor is not liable for internet downtime caused by third-party providers."),
-            
-            // Section 8
-            createHeading("8. ACCESS & SECURITY"),
-            createNumbered("8.1", "Normal access hours: Monday to Saturday 9:00 AM to 9:00 PM. The Premises will remain closed on all Sundays and Govt. declared public holidays (as notified from time to time) unless otherwise permitted."),
-            createNumbered("8.2", "Licensee shall not tamper with CCTV, access control systems, or security devices."),
-            createNumbered("8.3", "Visitors must follow the Licensor's entry protocols."),
-            
-            // Section 9
-            createHeading("9. DAMAGE & LOSS"),
-            createNumbered("9.1", "The Licensee shall be responsible for any damage caused by its employees, agents, or guests."),
-            createNumbered("9.2", "The Licensor is not responsible for theft, loss, or damage to personal belongings, laptops, or equipment brought by the Licensee."),
-            
-            // Section 10
-            createHeading("10. TERMINATION"),
-            createNumbered("10.1", "Either Party may terminate this Agreement by giving 30 days prior written notice."),
-            createNumbered("10.2", "The Licensor may terminate this leave and license agreement immediately if there is:"),
-            createBullet("Non-payment of license fee for two months"),
-            createBullet("Any illegal activity, misconduct or nuisance by the Licensee or its employees"),
-            createBullet("Any damage caused to property & person by the Licensee or its employees"),
-            createBullet("Any Breach of Agreement terms by the Licensee or its employees"),
-            createNumbered("10.3", "On termination, the Licensee shall:"),
-            createBullet("Vacate the workspace peacefully"),
-            createBullet("Remove all personal belongings"),
-            createBullet("Return access cards/keys"),
-            createBullet("Clear all dues"),
-            
-            // Section 11
-            createHeading("11. NO TENANCY / NO LEASE"),
-            createNumbered("11.1", "This Agreement creates no tenancy, lease, occupancy rights, or interest in the Premises."),
-            createNumbered("11.2", "The Licensee acknowledges that:"),
-            createBullet("The Licensor retains full control over the Premises"),
-            createBullet("The Licensee's right is purely permissive"),
-            createBullet("This Agreement does not fall under the Rent Control Act"),
-            
-            // Section 12
-            createHeading("12. INDEMNITY"),
-            createNumbered("12.1", "The Licensee agrees to indemnify and hold harmless the Licensor from all:"),
-            createBullet("Legal claims"),
-            createBullet("Damages"),
-            createBullet("Liabilities"),
-            createBullet("Losses arising out of the Licensee's use of the Premises."),
-            createNumbered("12.2", "The Licensee will be solely responsible for compliance with all applicable laws, payments of all statutory levies, dues, or liabilities including Goods & Service Tax (GST) arising from the use of the licensed premises. The Licensor will not be held responsible in any manner whatsoever for any such liabilities, defaults or non-compliances on the part of the Licensee."),
-            
-            // Section 13
-            createHeading("13. LIMITATION OF LIABILITY"),
-            createNumbered("13.1", "The Licensor shall not be responsible for:"),
-            createBullet("Business losses"),
-            createBullet("Data loss"),
-            createBullet("Interruption of services due to external factors"),
-            createBullet("Acts of God, electrical failures, or internet breakdowns"),
-            createNumbered("13.2", "The maximum liability of the Licensor shall not exceed the monthly license fee."),
-            
-            // Section 14
-            createHeading("14. GOVERNING LAW & JURISDICTION"),
-            createNumbered("14.1", "This Agreement shall be governed by the laws of India."),
-            createNumbered("14.2", "Courts in Faridabad, Haryana shall have exclusive jurisdiction."),
-            
-            // Section 15
-            createHeading("15. MISCELLANEOUS"),
-            createNumbered("15.1", "Any amendments must be in writing and signed by both Parties."),
-            createNumbered("15.2", "Notices shall be served via email and registered post."),
-            createNumbered("15.3", "If any clause is held invalid, the remaining clauses shall remain enforceable."),
-            
-            // Section 16 - Signatures
-            createHeading("16. SIGNATURES"),
-            createPara("IN WITNESS WHEREOF, the Parties hereto have executed this Agreement on the date and year first written above."),
-            
-            new Paragraph({ text: "", spacing: { after: 300 } }),
-            
-            // Licensor signature block
-            createPara("FOR THE LICENSOR", { bold: true }),
-            createPara("Thryve Coworking"),
-            createPara(`Name: ${data.for_Thryve}`),
-            createPara(`Designation: ${data.Thryve_Designation}`),
-            createPara("Signature: ________________"),
-            createPara(`Date: ${data.Start_Date}`),
-            
-            new Paragraph({ text: "", spacing: { after: 300 } }),
-            
-            // Licensee signature block
-            createPara("FOR THE LICENSEE", { bold: true }),
-            createPara(`Name of Company: ${data.Companys_Name}`),
-            createPara(`Authorized Signatory: ${data.Authorized_Signatory}`),
-            createPara(`Designation: ${data.Designation}`),
-            createPara("Signature: ________________"),
-            createPara(`Date: ${data.Start_Date}`),
-            
-            new Paragraph({ text: "", spacing: { after: 400 } }),
-            
-            // Witnesses
-            createPara("WITNESSES:", { bold: true }),
-            new Paragraph({ text: "", spacing: { after: 200 } }),
-            createPara("1. Name: ________________"),
-            createPara("   Address: ________________"),
-            createPara("   Signature: ________________"),
-            new Paragraph({ text: "", spacing: { after: 200 } }),
-            createPara("2. Name: ________________"),
-            createPara("   Address: ________________"),
-            createPara("   Signature: ________________"),
-          ],
-        }],
-      });
-
-      const blob = await Packer.toBlob(doc);
-      saveAs(blob, `LLA_${data.Companys_Name.replace(/[^a-zA-Z0-9]/g, '_')}.docx`);
-      toast.success("Agreement generated successfully");
-    } catch (error) {
-      console.error("Error generating document:", error);
-      toast.error("Failed to generate agreement");
-    } finally {
-      setGenerating(false);
-    }
-  };
+  // Download Word button now uses server-side generation via <a> tag
+  // The generateWordDocument function is no longer needed
 
   const previewAgreement = (company) => {
     const data = generateAgreementData(company);
@@ -630,31 +319,7 @@ export default function Agreement() {
   };
 
   const printAgreement = () => {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Leave and License Agreement</title>
-          <style>
-            body { 
-              font-family: Calibri, 'Segoe UI', Arial, sans-serif; 
-              font-size: 11pt;
-              line-height: 1.5;
-              color: #000;
-            }
-            @media print { 
-              body { margin: 20mm 15mm; }
-              @page { size: A4; margin: 20mm 15mm; }
-            }
-          </style>
-        </head>
-        <body>
-          ${agreementHtml}
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
+    window.print();
   };
 
   return (
@@ -708,15 +373,15 @@ export default function Agreement() {
               <FileText className="w-4 h-4 mr-2" />
               Preview
             </Button>
-            <Button
-              onClick={() => selectedCompany && generateWordDocument(selectedCompany)}
-              disabled={!selectedCompany || generating}
-              className="bg-[#2E375B] hover:bg-[#232B47]"
+            <a
+              href={selectedCompany ? `${API}/agreements/${selectedCompany.id}/docx` : '#'}
+              download
+              className={`inline-flex items-center justify-center h-10 rounded-md px-4 text-sm font-medium ${selectedCompany ? 'bg-[#2E375B] hover:bg-[#232B47] text-white' : 'bg-gray-300 text-gray-500 pointer-events-none'}`}
               data-testid="download-word-btn"
             >
               <Download className="w-4 h-4 mr-2" />
-              {generating ? "Generating..." : "Download Word"}
-            </Button>
+              Download Word
+            </a>
           </div>
         </CardContent>
       </Card>
@@ -766,14 +431,14 @@ export default function Agreement() {
                           >
                             <FileText className="w-4 h-4" />
                           </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => generateWordDocument(company)}
-                            className="bg-[#2E375B] hover:bg-[#232B47]"
+                          <a
+                            href={`${API}/agreements/${company.id}/docx`}
+                            download
+                            className="inline-flex items-center justify-center h-9 rounded-md px-3 bg-[#2E375B] hover:bg-[#232B47] text-white text-sm"
                             title="Download Word"
                           >
                             <Download className="w-4 h-4" />
-                          </Button>
+                          </a>
                         </div>
                       </td>
                     </tr>
@@ -801,13 +466,14 @@ export default function Agreement() {
               <Printer className="w-4 h-4 mr-2" />
               Print
             </Button>
-            <Button
-              onClick={() => selectedCompany && generateWordDocument(selectedCompany)}
-              className="bg-[#2E375B] hover:bg-[#232B47]"
+            <a
+              href={selectedCompany ? `${API}/agreements/${selectedCompany.id}/docx` : '#'}
+              download
+              className="inline-flex items-center justify-center h-10 rounded-md px-4 bg-[#2E375B] hover:bg-[#232B47] text-white text-sm font-medium"
             >
               <Download className="w-4 h-4 mr-2" />
               Download Word
-            </Button>
+            </a>
           </div>
         </DialogContent>
       </Dialog>

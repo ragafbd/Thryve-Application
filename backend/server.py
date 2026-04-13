@@ -743,6 +743,37 @@ def number_to_words(num):
     int_part = int(num)
     return "Rupees " + convert(int_part) + " Only"
 
+
+# Generate LLA Word document for a company
+@api_router.get("/agreements/{company_id}/docx")
+async def generate_lla_docx(company_id: str):
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    try:
+        from utils.lla_generator import generate_lla_docx
+        docx_bytes = generate_lla_docx(company)
+        
+        name = (company.get('company_name', 'Company') or 'Company').replace(' ', '_').replace('/', '-')
+        name = ''.join(c for c in name if c.isalnum() or c in ['_', '-'])
+        filename = f"LLA_{name}.docx"
+        
+        return Response(
+            content=docx_bytes,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Content-Length": str(len(docx_bytes))
+            }
+        )
+    except Exception as e:
+        print(f"LLA generation error: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to generate LLA: {str(e)}")
+
+
 # Generate PDF for invoice - WYSIWYG using Playwright
 @api_router.get("/invoices/{invoice_id}/pdf")
 async def generate_invoice_pdf(invoice_id: str):
