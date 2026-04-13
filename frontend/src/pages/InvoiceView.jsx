@@ -168,15 +168,34 @@ export default function InvoiceView() {
   };
 
   const [showPdfViewer, setShowPdfViewer] = useState(false);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const loadPdfData = async () => {
+    if (pdfBlobUrl) {
+      setShowPdfViewer(true);
+      return;
+    }
+    setPdfLoading(true);
+    setShowPdfViewer(true);
+    try {
+      const response = await fetch(`${API}/invoices/${id}/pdf`);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      setPdfBlobUrl(url);
+      setPdfLoading(false);
+    } catch (error) {
+      toast.error("Failed to load PDF");
+      setPdfLoading(false);
+    }
+  };
 
   const handlePrint = () => {
-    setShowPdfViewer(true);
-    toast.info("Use the print button in the PDF viewer above");
+    loadPdfData();
   };
 
   const handleDownloadPDF = () => {
-    setShowPdfViewer(true);
-    toast.info("Use the download button in the PDF viewer above");
+    loadPdfData();
   };
 
   const handleDelete = async () => {
@@ -330,12 +349,14 @@ export default function InvoiceView() {
         </div>
       )}
 
-      {/* Embedded PDF Viewer - shown when user clicks Download/Print */}
+      {/* Embedded PDF Viewer */}
       {showPdfViewer && (
         <div className="flex flex-col items-center gap-3 no-print">
           <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg overflow-hidden border-2 border-[#FFA14A]">
             <div className="bg-[#2E375B] text-white px-4 py-2 flex justify-between items-center">
-              <span className="text-sm font-medium">PDF Preview — Use the toolbar to Download or Print</span>
+              <span className="text-sm font-medium">
+                {pdfLoading ? "Loading PDF..." : "PDF Preview — Use toolbar icons to Download (↓) or Print (🖨)"}
+              </span>
               <button 
                 onClick={() => setShowPdfViewer(false)}
                 className="text-white hover:text-orange-300 text-lg font-bold"
@@ -344,26 +365,20 @@ export default function InvoiceView() {
                 &times;
               </button>
             </div>
-            <iframe
-              src={`${API}/invoices/${id}/pdf`}
-              title="Invoice PDF"
-              width="100%"
-              height="600"
-              style={{ border: 'none' }}
-              data-testid="pdf-iframe-viewer"
-            />
-            <div className="bg-slate-50 px-4 py-2 flex gap-3 items-center border-t">
-              <a
-                href={`${API}/invoices/${id}/pdf`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-[#2E375B] underline hover:text-[#FFA14A]"
-              >
-                Open PDF in new tab
-              </a>
-              <span className="text-xs text-slate-400">|</span>
-              <span className="text-xs text-slate-500">Right-click the link above → "Save link as..." to download</span>
-            </div>
+            {pdfLoading ? (
+              <div className="h-[600px] flex items-center justify-center bg-slate-50">
+                <p className="text-slate-500">Loading PDF...</p>
+              </div>
+            ) : pdfBlobUrl ? (
+              <iframe
+                src={pdfBlobUrl}
+                title="Invoice PDF"
+                width="100%"
+                height="600"
+                style={{ border: 'none' }}
+                data-testid="pdf-iframe-viewer"
+              />
+            ) : null}
           </div>
         </div>
       )}
