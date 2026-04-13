@@ -4,9 +4,7 @@ Tests: Login, Register, Change Password, User Management
 """
 import pytest
 import requests
-import os
-
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
+from conftest import BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD
 
 class TestAuthLogin:
     """Test login endpoint /api/auth/login"""
@@ -14,25 +12,25 @@ class TestAuthLogin:
     def test_login_with_valid_admin_credentials(self):
         """Test login with default admin credentials"""
         response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "admin123"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
         assert "access_token" in data, "Response should contain access_token"
         assert "user" in data, "Response should contain user object"
-        assert data["user"]["email"] == "admin@thryve.in"
+        assert data["user"]["email"] == ADMIN_EMAIL
         assert data["user"]["role"] == "admin"
         assert data["user"]["name"] == "Admin"
         assert data["token_type"] == "bearer"
-        print(f"✓ Login successful for admin@thryve.in")
+        print(f"✓ Login successful for {ADMIN_EMAIL}")
     
     def test_login_with_invalid_email(self):
         """Test login with non-existent email"""
         response = requests.post(f"{BASE_URL}/api/auth/login", json={
             "email": "nonexistent@thryve.in",
-            "password": "admin123"
+            "password": ADMIN_PASSWORD
         })
         assert response.status_code == 401, f"Expected 401, got {response.status_code}"
         data = response.json()
@@ -42,7 +40,7 @@ class TestAuthLogin:
     def test_login_with_wrong_password(self):
         """Test login with wrong password"""
         response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
+            "email": ADMIN_EMAIL,
             "password": "wrongpassword"
         })
         assert response.status_code == 401, f"Expected 401, got {response.status_code}"
@@ -66,8 +64,8 @@ class TestAuthMe:
     def auth_token(self):
         """Get auth token for admin user"""
         response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "admin123"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         if response.status_code == 200:
             return response.json()["access_token"]
@@ -107,8 +105,8 @@ class TestUserManagement:
     def admin_token(self):
         """Get admin auth token"""
         response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "admin123"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         if response.status_code == 200:
             return response.json()["access_token"]
@@ -126,7 +124,7 @@ class TestUserManagement:
         assert len(data) >= 1, "Should have at least one user"
         
         # Check admin user is in the list
-        admin_user = next((u for u in data if u["email"] == "admin@thryve.in"), None)
+        admin_user = next((u for u in data if u["email"] == ADMIN_EMAIL), None)
         assert admin_user is not None, "Admin user should be in the list"
         assert admin_user["role"] == "admin"
         assert "password_hash" not in admin_user, "Password hash should not be exposed"
@@ -207,8 +205,8 @@ class TestChangePassword:
     def admin_token(self):
         """Get admin auth token"""
         response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "admin123"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         if response.status_code == 200:
             return response.json()["access_token"]
@@ -230,7 +228,7 @@ class TestChangePassword:
     def test_change_password_without_auth(self):
         """Test change password without authentication"""
         response = requests.post(f"{BASE_URL}/api/auth/change-password", json={
-            "current_password": "admin123",
+            "current_password": ADMIN_PASSWORD,
             "new_password": "newpassword123"
         })
         

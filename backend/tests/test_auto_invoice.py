@@ -7,10 +7,9 @@ Tests for:
 """
 import pytest
 import requests
-import os
+from conftest import BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 class TestAutoInvoiceEligibility:
     """Tests for GET /api/auto-invoice/eligible-companies endpoint"""
@@ -19,8 +18,8 @@ class TestAutoInvoiceEligibility:
     def setup(self):
         """Login and get auth token"""
         login_resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "password"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         assert login_resp.status_code == 200, f"Login failed: {login_resp.text}"
         self.token = login_resp.json().get("access_token")
@@ -154,8 +153,8 @@ class TestAutoInvoiceGeneration:
     def setup(self):
         """Login and get auth token"""
         login_resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "password"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         assert login_resp.status_code == 200, f"Login failed: {login_resp.text}"
         self.token = login_resp.json().get("access_token")
@@ -203,8 +202,8 @@ class TestAutoInvoiceRuns:
     def setup(self):
         """Login and get auth token"""
         login_resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "password"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         assert login_resp.status_code == 200, f"Login failed: {login_resp.text}"
         self.token = login_resp.json().get("access_token")

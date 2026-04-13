@@ -8,17 +8,16 @@ Tests:
 """
 import pytest
 import requests
-import os
+from conftest import BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 @pytest.fixture(scope="module")
 def auth_token():
     """Get authentication token"""
     response = requests.post(f"{BASE_URL}/api/auth/login", json={
-        "email": "admin@thryve.in",
-        "password": "password"
+        "email": ADMIN_EMAIL,
+        "password": ADMIN_PASSWORD
     })
     assert response.status_code == 200, f"Login failed: {response.text}"
     return response.json()["access_token"]

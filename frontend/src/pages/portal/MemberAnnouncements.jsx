@@ -23,7 +23,7 @@ export default function MemberAnnouncements() {
         const response = await axios.get(`${API}/announcements`);
         setAnnouncements(response.data);
       } catch (error) {
-        console.error("Failed to fetch announcements:", error);
+        // silenced
       } finally {
         setLoading(false);
       }

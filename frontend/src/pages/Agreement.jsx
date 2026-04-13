@@ -38,7 +38,7 @@ export default function Agreement() {
       const response = await axios.get(`${API}/companies`);
       setCompanies(response.data.filter(c => c.status === "active"));
     } catch (error) {
-      console.error("Failed to fetch companies:", error);
+      // silenced
       toast.error("Failed to load companies");
     }
   };

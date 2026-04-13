@@ -87,7 +87,7 @@ export default function MemberBookings() {
       const response = await axios.get(`${HOLIDAYS_API}/holidays`);
       setPublicHolidays(response.data);
     } catch (error) {
-      console.error("Failed to fetch public holidays");
+      // silenced
     }
   };
 
@@ -99,7 +99,7 @@ export default function MemberBookings() {
         setSelectedRoom(response.data[0]);
       }
     } catch (error) {
-      console.error("Failed to fetch rooms:", error);
+      // silenced
     }
   };
 
@@ -108,7 +108,7 @@ export default function MemberBookings() {
       const response = await axios.get(`${API}/bookings`);
       setBookings(response.data);
     } catch (error) {
-      console.error("Failed to fetch bookings:", error);
+      // silenced
     } finally {
       setLoading(false);
     }
@@ -128,7 +128,7 @@ export default function MemberBookings() {
       setRoomDisabledMessage(response.data.message || "");
       setSelectedSlots([]);
     } catch (error) {
-      console.error("Failed to fetch availability:", error);
+      // silenced
       setSlots([]);
       setIsRoomDisabled(false);
       setRoomDisabledMessage("");
@@ -145,10 +145,12 @@ export default function MemberBookings() {
     fetchPublicHolidays();
     fetchRooms();
     fetchBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     fetchAvailability();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, selectedRoom]);
 
   // Change date by number of days (allows landing on blocked dates to show the warning)

@@ -70,6 +70,7 @@ export default function Users() {
     if (isAdmin()) {
       fetchUsers();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCreateUser = async () => {

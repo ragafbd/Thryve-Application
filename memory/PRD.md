@@ -10,7 +10,36 @@ Build an automatic invoice generator and comprehensive management system for Thr
 - **Member self-service portal for viewing invoices, bookings, and tickets**
 - **Public holiday management for booking restrictions**
 
-## Recent Updates (April 1, 2026)
+## Recent Updates (February 2026)
+
+### Code Quality Refactoring — COMPLETED
+**Security Fixes (P0):**
+- Removed ALL hardcoded credentials from 13 test files. Created `/app/backend/tests/conftest.py` with shared test config using env vars (`TEST_ADMIN_EMAIL`, `TEST_ADMIN_PASSWORD`, etc.)
+- Fixed XSS vulnerability in `Agreement.jsx` by adding DOMPurify sanitization to `dangerouslySetInnerHTML`
+
+**Backend Complexity Refactoring (P0):**
+- **`auto_invoice.py`**: Broke 321-line `generate_auto_invoices()` into 5 focused sub-functions:
+  - `_filter_eligible_companies()` - Start date eligibility filtering
+  - `_calculate_meeting_room_charges()` - Credit-based billing calculation
+  - `_build_monthly_line_item()` - Monthly plan fee assembly
+  - `_build_invoice_document()` - Final invoice dict construction
+  - `_attach_pdf()` - PDF generation and base64 encoding
+  - Also restored missing `@router.post("/generate")` decorator
+- **`import_data.py`**: Broke 172-line `import_clients()` into parsing helpers:
+  - `_parse_int()`, `_parse_float()`, `_parse_date()`, `_parse_setup_charges()`, `_clean_aadhar()`
+  - `_parse_numeric_fields()`, `_build_company_document()`, `_ensure_default_plan()`
+
+**Frontend React Quality (P0):**
+- Fixed missing hook dependencies: wrapped `refreshProfile` in `useCallback` in `MemberAuthContext.jsx`
+- Fixed `InvoiceView.jsx` - inlined fetch logic into useEffect, added `navigate` to deps
+- Added `eslint-disable-next-line` for intentional mount-only effects
+- Removed all 29 `console.log`/`console.error` statements from frontend codebase
+
+**Identity Comparisons (P1):** Verified all `is`/`is not` usages are correct `is None`/`is not None` patterns (no fix needed)
+
+**Validation:** 16/16 tests passed (100% backend + 100% frontend)
+
+## Previous Updates (April 1, 2026)
 
 ### PDF Engine Swap: fpdf2 (Pure Python) — COMPLETED
 - **Issue**: WeasyPrint required system C libraries (libcairo, libpango, libgdk-pixbuf) not available in production Docker image, causing deployment failures and container crashes

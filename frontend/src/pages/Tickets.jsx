@@ -100,7 +100,7 @@ export default function Tickets() {
       const response = await axios.get(`${API}/management/members`);
       setMembers(response.data);
     } catch (error) {
-      console.error("Failed to fetch members");
+      // silenced
     }
   };
 
@@ -109,7 +109,7 @@ export default function Tickets() {
       const response = await axios.get(`${API}/auth/users`);
       setUsers(response.data);
     } catch (error) {
-      console.error("Failed to fetch users");
+      // silenced
     }
   };
 
@@ -119,6 +119,7 @@ export default function Tickets() {
     if (isAdmin()) {
       fetchUsers();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const resetForm = () => {

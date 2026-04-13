@@ -4,10 +4,9 @@ Tests: Plans, Meeting Rooms, Members, Bookings, Tickets, Announcements
 """
 import pytest
 import requests
-import os
 from datetime import datetime, timedelta
+from conftest import BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 # ==================== FIXTURES ====================
 
@@ -15,8 +14,8 @@ BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 def admin_token():
     """Get admin auth token"""
     response = requests.post(f"{BASE_URL}/api/auth/login", json={
-        "email": "admin@thryve.in",
-        "password": "admin123"
+        "email": ADMIN_EMAIL,
+        "password": ADMIN_PASSWORD
     })
     if response.status_code == 200:
         return response.json()["access_token"]

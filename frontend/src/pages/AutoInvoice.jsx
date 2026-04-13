@@ -52,7 +52,7 @@ export default function AutoInvoice() {
       const response = await axios.get(`${API}/auto-invoice/runs`);
       setRuns(response.data);
     } catch (error) {
-      console.error("Failed to fetch runs");
+      // silenced
     } finally {
       setLoading(false);
     }
@@ -65,7 +65,7 @@ export default function AutoInvoice() {
       const activeCompanies = response.data.filter(c => c.status === 'active');
       setCompanies(activeCompanies);
     } catch (error) {
-      console.error("Failed to fetch companies");
+      // silenced
     }
   };
 

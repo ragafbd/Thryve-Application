@@ -9,9 +9,8 @@ Tests:
 """
 import pytest
 import requests
-import os
+from conftest import BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 # Test invoice IDs from test_credentials.md
 TEST_INVOICE_ID = "0174dd9e-4d94-4f53-a359-cca903a24217"  # Apex Legal Eagles
@@ -29,8 +28,8 @@ class TestPDFGeneration:
         
         # Login to get token
         login_response = self.session.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "password"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         if login_response.status_code == 200:
             token = login_response.json().get("access_token")
@@ -209,8 +208,8 @@ class TestPDFContent:
         self.session.headers.update({"Content-Type": "application/json"})
         
         login_response = self.session.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "password"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         if login_response.status_code == 200:
             token = login_response.json().get("access_token")

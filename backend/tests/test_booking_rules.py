@@ -7,10 +7,8 @@ Test Booking Rules for Thryve Coworking Management System
 """
 import pytest
 import requests
-import os
 from datetime import datetime, timedelta
-
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
+from conftest import BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD
 
 class TestBookingRules:
     """Test booking rules for meeting rooms"""
@@ -24,8 +22,8 @@ class TestBookingRules:
         
         # Login as admin
         response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "admin123"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         if response.status_code == 200:
             self.admin_token = response.json()["access_token"]
@@ -273,8 +271,8 @@ class TestAdminRouting:
     def test_admin_login_endpoint(self):
         """Test admin login at /api/auth/login"""
         response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "admin123"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         
         assert response.status_code == 200, f"Admin login failed: {response.text}"

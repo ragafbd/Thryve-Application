@@ -21,13 +21,6 @@ class TestAuth:
             "password": ADMIN_PASSWORD
         })
         
-        # If password fails, try alternate password
-        if response.status_code != 200:
-            response = requests.post(f"{BASE_URL}/api/auth/login", json={
-                "email": ADMIN_EMAIL,
-                "password": "admin123"  # Default password from server.py
-            })
-        
         assert response.status_code == 200, f"Login failed: {response.text}"
         data = response.json()
         assert "access_token" in data
@@ -47,11 +40,6 @@ class TestImportClients:
             "email": ADMIN_EMAIL,
             "password": ADMIN_PASSWORD
         })
-        if response.status_code != 200:
-            response = requests.post(f"{BASE_URL}/api/auth/login", json={
-                "email": ADMIN_EMAIL,
-                "password": "admin123"
-            })
         if response.status_code == 200:
             return response.json().get("access_token")
         pytest.skip("Authentication failed")
@@ -242,11 +230,6 @@ class TestCompaniesAPI:
             "email": ADMIN_EMAIL,
             "password": ADMIN_PASSWORD
         })
-        if response.status_code != 200:
-            response = requests.post(f"{BASE_URL}/api/auth/login", json={
-                "email": ADMIN_EMAIL,
-                "password": "admin123"
-            })
         if response.status_code == 200:
             return response.json().get("access_token")
         pytest.skip("Authentication failed")
@@ -345,11 +328,6 @@ class TestLLADataIntegrity:
             "email": ADMIN_EMAIL,
             "password": ADMIN_PASSWORD
         })
-        if response.status_code != 200:
-            response = requests.post(f"{BASE_URL}/api/auth/login", json={
-                "email": ADMIN_EMAIL,
-                "password": "admin123"
-            })
         if response.status_code == 200:
             return response.json().get("access_token")
         pytest.skip("Authentication failed")

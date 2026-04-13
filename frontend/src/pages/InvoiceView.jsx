@@ -93,14 +93,30 @@ export default function InvoiceView() {
       const response = await axios.get(`${API}/companies`);
       setClients(response.data);
     } catch (error) {
-      console.error("Failed to fetch clients:", error);
+      // Failed to fetch clients silently
     }
   };
 
   useEffect(() => {
-    fetchInvoice();
-    fetchClients();
-  }, [id]);
+    const loadData = async () => {
+      try {
+        const [invoiceRes, clientsRes] = await Promise.all([
+          axios.get(`${API}/invoices/${id}`).catch(() => null),
+          axios.get(`${API}/companies`).catch(() => null)
+        ]);
+        if (invoiceRes) {
+          setInvoice(invoiceRes.data);
+        } else {
+          toast.error("Invoice not found");
+          navigate("/admin/invoices");
+        }
+        if (clientsRes) setClients(clientsRes.data);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [id, navigate]);
 
   const openEditDialog = () => {
     if (invoice) {

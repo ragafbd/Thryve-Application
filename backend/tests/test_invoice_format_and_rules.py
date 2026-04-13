@@ -8,10 +8,9 @@ Tests for:
 """
 import pytest
 import requests
-import os
+from conftest import BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 class TestInvoiceNumberFormat:
     """Test invoice number format: YYYY-YYYY/MM/SEQ/CLIENT"""
@@ -24,8 +23,8 @@ class TestInvoiceNumberFormat:
         
         # Login as admin
         login_response = self.session.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "password"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         
         if login_response.status_code == 200:
@@ -151,8 +150,8 @@ class TestGSTRoundOff:
         self.session.headers.update({"Content-Type": "application/json"})
         
         login_response = self.session.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "password"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         
         if login_response.status_code == 200:
@@ -269,8 +268,8 @@ class TestCreditPricing:
         self.session.headers.update({"Content-Type": "application/json"})
         
         login_response = self.session.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "password"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         
         if login_response.status_code == 200:
@@ -338,7 +337,7 @@ class TestCancellationPolicy:
         # Login as member
         login_response = self.session.post(f"{BASE_URL}/api/member/login", json={
             "email": "info@tbhcircle.com",
-            "password": "password"
+            "password": ADMIN_PASSWORD
         })
         
         if login_response.status_code == 200:

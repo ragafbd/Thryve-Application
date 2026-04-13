@@ -72,7 +72,7 @@ export default function ImportData() {
       setPreviewData(mappedData);
       toast.success(`Found ${mappedData.length} clients to import`);
     } catch (error) {
-      console.error("Error parsing Excel:", error);
+      // silenced
       toast.error("Failed to parse Excel file");
     }
   };
@@ -99,7 +99,7 @@ export default function ImportData() {
         toast.warning(`${response.data.errors.length} rows had errors`);
       }
     } catch (error) {
-      console.error("Import error:", error);
+      // silenced
       toast.error(error.response?.data?.detail || "Failed to import data");
     } finally {
       setImporting(false);

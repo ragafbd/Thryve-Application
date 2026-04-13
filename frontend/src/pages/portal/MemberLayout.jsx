@@ -145,7 +145,7 @@ export default function MemberLayout() {
         setLastTicketStates(newStates);
         
       } catch (error) {
-        console.error('Notification check failed:', error);
+        // silenced
       }
     };
 

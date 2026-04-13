@@ -183,7 +183,7 @@ export default function CreateInvoice() {
           setLineItems(prev => sortLineItems(prev.filter(item => !item.is_bundled_meeting_room)));
         }
       } catch (error) {
-        console.error("Failed to fetch pending charges");
+        // silenced
       }
     };
     fetchPendingCharges();

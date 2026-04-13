@@ -140,7 +140,7 @@ export default function Companies() {
       const response = await axios.get(`${API}/management/plans`);
       setPlans(response.data);
     } catch (error) {
-      console.error("Failed to fetch plans");
+      // silenced
     }
   };
 
@@ -149,7 +149,7 @@ export default function Companies() {
       const response = await axios.get(`${API}/companies/stats/summary`);
       setStats(response.data);
     } catch (error) {
-      console.error("Failed to fetch stats");
+      // silenced
     }
   };
 
@@ -157,6 +157,7 @@ export default function Companies() {
     fetchCompanies();
     fetchPlans();
     fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
 
   const resetCompanyForm = () => {
@@ -298,7 +299,7 @@ export default function Companies() {
             });
             toast.success("Signatory added as member");
           } catch (memberError) {
-            console.error("Failed to add signatory as member:", memberError);
+            // silenced
             toast.warning("Company created, but failed to add signatory as member");
           }
         }

@@ -109,7 +109,7 @@ export default function Bookings() {
       const response = await axios.get(`${API}/holidays`);
       setPublicHolidays(response.data);
     } catch (error) {
-      console.error("Failed to fetch public holidays");
+      // silenced
     }
   };
 
@@ -132,7 +132,7 @@ export default function Bookings() {
       const response = await axios.get(`${API}/management/bookings`);
       setBookings(response.data);
     } catch (error) {
-      console.error("Failed to fetch bookings");
+      // silenced
     }
   };
 
@@ -141,7 +141,7 @@ export default function Bookings() {
       const response = await axios.get(`${API}/management/members`);
       setMembers(response.data.filter(m => m.status === 'active'));
     } catch (error) {
-      console.error("Failed to fetch members");
+      // silenced
     }
   };
 
@@ -156,7 +156,7 @@ export default function Bookings() {
       setIsRoomDisabled(response.data.is_room_disabled || false);
       setRoomDisabledMessage(response.data.message || "");
     } catch (error) {
-      console.error("Failed to fetch availability");
+      // silenced
       setSlots([]);
       setIsRoomDisabled(false);
       setRoomDisabledMessage("");
@@ -218,10 +218,12 @@ export default function Bookings() {
     fetchRooms();
     fetchBookings();
     fetchMembers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     fetchAvailability();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, selectedRoom]);
 
   const changeDate = (days) => {

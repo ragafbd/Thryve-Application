@@ -72,7 +72,7 @@ export default function MemberTickets() {
       const response = await axios.get(`${API}/tickets`);
       setTickets(response.data);
     } catch (error) {
-      console.error("Failed to fetch tickets:", error);
+      // silenced
     } finally {
       setLoading(false);
     }

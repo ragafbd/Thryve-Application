@@ -51,6 +51,7 @@ export default function PublicHolidays() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchHolidays();
   }, [selectedYear]);

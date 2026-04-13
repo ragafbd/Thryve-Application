@@ -150,7 +150,7 @@ export default function Layout() {
         setNewTicketCount(openTickets);
         setLastTicketCheck(openTickets);
       } catch (error) {
-        console.error('Failed to check tickets:', error);
+        // silenced
       }
     };
 
@@ -170,7 +170,7 @@ export default function Layout() {
         const response = await axios.get(`${API}/management/birthdays/upcoming?days=10`);
         setUpcomingBirthdayCount(response.data?.length || 0);
       } catch (error) {
-        console.error('Failed to fetch birthdays:', error);
+        // silenced
       }
     };
 

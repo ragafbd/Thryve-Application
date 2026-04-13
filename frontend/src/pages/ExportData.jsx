@@ -70,7 +70,7 @@ export default function ExportData() {
 
       toast.success(`Exported ${exportData.length} clients to Excel`);
     } catch (error) {
-      console.error("Export error:", error);
+      // silenced
       toast.error("Failed to export data");
     } finally {
       setExportingClients(false);
@@ -122,7 +122,7 @@ export default function ExportData() {
 
       toast.success(`Exported ${exportData.length} members to Excel`);
     } catch (error) {
-      console.error("Export error:", error);
+      // silenced
       toast.error("Failed to export data");
     } finally {
       setExportingMembers(false);

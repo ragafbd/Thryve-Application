@@ -6,9 +6,8 @@ Test Invoice Edit Feature
 """
 import pytest
 import requests
-import os
+from conftest import BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 class TestInvoiceEdit:
     """Invoice Edit endpoint tests"""
@@ -21,8 +20,8 @@ class TestInvoiceEdit:
         
         # Login to get token
         login_response = self.session.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "password"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         
         if login_response.status_code == 200:
@@ -289,8 +288,8 @@ class TestCreateInvoiceDescription:
         
         # Login to get token
         login_response = self.session.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@thryve.in",
-            "password": "password"
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
         })
         
         if login_response.status_code == 200:

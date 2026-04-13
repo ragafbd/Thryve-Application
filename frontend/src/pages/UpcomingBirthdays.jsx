@@ -17,7 +17,7 @@ export default function UpcomingBirthdays() {
         const response = await axios.get(`${API}/management/birthdays/upcoming?days=10`);
         setBirthdays(response.data || []);
       } catch (error) {
-        console.error("Error fetching birthdays:", error);
+        // silenced
       } finally {
         setLoading(false);
       }

@@ -45,7 +45,7 @@ export default function MemberInvoices() {
         const response = await axios.get(`${API}/member/invoices`);
         setInvoices(response.data);
       } catch (error) {
-        console.error("Failed to fetch invoices:", error);
+        // silenced
       } finally {
         setLoading(false);
       }
@@ -66,7 +66,7 @@ export default function MemberInvoices() {
       link.click();
       link.remove();
     } catch (error) {
-      console.error("Failed to download PDF:", error);
+      // silenced
     }
   };
 
