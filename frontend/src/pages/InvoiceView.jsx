@@ -171,31 +171,33 @@ export default function InvoiceView() {
   const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
 
-  const loadPdfData = async () => {
-    if (pdfBlobUrl) {
-      setShowPdfViewer(true);
-      return;
-    }
-    setPdfLoading(true);
-    setShowPdfViewer(true);
+  const handleDownloadPDF = async () => {
     try {
+      setPdfLoading(true);
+      toast.info("Generating PDF...");
       const response = await fetch(`${API}/invoices/${id}/pdf`);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-      setPdfBlobUrl(url);
-      setPdfLoading(false);
+      // Navigate to the PDF — opens Chrome's full-page PDF viewer with working download/print
+      window.location.href = url;
     } catch (error) {
       toast.error("Failed to load PDF");
       setPdfLoading(false);
     }
   };
 
-  const handlePrint = () => {
-    loadPdfData();
-  };
-
-  const handleDownloadPDF = () => {
-    loadPdfData();
+  const handlePrint = async () => {
+    try {
+      setPdfLoading(true);
+      toast.info("Loading invoice for print...");
+      const response = await fetch(`${API}/invoices/${id}/pdf`);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      window.location.href = url;
+    } catch (error) {
+      toast.error("Failed to load PDF");
+      setPdfLoading(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -345,40 +347,6 @@ export default function InvoiceView() {
             <p className="text-sm text-red-600">
               This invoice was due on {invoice.due_date && new Date(invoice.due_date).toLocaleDateString('en-IN')}
             </p>
-          </div>
-        </div>
-      )}
-
-      {/* Embedded PDF Viewer */}
-      {showPdfViewer && (
-        <div className="flex flex-col items-center gap-3 no-print">
-          <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg overflow-hidden border-2 border-[#FFA14A]">
-            <div className="bg-[#2E375B] text-white px-4 py-2 flex justify-between items-center">
-              <span className="text-sm font-medium">
-                {pdfLoading ? "Loading PDF..." : "PDF Preview — Use toolbar icons to Download (↓) or Print (🖨)"}
-              </span>
-              <button 
-                onClick={() => setShowPdfViewer(false)}
-                className="text-white hover:text-orange-300 text-lg font-bold"
-                data-testid="close-pdf-viewer"
-              >
-                &times;
-              </button>
-            </div>
-            {pdfLoading ? (
-              <div className="h-[600px] flex items-center justify-center bg-slate-50">
-                <p className="text-slate-500">Loading PDF...</p>
-              </div>
-            ) : pdfBlobUrl ? (
-              <iframe
-                src={pdfBlobUrl}
-                title="Invoice PDF"
-                width="100%"
-                height="600"
-                style={{ border: 'none' }}
-                data-testid="pdf-iframe-viewer"
-              />
-            ) : null}
           </div>
         </div>
       )}
