@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import DOMPurify from "dompurify";
 import axios from "axios";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -459,7 +460,7 @@ export default function Agreement() {
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4 border rounded-lg p-4 bg-white">
-            <div dangerouslySetInnerHTML={{ __html: agreementHtml }} />
+            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(agreementHtml) }} />
           </div>
           <div className="flex justify-end gap-2 mt-4">
             <Button variant="outline" onClick={printAgreement} data-testid="print-btn">

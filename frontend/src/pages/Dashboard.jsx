@@ -49,27 +49,24 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log("Dashboard: Fetching data from API:", API);
       try {
         // Check for overdue invoices first
         await axios.post(`${API}/invoices/check-overdue`).catch(() => {});
         
         // Fetch all data independently to prevent one failure from blocking others
         const [statsRes, invoicesRes, mgmtStatsRes, chargesRes] = await Promise.all([
-          axios.get(`${API}/stats`).catch(e => { console.error("Stats error:", e); return { data: null, error: e }; }),
-          axios.get(`${API}/invoices`).catch(e => { console.error("Invoices error:", e); return { data: [], error: e }; }),
-          axios.get(`${API}/management/stats`).catch(e => { console.error("Management stats error:", e); return { data: null, error: e }; }),
-          axios.get(`${API}/management/pending-charges`).catch(e => { console.error("Pending charges error:", e); return { data: null, error: e }; })
+          axios.get(`${API}/stats`).catch(e => ({ data: null, error: e })),
+          axios.get(`${API}/invoices`).catch(e => ({ data: [], error: e })),
+          axios.get(`${API}/management/stats`).catch(e => ({ data: null, error: e })),
+          axios.get(`${API}/management/pending-charges`).catch(e => ({ data: null, error: e }))
         ]);
-        
-        console.log("Dashboard: Management stats response:", mgmtStatsRes.data);
         
         if (statsRes.data && !statsRes.error) setInvoiceStats(statsRes.data);
         if (invoicesRes.data && !invoicesRes.error) setRecentInvoices(invoicesRes.data.slice(0, 5));
         if (mgmtStatsRes.data && !mgmtStatsRes.error) setManagementStats(mgmtStatsRes.data);
         if (chargesRes.data && !chargesRes.error) setPendingCharges(chargesRes.data);
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
+        // Dashboard data fetch failed silently
       } finally {
         setLoading(false);
       }

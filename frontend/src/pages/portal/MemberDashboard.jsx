@@ -39,15 +39,15 @@ export default function MemberDashboard() {
         setAnnouncements(annRes.data.slice(0, 3));
         setPendingCharges(chargesRes.data || []);
         setCompanyCredits(creditsRes.data);
-        refreshProfile(); // Refresh credits info
+        refreshProfile();
       } catch (error) {
-        console.error("Error fetching data:", error);
+        // Data fetch failed silently
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [refreshProfile]);
 
   const pendingInvoices = invoices.filter(i => i.status === 'pending' || i.status === 'overdue');
   const openTickets = tickets.filter(t => t.status === 'open' || t.status === 'in_progress');

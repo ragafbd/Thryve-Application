@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useMemo } from "react";
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api/member`;
@@ -82,12 +82,12 @@ export function MemberAuthProvider({ children }) {
     });
   };
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     const token = localStorage.getItem("member_token");
     if (token) {
       await fetchMemberProfile(token);
     }
-  };
+  }, []);
 
   const value = useMemo(() => ({
     member,
@@ -98,7 +98,7 @@ export function MemberAuthProvider({ children }) {
     changePassword,
     isAuthenticated: !!member,
     refreshProfile
-  }), [member, loading]);
+  }), [member, loading, refreshProfile]);
 
   return (
     <MemberAuthContext.Provider value={value}>

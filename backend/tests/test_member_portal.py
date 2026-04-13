@@ -4,17 +4,10 @@ Tests for member registration, login, invoices, bookings, tickets, and announcem
 """
 import pytest
 import requests
-import os
+from conftest import BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
-
-# Test member credentials
 TEST_MEMBER_EMAIL = "testmember@thryve.in"
 TEST_MEMBER_PASSWORD = "member123"
-
-# Admin credentials for setup
-ADMIN_EMAIL = "admin@thryve.in"
-ADMIN_PASSWORD = "admin123"
 
 
 class TestMemberPortalAuth:

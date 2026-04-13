@@ -9,32 +9,8 @@ Test Public Holidays Feature
 """
 import pytest
 import requests
-import os
 from datetime import datetime, timedelta
-
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cowork-invoicing.preview.emergentagent.com')
-
-# Test credentials
-ADMIN_EMAIL = "admin@thryve.in"
-ADMIN_PASSWORD = "password"
-
-
-@pytest.fixture(scope="module")
-def admin_token():
-    """Get admin authentication token"""
-    response = requests.post(
-        f"{BASE_URL}/api/auth/login",
-        json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
-    )
-    if response.status_code != 200:
-        pytest.skip(f"Admin login failed: {response.text}")
-    return response.json()["access_token"]
-
-
-@pytest.fixture(scope="module")
-def auth_headers(admin_token):
-    """Get authorization headers"""
-    return {"Authorization": f"Bearer {admin_token}"}
+from conftest import BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD
 
 
 class TestPublicHolidaysAPI:

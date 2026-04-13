@@ -82,7 +82,7 @@ export default function MemberLayout() {
         setTimeout(() => { osc2.stop(); ctx2.close(); }, 150);
       }, 200);
     } catch (e) {
-      console.log('Audio not supported');
+      // Audio not supported
     }
   };
 

@@ -120,7 +120,7 @@ export default function Layout() {
         }, 200);
       }, 250);
     } catch (e) {
-      console.log('Audio notification not supported');
+      // Audio notification not supported
     }
   };
 

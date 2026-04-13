@@ -10,16 +10,8 @@ Tests for:
 """
 import pytest
 import requests
-import os
 from datetime import datetime, timedelta
-
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
-
-# Test credentials
-ADMIN_EMAIL = "admin@thryve.in"
-ADMIN_PASSWORD = "password"
-MEMBER_EMAIL = "info@tbhcircle.com"
-MEMBER_PASSWORD = "password"
+from conftest import BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD, MEMBER_EMAIL, MEMBER_PASSWORD
 
 
 class TestAdminCompanyCredits:

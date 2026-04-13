@@ -7,14 +7,8 @@ Tests:
 """
 import pytest
 import requests
-import os
 import uuid
-
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
-
-# Test credentials
-ADMIN_EMAIL = "admin@thryve.in"
-ADMIN_PASSWORD = "password"  # Updated password from test request
+from conftest import BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD
 
 
 class TestAuth:
