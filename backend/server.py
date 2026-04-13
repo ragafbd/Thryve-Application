@@ -766,7 +766,7 @@ async def generate_invoice_pdf(invoice_id: str):
             content=pdf_content,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f"attachment; filename={filename}",
+                "Content-Disposition": f"inline; filename={filename}",
                 "Content-Length": str(len(pdf_content))
             }
         )

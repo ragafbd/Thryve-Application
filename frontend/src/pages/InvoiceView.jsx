@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import axios from "axios";
-import { saveAs } from "file-saver";
 import InvoicePreview from "@/components/InvoicePreview";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -168,40 +167,16 @@ export default function InvoiceView() {
     }
   };
 
-  const handlePrint = async () => {
-    // Open window immediately to avoid popup blocker (must be synchronous with click)
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      toast.error("Popup blocked — please allow popups for this site, then try again");
-      return;
-    }
-    printWindow.document.write('<p>Loading invoice PDF...</p>');
-    try {
-      const response = await fetch(`${API}/invoices/${id}/pdf`);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      printWindow.location.href = blobUrl;
-      setTimeout(() => {
-        printWindow.focus();
-        printWindow.print();
-      }, 1500);
-    } catch (error) {
-      printWindow.close();
-      toast.error("Failed to print invoice");
-    }
+  const [showPdfViewer, setShowPdfViewer] = useState(false);
+
+  const handlePrint = () => {
+    setShowPdfViewer(true);
+    toast.info("Use the print button in the PDF viewer above");
   };
 
-  const handleDownloadPDF = async () => {
-    try {
-      toast.info("Generating PDF...");
-      const response = await fetch(`${API}/invoices/${id}/pdf`);
-      const blob = await response.blob();
-      const invoiceNum = (invoice?.invoice_number || 'invoice').replace(/\//g, '-');
-      const clientName = (invoice?.client?.company_name || 'Client').replace(/\s+/g, '_');
-      saveAs(blob, `${invoiceNum}_${clientName}.pdf`);
-    } catch (error) {
-      toast.error("Failed to download PDF");
-    }
+  const handleDownloadPDF = () => {
+    setShowPdfViewer(true);
+    toast.info("Use the download button in the PDF viewer above");
   };
 
   const handleDelete = async () => {
@@ -351,6 +326,44 @@ export default function InvoiceView() {
             <p className="text-sm text-red-600">
               This invoice was due on {invoice.due_date && new Date(invoice.due_date).toLocaleDateString('en-IN')}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Embedded PDF Viewer - shown when user clicks Download/Print */}
+      {showPdfViewer && (
+        <div className="flex flex-col items-center gap-3 no-print">
+          <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg overflow-hidden border-2 border-[#FFA14A]">
+            <div className="bg-[#2E375B] text-white px-4 py-2 flex justify-between items-center">
+              <span className="text-sm font-medium">PDF Preview — Use the toolbar to Download or Print</span>
+              <button 
+                onClick={() => setShowPdfViewer(false)}
+                className="text-white hover:text-orange-300 text-lg font-bold"
+                data-testid="close-pdf-viewer"
+              >
+                &times;
+              </button>
+            </div>
+            <iframe
+              src={`${API}/invoices/${id}/pdf`}
+              title="Invoice PDF"
+              width="100%"
+              height="600"
+              style={{ border: 'none' }}
+              data-testid="pdf-iframe-viewer"
+            />
+            <div className="bg-slate-50 px-4 py-2 flex gap-3 items-center border-t">
+              <a
+                href={`${API}/invoices/${id}/pdf`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-[#2E375B] underline hover:text-[#FFA14A]"
+              >
+                Open PDF in new tab
+              </a>
+              <span className="text-xs text-slate-400">|</span>
+              <span className="text-xs text-slate-500">Right-click the link above → "Save link as..." to download</span>
+            </div>
           </div>
         </div>
       )}
