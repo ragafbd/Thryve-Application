@@ -38,6 +38,7 @@ app.add_middleware(
     allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition", "Content-Length"],
 )
 
 # Create a router with the /api prefix
@@ -764,7 +765,8 @@ async def generate_lla_docx(company_id: str):
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             headers={
                 "Content-Disposition": f"attachment; filename={filename}",
-                "Content-Length": str(len(docx_bytes))
+                "Content-Length": str(len(docx_bytes)),
+                "Access-Control-Expose-Headers": "Content-Disposition"
             }
         )
     except Exception as e:
@@ -797,8 +799,9 @@ async def generate_invoice_pdf(invoice_id: str):
             content=pdf_content,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f"inline; filename={filename}",
-                "Content-Length": str(len(pdf_content))
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Content-Length": str(len(pdf_content)),
+                "Access-Control-Expose-Headers": "Content-Disposition"
             }
         )
     except Exception as e:
