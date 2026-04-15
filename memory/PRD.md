@@ -328,8 +328,9 @@ Build an automatic invoice generator and comprehensive management system for Thr
 #### Plans Available
 | Plan | Default Rate | Meeting Room Credits |
 |------|-------------|---------------------|
-| Private Cabin - 4 Seater | Rs. 40,000/mo | 480 min/mo |
-| Private Cabin - 6 Seater | Rs. 55,000/mo | 600 min/mo |
+| Cabin - 2 Seater | Rs. 20,000/mo | 240 min/mo |
+| Cabin - 4 Seater | Rs. 40,000/mo | 480 min/mo |
+| Cabin - 6 Seater | Rs. 55,000/mo | 600 min/mo |
 | Open Desk | Rs. 8,000/mo | 120 min/mo |
 | Hot Desk | Rs. 6,000/mo | 60 min/mo |
 | Day Pass | Rs. 500/day | 0 min |

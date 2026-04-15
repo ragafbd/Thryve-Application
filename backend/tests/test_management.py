@@ -42,7 +42,7 @@ class TestPlanTypes:
         
         # Verify default plans exist
         plan_names = [p["name"] for p in data]
-        assert "Private Cabin - 4 Seater" in plan_names, "Missing Private Cabin - 4 Seater plan"
+        assert "Cabin - 4 Seater" in plan_names, "Missing Cabin - 4 Seater plan"
         assert "Open Desk" in plan_names, "Missing Open Desk plan"
         assert "Hot Desk" in plan_names, "Missing Hot Desk plan"
         assert "Day Pass" in plan_names, "Missing Day Pass plan"
@@ -72,8 +72,8 @@ class TestPlanTypes:
         plans_dict = {p["name"]: p for p in data}
         
         # Verify rates as per requirements
-        assert plans_dict["Private Cabin - 4 Seater"]["default_rate"] == 40000, "4-seater cabin should be 40k"
-        assert plans_dict["Private Cabin - 6 Seater"]["default_rate"] == 55000, "6-seater cabin should be 55k"
+        assert plans_dict["Cabin - 4 Seater"]["default_rate"] == 40000, "4-seater cabin should be 40k"
+        assert plans_dict["Cabin - 6 Seater"]["default_rate"] == 55000, "6-seater cabin should be 55k"
         assert plans_dict["Open Desk"]["default_rate"] == 8000, "Open Desk should be 8k"
         assert plans_dict["Hot Desk"]["default_rate"] == 6000, "Hot Desk should be 6k"
         assert plans_dict["Day Pass"]["default_rate"] == 500, "Day Pass should be 500"

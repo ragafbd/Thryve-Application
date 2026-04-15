@@ -1176,13 +1176,29 @@ async def seed_default_data(database=None):
     
     # Default plan types
     default_plans = [
-        {"name": "Private Cabin - 4 Seater", "category": "cabin", "capacity": 4, "default_rate": 40000, "meeting_room_credits": 480},
-        {"name": "Private Cabin - 6 Seater", "category": "cabin", "capacity": 6, "default_rate": 55000, "meeting_room_credits": 600},
+        {"name": "Cabin - 2 Seater", "category": "cabin", "capacity": 2, "default_rate": 20000, "meeting_room_credits": 240},
+        {"name": "Cabin - 4 Seater", "category": "cabin", "capacity": 4, "default_rate": 40000, "meeting_room_credits": 480},
+        {"name": "Cabin - 6 Seater", "category": "cabin", "capacity": 6, "default_rate": 55000, "meeting_room_credits": 600},
         {"name": "Open Desk", "category": "open_desk", "capacity": 1, "default_rate": 8000, "meeting_room_credits": 120},
         {"name": "Hot Desk", "category": "hot_desk", "capacity": 1, "default_rate": 6000, "meeting_room_credits": 60},
         {"name": "Day Pass", "category": "day_pass", "capacity": 1, "default_rate": 500, "meeting_room_credits": 0},
     ]
     
+    # Migrate: Rename "Private Cabin" → "Cabin" in plan_types and companies
+    renames = [
+        ("Private Cabin - 4 Seater", "Cabin - 4 Seater"),
+        ("Private Cabin - 6 Seater", "Cabin - 6 Seater"),
+    ]
+    for old_name, new_name in renames:
+        await _db.plan_types.update_many(
+            {"name": old_name},
+            {"$set": {"name": new_name}}
+        )
+        await _db.companies.update_many(
+            {"plan_name": old_name},
+            {"$set": {"plan_name": new_name}}
+        )
+
     for plan in default_plans:
         existing = await _db.plan_types.find_one({"name": plan["name"]})
         if not existing:

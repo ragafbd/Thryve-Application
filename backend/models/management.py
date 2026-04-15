@@ -12,7 +12,7 @@ class PlanType(BaseModel):
     """Defines available workspace plans"""
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str  # e.g., "Private Cabin - 4 Seater", "Open Desk", "Hot Desk", "Day Pass"
+    name: str  # e.g., "Cabin - 4 Seater", "Open Desk", "Hot Desk", "Day Pass"
     category: str  # cabin, open_desk, hot_desk, day_pass
     capacity: Optional[int] = None  # For cabins: 4, 6, 1 (boss cabin)
     default_rate: float  # Default monthly rate
