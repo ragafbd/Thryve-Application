@@ -1176,7 +1176,7 @@ async def seed_default_data(database=None):
     
     # Default plan types
     default_plans = [
-        {"name": "Cabin - 2 Seater", "category": "cabin", "capacity": 2, "default_rate": 20000, "meeting_room_credits": 240},
+        {"name": "Cabin - 2 Seater", "category": "cabin", "capacity": 2, "default_rate": 0, "meeting_room_credits": 0},
         {"name": "Cabin - 4 Seater", "category": "cabin", "capacity": 4, "default_rate": 40000, "meeting_room_credits": 480},
         {"name": "Cabin - 6 Seater", "category": "cabin", "capacity": 6, "default_rate": 55000, "meeting_room_credits": 600},
         {"name": "Open Desk", "category": "open_desk", "capacity": 1, "default_rate": 8000, "meeting_room_credits": 120},
