@@ -869,9 +869,9 @@ async def check_overdue_invoices():
     return {"updated_count": result.modified_count}
 
 
-# Get all companies/clients with overdue invoices
+# Get all companies/clients with their invoice payment status
 @api_router.get("/overdue-clients")
-async def get_overdue_clients():
+async def get_clients_by_status():
     # First update any pending invoices that are now overdue
     today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
     await db.invoices.update_many(
@@ -879,27 +879,35 @@ async def get_overdue_clients():
         {"$set": {"status": "overdue"}}
     )
 
-    overdue_invoices = await db.invoices.find(
-        {"status": "overdue"}, {"_id": 0}
-    ).to_list(1000)
+    invoices = await db.invoices.find({}, {"_id": 0}).to_list(5000)
 
-    # Group by company
     companies = {}
-    for inv in overdue_invoices:
+    for inv in invoices:
         client = inv.get("client", {})
         company_name = client.get("company_name", "")
+        if not company_name:
+            continue
         if company_name not in companies:
-            companies[company_name] = 0
-        companies[company_name] += inv.get("grand_total", 0)
+            companies[company_name] = {"paid": 0, "pending": 0, "overdue": 0}
+        status = inv.get("status", "pending")
+        if status in companies[company_name]:
+            companies[company_name][status] += inv.get("grand_total", 0)
 
-    result = [
-        {
+    result = []
+    for name, amounts in sorted(companies.items()):
+        if amounts["overdue"] > 0:
+            status = "overdue"
+        elif amounts["pending"] > 0:
+            status = "pending"
+        else:
+            status = "paid"
+        result.append({
             "company_name": name,
-            "status": "overdue",
-            "overdue_amount": round(amount, 2),
-        }
-        for name, amount in sorted(companies.items(), key=lambda x: x[1], reverse=True)
-    ]
+            "status": status,
+            "paid_amount": round(amounts["paid"], 2),
+            "pending_amount": round(amounts["pending"], 2),
+            "overdue_amount": round(amounts["overdue"], 2),
+        })
 
     return result
 
