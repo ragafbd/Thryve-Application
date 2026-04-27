@@ -914,6 +914,66 @@ async def get_clients_by_status():
 
 
 
+
+# Get paid/pending companies with their member details (name + mobile)
+@api_router.get("/paid-clients")
+async def get_paid_clients():
+    # Update overdue statuses first
+    today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    await db.invoices.update_many(
+        {"status": "pending", "due_date": {"$lt": today}},
+        {"$set": {"status": "overdue"}}
+    )
+
+    # Get all invoices grouped by company
+    invoices = await db.invoices.find({}, {"_id": 0}).to_list(5000)
+    company_statuses = {}
+    for inv in invoices:
+        name = inv.get("client", {}).get("company_name", "")
+        if not name:
+            continue
+        status = inv.get("status", "pending")
+        if name not in company_statuses:
+            company_statuses[name] = set()
+        company_statuses[name].add(status)
+
+    # Get only paid or pending companies (no overdue)
+    eligible_companies = []
+    all_companies = await db.companies.find({"status": "active"}, {"_id": 0}).to_list(1000)
+    for comp in all_companies:
+        name = comp["company_name"]
+        statuses = company_statuses.get(name, set())
+        if "overdue" in statuses:
+            continue
+        if "paid" in statuses or "pending" in statuses:
+            eligible_companies.append(comp)
+
+    # Get members for eligible companies
+    result = []
+    for comp in eligible_companies:
+        members = await db.members.find(
+            {"company_id": comp["id"], "status": "active"},
+            {"_id": 0, "name": 1, "phone": 1}
+        ).to_list(100)
+
+        statuses = company_statuses.get(comp["company_name"], set())
+        if "pending" in statuses:
+            status = "pending"
+        else:
+            status = "paid"
+
+        result.append({
+            "company_name": comp["company_name"],
+            "status": status,
+            "members": [
+                {"name": m.get("name", ""), "mobile": m.get("phone", "")}
+                for m in members
+            ],
+        })
+
+    return sorted(result, key=lambda x: x["company_name"])
+
+
 # Get invoice payment status (paid/pending/overdue)
 @api_router.get("/invoices/{invoice_id}/status")
 async def get_invoice_status(invoice_id: str):
