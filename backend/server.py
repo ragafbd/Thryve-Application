@@ -868,6 +868,57 @@ async def check_overdue_invoices():
     )
     return {"updated_count": result.modified_count}
 
+
+# Get invoice payment status (paid/pending/overdue)
+@api_router.get("/invoices/{invoice_id}/status")
+async def get_invoice_status(invoice_id: str):
+    invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    return {
+        "invoice_id": invoice["id"],
+        "invoice_number": invoice.get("invoice_number", ""),
+        "status": invoice.get("status", "pending"),
+        "grand_total": invoice.get("grand_total", 0),
+        "due_date": invoice.get("due_date", ""),
+        "payment_date": invoice.get("payment_date"),
+        "company_name": invoice.get("client", {}).get("company_name", ""),
+    }
+
+
+# Get client (company) with its member details
+@api_router.get("/clients/{company_id}/members")
+async def get_client_with_members(company_id: str):
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    if not company:
+        raise HTTPException(status_code=404, detail="Client not found")
+    members = await db.members.find({"company_id": company_id}, {"_id": 0}).to_list(100)
+    return {
+        "company_id": company["id"],
+        "company_name": company.get("company_name", ""),
+        "status": company.get("status", ""),
+        "signatory_name": company.get("signatory_name", ""),
+        "signatory_email": company.get("signatory_email", ""),
+        "signatory_phone": company.get("signatory_phone", ""),
+        "plan_name": company.get("plan_name", ""),
+        "total_seats": company.get("total_seats", 0),
+        "members": [
+            {
+                "id": m["id"],
+                "name": m.get("name", ""),
+                "email": m.get("email", ""),
+                "phone": m.get("phone", ""),
+                "is_primary": m.get("is_primary", False),
+                "status": m.get("status", ""),
+                "seat_number": m.get("seat_number", ""),
+                "date_of_birth": m.get("date_of_birth", ""),
+            }
+            for m in members
+        ],
+        "total_members": len(members),
+    }
+
+
 # Download Excel Template
 @api_router.get("/excel/template")
 async def download_excel_template():
