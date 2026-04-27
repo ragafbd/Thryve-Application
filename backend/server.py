@@ -869,6 +869,53 @@ async def check_overdue_invoices():
     return {"updated_count": result.modified_count}
 
 
+# Get all companies/clients with overdue invoices
+@api_router.get("/overdue-clients")
+async def get_overdue_clients():
+    # First update any pending invoices that are now overdue
+    today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    await db.invoices.update_many(
+        {"status": "pending", "due_date": {"$lt": today}},
+        {"$set": {"status": "overdue"}}
+    )
+
+    overdue_invoices = await db.invoices.find(
+        {"status": "overdue"}, {"_id": 0}
+    ).to_list(1000)
+
+    # Group by company
+    companies = {}
+    for inv in overdue_invoices:
+        client = inv.get("client", {})
+        company_id = client.get("id", "")
+        if company_id not in companies:
+            companies[company_id] = {
+                "company_id": company_id,
+                "company_name": client.get("company_name", ""),
+                "contact_name": client.get("name", ""),
+                "email": client.get("email", ""),
+                "phone": client.get("phone", ""),
+                "overdue_invoices": [],
+                "total_overdue_amount": 0,
+            }
+        companies[company_id]["overdue_invoices"].append({
+            "invoice_id": inv.get("id"),
+            "invoice_number": inv.get("invoice_number", ""),
+            "grand_total": inv.get("grand_total", 0),
+            "due_date": inv.get("due_date", ""),
+            "billing_month": inv.get("billing_month", ""),
+        })
+        companies[company_id]["total_overdue_amount"] += inv.get("grand_total", 0)
+
+    result = sorted(companies.values(), key=lambda c: c["total_overdue_amount"], reverse=True)
+    return {
+        "total_overdue_companies": len(result),
+        "total_overdue_amount": round(sum(c["total_overdue_amount"] for c in result), 2),
+        "companies": result,
+    }
+
+
+
 # Get invoice payment status (paid/pending/overdue)
 @api_router.get("/invoices/{invoice_id}/status")
 async def get_invoice_status(invoice_id: str):
