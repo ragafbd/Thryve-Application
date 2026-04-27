@@ -879,37 +879,38 @@ async def get_clients_by_status():
         {"$set": {"status": "overdue"}}
     )
 
-    invoices = await db.invoices.find({}, {"_id": 0}).to_list(5000)
+    # Get all active companies
+    all_companies = await db.companies.find(
+        {"status": "active"}, {"_id": 0, "company_name": 1}
+    ).to_list(1000)
 
-    companies = {}
+    # Get all invoices grouped by company
+    invoices = await db.invoices.find({}, {"_id": 0}).to_list(5000)
+    company_statuses = {}
     for inv in invoices:
-        client = inv.get("client", {})
-        company_name = client.get("company_name", "")
-        if not company_name:
+        name = inv.get("client", {}).get("company_name", "")
+        if not name:
             continue
-        if company_name not in companies:
-            companies[company_name] = {"paid": 0, "pending": 0, "overdue": 0}
         status = inv.get("status", "pending")
-        if status in companies[company_name]:
-            companies[company_name][status] += inv.get("grand_total", 0)
+        if name not in company_statuses:
+            company_statuses[name] = set()
+        company_statuses[name].add(status)
 
     result = []
-    for name, amounts in sorted(companies.items()):
-        if amounts["overdue"] > 0:
+    for comp in all_companies:
+        name = comp["company_name"]
+        statuses = company_statuses.get(name, set())
+        if "overdue" in statuses:
             status = "overdue"
-        elif amounts["pending"] > 0:
+        elif "pending" in statuses:
             status = "pending"
-        else:
+        elif "paid" in statuses:
             status = "paid"
-        result.append({
-            "company_name": name,
-            "status": status,
-            "paid_amount": round(amounts["paid"], 2),
-            "pending_amount": round(amounts["pending"], 2),
-            "overdue_amount": round(amounts["overdue"], 2),
-        })
+        else:
+            status = "no invoices"
+        result.append({"company_name": name, "status": status})
 
-    return result
+    return sorted(result, key=lambda x: x["company_name"])
 
 
 
