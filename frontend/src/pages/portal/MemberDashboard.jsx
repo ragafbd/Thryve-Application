@@ -104,8 +104,9 @@ export default function MemberDashboard() {
               </div>
             </div>
             {/* Credit costs info */}
-            <div className="text-xs font-semibold text-[#2E375B]/70 mb-2 bg-white/50 p-2 rounded">
-              <strong>Costs:</strong> Conference Room: Rs. 1000 OR 20 credits for 60 minutes or part of • Meeting Room: Rs. 250 OR 5 credits for 30 minutes or part of
+            <div className="text-xs font-semibold text-[#2E375B]/70 mb-2 bg-white/50 p-2 rounded text-center">
+              <div>Conference Room: Rs. 1000 OR 20 credits for 60 minutes or part of</div>
+              <div>Meeting Room: Rs. 250 OR 5 credits for 30 minutes or part of</div>
             </div>
             {/* Progress bar */}
             <div>
