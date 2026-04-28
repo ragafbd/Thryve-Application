@@ -450,7 +450,7 @@ export default function Bookings() {
                             {room.display_name}
                           </p>
                           <p className={`text-sm ${roomDisabledForSelectedDate ? "text-gray-400" : "text-[#2E375B]"}`}>
-                            {room.capacity} seats • ₹{room.hourly_rate}/{room.slot_duration === 60 ? 'hr' : '30 min or part of'} • {room.credit_cost_per_slot} credits/{room.slot_duration === 60 ? 'hr' : '30 min'}
+                            {room.capacity} seats • Rs. {room.hourly_rate} OR {room.credit_cost_per_slot} credits for {room.slot_duration} minutes or part of
                           </p>
                         </div>
                         {roomDisabledForSelectedDate && (
