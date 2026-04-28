@@ -7,6 +7,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import axios from "axios";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -254,9 +255,32 @@ export default function Dashboard() {
                 <div className="p-3 bg-white/80 rounded-lg">
                   <p className="font-medium text-slate-800 mb-2">Guest Bookings</p>
                   {pendingCharges.guest_charges.slice(0, 3).map((guest, idx) => (
-                    <p key={idx} className="text-sm text-slate-500">
-                      {guest.guest_name} ({guest.guest_company || 'Walk-in'}) - ₹{guest.amount}
-                    </p>
+                    <div key={idx} className="flex items-center justify-between mb-1">
+                      <p className="text-sm text-slate-500">
+                        {guest.guest_name} ({guest.guest_company || 'Walk-in'}) - ₹{guest.amount}
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs h-6 px-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                        onClick={async () => {
+                          try {
+                            await axios.patch(`${API}/management/bookings/${guest.booking_id}/payment`);
+                            toast.success("Marked as paid");
+                            setPendingCharges(prev => ({
+                              ...prev,
+                              guest_charges: prev.guest_charges.filter(g => g.booking_id !== guest.booking_id),
+                              total_pending: prev.total_pending - guest.amount
+                            }));
+                          } catch (e) {
+                            toast.error("Failed to mark as paid");
+                          }
+                        }}
+                      >
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Paid
+                      </Button>
+                    </div>
                   ))}
                 </div>
               )}

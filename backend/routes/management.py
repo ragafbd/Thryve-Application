@@ -791,6 +791,24 @@ async def cancel_booking(booking_id: str, current_user: dict = Depends(get_curre
     
     return {"message": message, "charges_apply": hours_until < 48}
 
+
+@router.patch("/bookings/{booking_id}/payment")
+async def mark_booking_paid(booking_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark a guest booking's payment as paid"""
+    check_permission(current_user, "create_booking")
+    
+    booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    await db.bookings.update_one(
+        {"id": booking_id},
+        {"$set": {"payment_status": "paid"}}
+    )
+    
+    return {"message": "Payment marked as paid", "booking_id": booking_id}
+
+
 # ==================== SUPPORT TICKETS ====================
 
 async def generate_ticket_number():
