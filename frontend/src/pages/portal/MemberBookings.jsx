@@ -494,7 +494,7 @@ export default function MemberBookings() {
                 <span>{selectedRoom.slot_duration} min slots</span>
               </div>
               <div className="text-sm font-semibold text-[#2E375B]">
-                Rs. {selectedRoom.hourly_rate}/{selectedRoom.slot_duration === 60 ? 'hour' : '30 min'} • {selectedRoom.credit_cost_per_slot} credits/{selectedRoom.slot_duration === 60 ? 'hour' : '30 min'}
+                Rs. {selectedRoom.hourly_rate}/{selectedRoom.slot_duration === 60 ? 'hour' : '30 min or part of'} • {selectedRoom.credit_cost_per_slot} credits/{selectedRoom.slot_duration === 60 ? 'hour' : '30 min'}
               </div>
               <div className="pt-2 border-t border-[#2E375B]/10">
                 <p className="text-xs text-[#2E375B]/60">
@@ -717,7 +717,7 @@ export default function MemberBookings() {
             <div className="bg-[#FFA14A]/10 p-3 rounded-lg text-sm">
               <p className="font-medium text-[#FFA14A]">Your Credits: {creditsRemaining} min remaining</p>
               <p className="text-[#FFA14A]/70 text-xs mt-1">
-                If credits are insufficient, the remaining time will be billed at Rs. {selectedRoom?.hourly_rate}/{selectedRoom?.slot_duration === 60 ? 'hour' : '30 min'}
+                If credits are insufficient, the remaining time will be billed at Rs. {selectedRoom?.hourly_rate}/{selectedRoom?.slot_duration === 60 ? 'hour' : '30 min or part of'}
               </p>
             </div>
 

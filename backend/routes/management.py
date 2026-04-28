@@ -1210,8 +1210,8 @@ async def seed_default_data(database=None):
     # Meeting Room: 5 credits per 30-min slot
     default_rooms = [
         {"name": "CR-1", "display_name": "Conference Room", "capacity": 10, "hourly_rate": 1000, "slot_duration": 60, "room_type": "conference_room", "credit_cost_per_slot": 20},
-        {"name": "MR-1", "display_name": "Meeting Room 1", "capacity": 5, "hourly_rate": 500, "slot_duration": 30, "room_type": "meeting_room", "credit_cost_per_slot": 5},
-        {"name": "MR-2", "display_name": "Meeting Room 2", "capacity": 5, "hourly_rate": 500, "slot_duration": 30, "room_type": "meeting_room", "credit_cost_per_slot": 5},
+        {"name": "MR-1", "display_name": "Meeting Room 1", "capacity": 5, "hourly_rate": 250, "slot_duration": 30, "room_type": "meeting_room", "credit_cost_per_slot": 5},
+        {"name": "MR-2", "display_name": "Meeting Room 2", "capacity": 5, "hourly_rate": 250, "slot_duration": 30, "room_type": "meeting_room", "credit_cost_per_slot": 5},
     ]
     
     for room in default_rooms:
