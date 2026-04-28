@@ -96,7 +96,8 @@ export default function MemberBookings() {
       const response = await axios.get(`${API}/rooms`);
       setRooms(response.data);
       if (response.data.length > 0 && !selectedRoom) {
-        setSelectedRoom(response.data[0]);
+        const firstAvailable = response.data.find(r => !isRoomDisabledForDate(r, selectedDate));
+        if (firstAvailable) setSelectedRoom(firstAvailable);
       }
     } catch (error) {
       // silenced
@@ -447,28 +448,23 @@ export default function MemberBookings() {
         {rooms.map(room => {
           const roomDisabledForSelectedDate = isRoomDisabledForDate(room, selectedDate);
           
+          if (roomDisabledForSelectedDate) return null;
+
           return (
             <Button
               key={room.id}
               variant={selectedRoom?.id === room.id ? "default" : "outline"}
               className={`${
-                roomDisabledForSelectedDate
-                  ? "opacity-50 bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                  : selectedRoom?.id === room.id 
+                selectedRoom?.id === room.id 
                   ? "bg-[#2E375B] hover:bg-[#232B47]" 
                   : "border-[#2E375B]/20 text-[#2E375B] hover:bg-[#2E375B]/10"
               }`}
-              onClick={() => !roomDisabledForSelectedDate && setSelectedRoom(room)}
+              onClick={() => setSelectedRoom(room)}
               disabled={currentDateBlocked}
             >
               <Building2 className="w-4 h-4 mr-2" />
               {room.name}
               <span className="ml-2 text-xs opacity-70">({room.capacity} seats)</span>
-              {roomDisabledForSelectedDate && (
-                <Badge variant="secondary" className="ml-2 bg-gray-200 text-gray-600 text-xs">
-                  Disabled
-                </Badge>
-              )}
             </Button>
           );
         })}
