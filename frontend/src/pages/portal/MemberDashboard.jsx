@@ -65,7 +65,7 @@ export default function MemberDashboard() {
         <div className="flex items-center gap-6 mt-4">
           <div>
             <p className="text-3xl font-bold text-[#FFA14A]">{creditsRemaining.toLocaleString('en-IN')}</p>
-            <p className="text-xs text-white/60">Balance Credits (mins)</p>
+            <p className="text-xs text-white/60">Balance Credits</p>
           </div>
           {member?.seat_number && (
             <div className="border-l border-white/20 pl-6">
