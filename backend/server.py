@@ -792,7 +792,7 @@ async def generate_invoice_pdf(invoice_id: str):
         # Create filename - invoice_number already contains company name
         invoice_num = invoice.get('invoice_number', 'invoice').replace('/', '-').replace(' ', '_')
         invoice_num = ''.join(c for c in invoice_num if c.isalnum() or c in ['_', '-'])
-        filename = f"{invoice_num}.pdf"
+        filename = f"{invoice_num}"
         
         return Response(
             content=pdf_content,
