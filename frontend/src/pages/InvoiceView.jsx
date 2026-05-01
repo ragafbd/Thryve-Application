@@ -33,6 +33,7 @@ import {
 import { toast } from "sonner";
 import axios from "axios";
 import InvoicePreview from "@/components/InvoicePreview";
+import { downloadFile } from "@/utils/downloadFile";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -184,8 +185,7 @@ export default function InvoiceView() {
   };
 
   const handleDownloadPdf = () => {
-    // Direct navigation - not intercepted by Cloudflare
-    window.location.href = `${API}/invoices/${id}/pdf`;
+    downloadFile(`${API}/invoices/${id}/pdf`, `Invoice_${id}.pdf`);
   };
 
   const handlePrint = () => {
@@ -287,14 +287,14 @@ export default function InvoiceView() {
               Mark as Paid
             </Button>
           )}
-          <a
-            href={`${API}/invoices/${id}/pdf`}
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-[#FFA14A] hover:bg-[#E8923E] text-[#2E375B] transition-colors"
+          <Button
+            onClick={handleDownloadPdf}
+            className="bg-[#FFA14A] hover:bg-[#E8923E] text-[#2E375B]"
             data-testid="download-pdf-btn"
           >
-            <FileDown className="w-4 h-4" />
+            <FileDown className="w-4 h-4 mr-2" />
             Download PDF
-          </a>
+          </Button>
           <Button
             variant="outline"
             onClick={handlePrint}
