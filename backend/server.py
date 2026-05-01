@@ -187,6 +187,8 @@ class InvoiceCreate(BaseModel):
     invoice_date: str
     due_date: Optional[str] = None
     line_items: List[LineItem]
+    adjustment: float = 0
+    adjustment_reason: Optional[str] = ""
     notes: Optional[str] = ""
 
 class InvoiceStatusUpdate(BaseModel):
@@ -206,6 +208,8 @@ class Invoice(BaseModel):
     total_sgst: float
     total_tax: float
     round_off_adjustment: float = 0  # GST-compliant rounding adjustment
+    adjustment: float = 0
+    adjustment_reason: str = ""
     grand_total: float
     notes: str = ""
     status: str = "pending"  # pending, paid, overdue
@@ -553,9 +557,13 @@ async def create_invoice(invoice_data: InvoiceCreate):
     total_tax = total_cgst + total_sgst
     calculated_total = round(subtotal + total_tax, 2)
     
+    # Apply adjustment (deduction from total)
+    adjustment = round(invoice_data.adjustment or 0, 2)
+    adjusted_total = round(calculated_total - adjustment, 2)
+    
     # GST-compliant rounding: Round final total to nearest whole rupee
-    rounded_total = round(calculated_total)
-    round_off_adjustment = round(rounded_total - calculated_total, 2)
+    rounded_total = round(adjusted_total)
+    round_off_adjustment = round(rounded_total - adjusted_total, 2)
     
     # Create invoice object
     invoice_obj = Invoice(
@@ -569,6 +577,8 @@ async def create_invoice(invoice_data: InvoiceCreate):
         total_sgst=round(total_sgst, 2),
         total_tax=round(total_tax, 2),
         round_off_adjustment=round_off_adjustment,
+        adjustment=adjustment,
+        adjustment_reason=invoice_data.adjustment_reason or "",
         grand_total=rounded_total,
         notes=invoice_data.notes or "",
         status="pending"

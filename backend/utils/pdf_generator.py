@@ -129,8 +129,11 @@ def generate_pdf_from_html(invoice: dict) -> bytes:
     subtotal = invoice.get('subtotal', 0)
     cgst = invoice.get('total_cgst', 0)
     sgst = invoice.get('total_sgst', 0)
+    adjustment = invoice.get('adjustment', 0)
+    adjustment_reason = invoice.get('adjustment_reason', '')
     round_off = invoice.get('round_off_adjustment', 0)
     grand_total = invoice.get('grand_total', 0)
+    notes = invoice.get('notes', '')
 
     pdf = FPDF(orientation='P', unit='mm', format='A4')
     pdf.set_auto_page_break(auto=True, margin=15)
@@ -363,6 +366,11 @@ def generate_pdf_from_html(invoice: dict) -> bytes:
         ("CGST (9%) on Plan fee", fmt_currency(cgst), False, False),
         ("SGST (9%) on Plan fee", fmt_currency(sgst), False, False),
     ]
+    if adjustment and adjustment > 0:
+        adj_label = f"Less: Adjustment"
+        if adjustment_reason:
+            adj_label += f" ({adjustment_reason})"
+        rows.append((adj_label, f"-{fmt_currency(adjustment)}", False, False))
     if round_off is not None:
         ro_str = fmt_currency(round_off) if round_off >= 0 else fmt_currency(round_off)
         if round_off > 0:
@@ -421,6 +429,18 @@ def generate_pdf_from_html(invoice: dict) -> bytes:
     pdf.set_line_width(0.2)
     pdf.line(M, y, PW - M, y)
     y += 3
+
+    # Notes (if present)
+    if notes:
+        pdf.set_xy(M, y)
+        pdf.set_font("Helvetica", "B", 9)
+        pdf.set_text_color(*C_SLATE_800)
+        pdf.cell(15, 5, "Notes: ", ln=0)
+        pdf.set_font("Helvetica", "", 9)
+        pdf.multi_cell(CW - 15, 5, notes)
+        y = pdf.get_y() + 3
+        pdf.line(M, y, PW - M, y)
+        y += 3
 
     bank = company.get('bank', COMPANY_DETAILS['bank'])
 

@@ -276,6 +276,17 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
                   {formatCurrency(invoice?.total_sgst)}
                 </td>
               </tr>
+              {/* Adjustment */}
+              {invoice?.adjustment > 0 && (
+                <tr>
+                  <td className="border border-slate-300 px-3 py-1 text-slate-600">
+                    Less: Adjustment{invoice?.adjustment_reason ? ` (${invoice.adjustment_reason})` : ''}
+                  </td>
+                  <td className="border border-slate-300 px-3 py-1 text-right font-numbers text-red-600">
+                    -{formatCurrency(invoice.adjustment)}
+                  </td>
+                </tr>
+              )}
               {/* Round-Off Adjustment */}
               {invoice?.round_off_adjustment !== undefined && invoice?.round_off_adjustment !== 0 && (
                 <tr>
@@ -314,6 +325,14 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
 
       {/* Bank Details & Signature */}
       <div className="grid grid-cols-2 border-t border-slate-300 mt-4">
+
+        {/* Notes */}
+        {invoice?.notes && (
+          <div className="col-span-2 p-3 border-b border-slate-200 bg-amber-50/50">
+            <p className="text-sm"><span className="font-semibold">Notes:</span> {invoice.notes}</p>
+          </div>
+        )}
+
         {/* Bank Details */}
         <div className="p-4 border-r border-slate-300">
           <h3 className="font-bold text-sm mb-2">Company's Bank Details</h3>

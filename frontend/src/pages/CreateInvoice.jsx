@@ -90,6 +90,8 @@ export default function CreateInvoice() {
   });
   const [lineItems, setLineItems] = useState([{ ...emptyLineItem }]);
   const [notes, setNotes] = useState("");
+  const [adjustment, setAdjustment] = useState(0);
+  const [adjustmentReason, setAdjustmentReason] = useState("");
   const [pendingCharges, setPendingCharges] = useState([]);
 
   // Compute selectedClient from clients array
@@ -338,11 +340,14 @@ export default function CreateInvoice() {
     // Calculate precise total before rounding
     const preciseTotal = Math.round((subtotal + totalCgst + totalSgst) * 100) / 100;
     
+    // Apply adjustment (reduces the total)
+    const adjustedTotal = Math.round((preciseTotal - (parseFloat(adjustment) || 0)) * 100) / 100;
+    
     // Round final total to nearest whole rupee (>=0.50 rounds up, <0.50 rounds down)
-    const roundedTotal = Math.round(preciseTotal);
+    const roundedTotal = Math.round(adjustedTotal);
     
     // Calculate round-off adjustment
-    const roundOffAdjustment = Math.round((roundedTotal - preciseTotal) * 100) / 100;
+    const roundOffAdjustment = Math.round((roundedTotal - adjustedTotal) * 100) / 100;
 
     return {
       subtotal: preciseSubtotal,
@@ -400,6 +405,8 @@ export default function CreateInvoice() {
     calculated_total: totals.calculatedTotal,
     round_off_adjustment: totals.roundOffAdjustment,
     grand_total: totals.grandTotal,
+    adjustment: parseFloat(adjustment) || 0,
+    adjustment_reason: adjustmentReason,
     notes: notes
   };
 
@@ -435,6 +442,8 @@ export default function CreateInvoice() {
         invoice_date: invoiceDate.toISOString().split('T')[0],
         due_date: dueDate.toISOString().split('T')[0],
         line_items: processedLineItems,
+        adjustment: parseFloat(adjustment) || 0,
+        adjustment_reason: adjustmentReason,
         notes: notes
       });
       toast.success("Invoice created successfully!");
@@ -815,6 +824,39 @@ export default function CreateInvoice() {
                   </div>
                 </div>
               ))}
+            </CardContent>
+          </Card>
+
+          {/* Adjustment */}
+          <Card className="border border-slate-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold font-[Manrope]">
+                Adjustment (Optional)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm text-slate-600">Amount to deduct (₹)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={adjustment}
+                    onChange={(e) => setAdjustment(e.target.value)}
+                    placeholder="0"
+                    data-testid="adjustment-amount"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm text-slate-600">Reason</Label>
+                  <Input
+                    value={adjustmentReason}
+                    onChange={(e) => setAdjustmentReason(e.target.value)}
+                    placeholder="e.g. Excess payment, Credit note"
+                    data-testid="adjustment-reason"
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
 
