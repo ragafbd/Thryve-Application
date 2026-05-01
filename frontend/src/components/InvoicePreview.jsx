@@ -346,12 +346,12 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
         {/* Signature */}
         <div className="p-4 text-right">
           <p className="text-xs text-slate-400 mb-8">E. & O.E.</p>
+          <p className="font-semibold">for {company.name}</p>
           <img 
             src="https://customer-assets.emergentagent.com/job_683f7dfb-7860-4882-8d93-58ac3f0439b2/artifacts/x6h984ax_Untitled%20design.jpg" 
             alt="Signature" 
             className="h-12 w-auto ml-auto my-1"
           />
-          <p className="font-semibold">for {company.name}</p>
           <p className="text-sm text-slate-500">Authorised Signatory</p>
         </div>
       </div>

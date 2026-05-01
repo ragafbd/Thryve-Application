@@ -471,18 +471,19 @@ def generate_pdf_from_html(invoice: dict) -> bytes:
     pdf.set_text_color(*C_SLATE_400)
     pdf.cell(half - 5, 4, "E. & O.E.", align="R", ln=1)
 
-    sig = _download_image(SIGNATURE_URL)
-    if sig:
-        try:
-            pdf.image(sig, x=PW - M - 30, y=y + 5, h=10)
-        except Exception:
-            pass
-
-    pdf.set_xy(sig_x, y + 16)
+    pdf.set_xy(sig_x, y + 6)
     pdf.set_font("Helvetica", "B", 10)
     pdf.set_text_color(*C_SLATE_800)
     pdf.cell(half - 5, 4, f"for {company.get('name','Thryve Coworking')}", align="R", ln=1)
-    pdf.set_x(sig_x)
+
+    sig = _download_image(SIGNATURE_URL)
+    if sig:
+        try:
+            pdf.image(sig, x=PW - M - 30, y=y + 11, h=10)
+        except Exception:
+            pass
+
+    pdf.set_xy(sig_x, y + 22)
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(*C_SLATE_500)
     pdf.cell(half - 5, 4, "Authorised Signatory", align="R")
