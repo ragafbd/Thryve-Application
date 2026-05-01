@@ -184,7 +184,15 @@ export default function InvoiceView() {
   };
 
   const handlePrint = () => {
-    window.print();
+    // Open PDF in a new window for printing
+    const printWindow = window.open(`${API}/invoices/${id}/pdf`, '_blank');
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    } else {
+      window.print();
+    }
   };
 
   const handleDelete = async () => {
@@ -282,16 +290,14 @@ export default function InvoiceView() {
               Mark as Paid
             </Button>
           )}
-          <a
-            href={`${API}/invoices/${id}/pdf`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-[#FFA14A] hover:bg-[#E8923E] text-[#2E375B] transition-colors"
+          <Button
+            onClick={() => { window.location.href = `${API}/invoices/${id}/pdf`; }}
+            className="bg-[#FFA14A] hover:bg-[#E8923E] text-[#2E375B]"
             data-testid="download-pdf-btn"
           >
-            <FileDown className="w-4 h-4" />
+            <FileDown className="w-4 h-4 mr-2" />
             Download PDF
-          </a>
+          </Button>
           <Button
             variant="outline"
             onClick={handlePrint}
