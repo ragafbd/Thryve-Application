@@ -433,10 +433,10 @@ def generate_pdf_from_html(invoice: dict) -> bytes:
     # Notes (if present)
     if notes:
         pdf.set_xy(M, y)
-        pdf.set_font("Helvetica", "B", 9)
+        pdf.set_font("Helvetica", "B", 10)
         pdf.set_text_color(*C_SLATE_800)
         pdf.cell(15, 5, "Notes: ", ln=0)
-        pdf.set_font("Helvetica", "", 9)
+        pdf.set_font("Helvetica", "B", 10)
         pdf.multi_cell(CW - 15, 5, notes)
         y = pdf.get_y() + 3
         pdf.line(M, y, PW - M, y)

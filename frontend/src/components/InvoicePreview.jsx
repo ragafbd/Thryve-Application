@@ -329,7 +329,7 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
         {/* Notes */}
         {invoice?.notes && (
           <div className="col-span-2 p-3 border-b border-slate-200 bg-amber-50/50">
-            <p className="text-sm"><span className="font-semibold">Notes:</span> {invoice.notes}</p>
+            <p className="text-base font-semibold"><span className="font-bold">Notes:</span> {invoice.notes}</p>
           </div>
         )}
 
