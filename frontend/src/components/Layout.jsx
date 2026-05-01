@@ -19,7 +19,8 @@ import {
   Download,
   FileSignature,
   Bell,
-  Cake
+  Cake,
+  BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +58,7 @@ const managementNavItems = [
   { path: "companies", icon: Building2, label: "Clients" },
   { path: "agreement", icon: FileSignature, label: "LLA Generator" },
   { path: "bookings", icon: CalendarDays, label: "Meeting Room Bookings" },
+  { path: "analytics", icon: BarChart3, label: "Analytics" },
   { path: "tickets", icon: Ticket, label: "Support Tickets" },
   { path: "announcements", icon: Megaphone, label: "Announcements" },
 ];

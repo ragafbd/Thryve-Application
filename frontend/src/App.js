@@ -20,6 +20,7 @@ import ExportData from "@/pages/ExportData";
 import ImportData from "@/pages/ImportData";
 import Agreement from "@/pages/Agreement";
 import UpcomingBirthdays from "@/pages/UpcomingBirthdays";
+import Analytics from "@/pages/Analytics";
 
 // Member Portal imports
 import MemberLogin from "@/pages/portal/MemberLogin";
@@ -109,6 +110,7 @@ function AdminRoutes() {
         <Route path="birthdays" element={<UpcomingBirthdays />} />
         <Route path="import" element={<ImportData />} />
         <Route path="agreement" element={<Agreement />} />
+        <Route path="analytics" element={<Analytics />} />
       </Route>
     </Routes>
   );
