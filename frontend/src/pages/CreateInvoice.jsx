@@ -90,7 +90,7 @@ export default function CreateInvoice() {
   });
   const [lineItems, setLineItems] = useState([{ ...emptyLineItem }]);
   const [notes, setNotes] = useState("");
-  const [adjustment, setAdjustment] = useState(0);
+  const [adjustment, setAdjustment] = useState("");
   const [adjustmentReason, setAdjustmentReason] = useState("");
   const [pendingCharges, setPendingCharges] = useState([]);
 
@@ -841,9 +841,9 @@ export default function CreateInvoice() {
                   <Input
                     type="number"
                     min="0"
-                    value={adjustment}
+                    value={adjustment || ""}
                     onChange={(e) => setAdjustment(e.target.value)}
-                    placeholder="0"
+                    placeholder=""
                     data-testid="adjustment-amount"
                   />
                 </div>
