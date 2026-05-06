@@ -314,7 +314,7 @@ def generate_lla_docx(company: dict) -> bytes:
             ("10.2", "The Licensor may terminate this leave and license agreement immediately if there is:"),
             None, "Non-payment of license fee for two months", "Any illegal activity, misconduct or nuisance by the Licensee or its employees", "Any damage caused to property & person by the Licensee or its employees", "Any Breach of Agreement terms by the Licensee or its employees",
             ("10.3", "On termination, the Licensee shall:"),
-            None, "Vacate the workspace peacefully", "Remove all personal belongings", "Return access cards/keys", "Clear all dues",
+            None, "Vacate the workspace peacefully and remove all personal belongings", "Return access cards/keys", "Clear all dues",
         ]),
         ("11. NO TENANCY / NO LEASE", [
             ("11.1", "This Agreement creates no tenancy, lease, occupancy rights, or interest in the Premises."),
