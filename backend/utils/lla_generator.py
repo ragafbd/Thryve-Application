@@ -333,7 +333,7 @@ def generate_lla_docx(company: dict) -> bytes:
         ]),
         ("14. PROFESSIONAL INTEGRITY AND NON-SOLICITATION", [
             ("14.1", "Member Protection: To maintain the professional integrity of the Thryve community, the Licensee agrees not to actively solicit or entice away employees of other member companies operating within the premises."),
-            ("14.2", "Penalty: Any breach of this provision will be considered a material breach of this Agreement, and Thryve Coworking reserves the right to terminate the License of the violator community immediately without a refund of the security deposit."),
+            ("14.2", "Penalty: Any breach of this provision will be considered a material breach of this Agreement, and Thryve Coworking reserves the right to terminate the License of the violator company immediately without a refund of the security deposit."),
         ]),
         ("15. GOVERNING LAW & JURISDICTION", [
             ("15.1", "This Agreement shall be governed by the laws of India."),
