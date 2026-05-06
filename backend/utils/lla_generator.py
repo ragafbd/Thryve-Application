@@ -106,7 +106,7 @@ def generate_lla_docx(company: dict) -> bytes:
     font.name = 'Calibri'
     font.size = Pt(10)
     style.paragraph_format.space_after = Pt(2)
-    style.paragraph_format.line_spacing = 1.15
+    style.paragraph_format.line_spacing = 1.10
 
     # First page: 4.5 inch top margin for stamp paper
     section = doc.sections[0]
@@ -201,7 +201,7 @@ def generate_lla_docx(company: dict) -> bytes:
     ])
 
     # BETWEEN
-    add_para("BETWEEN", bold=True, align=WD_ALIGN_PARAGRAPH.LEFT)
+    add_para("BETWEEN", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
 
     # Licensor
     add_mixed_para([
@@ -225,9 +225,6 @@ def generate_lla_docx(company: dict) -> bytes:
 
     add_para('The Licensor and the Licensee are collectively referred to as the "Parties" and individually as a "Party."')
 
-    # Switch to normal margins for page 2 onwards
-    switch_to_normal_margins()
-
     # WHEREAS
     add_heading_text("WHEREAS")
     add_numbered("1.", 'The Licensor is operating a coworking facility known as "Thryve Coworking" at Plot No. 3, First Floor, Near Ajronda Metro Station, 18/1, Mathura Road, Faridabad 121007 ("hereinafter referred to as Premises").')
@@ -243,6 +240,9 @@ def generate_lla_docx(company: dict) -> bytes:
     add_bullet(f"Number of Seats: {data['seats']}")
     add_bullet("Meeting Room Access: As per usage/plan")
     add_bullet("Common Areas: Reception, Lounge, Pantry, Washrooms, Hallways, and such other areas as designated by the Licensor.")
+
+    # Switch to normal margins for page 2 onwards (starts from 1.2)
+    switch_to_normal_margins()
     add_numbered("1.2", "The License is limited to right to enter and use only, and no tenancy, lease, or rights of possession are created or transferred.")
     add_numbered("1.3", "The following services are included (as applicable to the chosen plan):")
     for svc in ["High-speed Internet", "Electricity & Air Conditioning during business hours", "Housekeeping of common spaces", "Power Backup", "Front Desk Assistance", "Access to Pantry Facilities", "Access to Conference Rooms (subject to availability and booking rules)", "CCTV Surveillance (excluding private cabins)"]:
