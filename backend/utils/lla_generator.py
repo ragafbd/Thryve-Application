@@ -106,7 +106,7 @@ def generate_lla_docx(company: dict) -> bytes:
     font.name = 'Calibri'
     font.size = Pt(10)
     style.paragraph_format.space_after = Pt(2)
-    style.paragraph_format.line_spacing = 1.10
+    style.paragraph_format.line_spacing = 1.05
 
     # First page: 4.5 inch top margin for stamp paper
     section = doc.sections[0]
@@ -211,7 +211,7 @@ def generate_lla_docx(company: dict) -> bytes:
         ('", (which expression shall, unless repugnant to the context, include its successors, assigns, administrators, and representatives)', False),
     ])
 
-    add_para("AND", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=Pt(12))
+    add_para("AND", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=Pt(2))
 
     # Licensee
     add_mixed_para([
