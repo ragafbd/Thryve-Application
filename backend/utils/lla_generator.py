@@ -100,83 +100,96 @@ def generate_lla_docx(company: dict) -> bytes:
 
     doc = Document()
     
-    # Set default font
+    # Set default font - condensed
     style = doc.styles['Normal']
     font = style.font
     font.name = 'Calibri'
-    font.size = Pt(11)
-    style.paragraph_format.space_after = Pt(6)
-    style.paragraph_format.line_spacing = 1.5
+    font.size = Pt(10)
+    style.paragraph_format.space_after = Pt(2)
+    style.paragraph_format.line_spacing = 1.15
 
-    # Page margins
-    for section in doc.sections:
-        section.top_margin = Inches(1)
-        section.bottom_margin = Inches(1)
-        section.left_margin = Inches(0.75)
-        section.right_margin = Inches(0.75)
+    # First page: 4.5 inch top margin for stamp paper
+    section = doc.sections[0]
+    section.top_margin = Inches(4.5)
+    section.bottom_margin = Inches(0.5)
+    section.left_margin = Inches(0.75)
+    section.right_margin = Inches(0.75)
 
     # Helper functions
-    def add_para(text, bold=False, align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_after=Pt(6)):
+    def add_para(text, bold=False, align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_after=Pt(2)):
         p = doc.add_paragraph()
         p.alignment = align
         p.paragraph_format.space_after = space_after
+        p.paragraph_format.space_before = Pt(0)
         run = p.add_run(text)
         run.bold = bold
         run.font.name = 'Calibri'
-        run.font.size = Pt(11)
+        run.font.size = Pt(10)
         return p
 
     def add_heading_text(text):
         p = doc.add_paragraph()
-        p.paragraph_format.space_before = Pt(12)
-        p.paragraph_format.space_after = Pt(6)
+        p.paragraph_format.space_before = Pt(6)
+        p.paragraph_format.space_after = Pt(2)
         run = p.add_run(text)
         run.bold = True
         run.font.name = 'Calibri'
-        run.font.size = Pt(11)
+        run.font.size = Pt(10)
         return p
 
     def add_numbered(num, text):
         p = doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-        p.paragraph_format.space_after = Pt(4)
+        p.paragraph_format.space_after = Pt(1)
+        p.paragraph_format.space_before = Pt(0)
         run_num = p.add_run(f"{num} ")
         run_num.bold = True
         run_num.font.name = 'Calibri'
-        run_num.font.size = Pt(11)
+        run_num.font.size = Pt(10)
         run_text = p.add_run(text)
         run_text.font.name = 'Calibri'
-        run_text.font.size = Pt(11)
+        run_text.font.size = Pt(10)
         return p
 
     def add_bullet(text):
         p = doc.add_paragraph(style='List Bullet')
-        p.paragraph_format.space_after = Pt(2)
+        p.paragraph_format.space_after = Pt(1)
+        p.paragraph_format.space_before = Pt(0)
         p.text = ""
         run = p.add_run(text)
         run.font.name = 'Calibri'
-        run.font.size = Pt(11)
+        run.font.size = Pt(10)
         return p
 
-    def add_mixed_para(parts, align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_after=Pt(6)):
+    def add_mixed_para(parts, align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_after=Pt(2)):
         p = doc.add_paragraph()
         p.alignment = align
         p.paragraph_format.space_after = space_after
+        p.paragraph_format.space_before = Pt(0)
         for text, bold in parts:
             run = p.add_run(text)
             run.bold = bold
             run.font.name = 'Calibri'
-            run.font.size = Pt(11)
+            run.font.size = Pt(10)
         return p
+
+    def switch_to_normal_margins():
+        """Add a section break and set normal margins for remaining pages."""
+        from docx.enum.section import WD_ORIENT
+        new_section = doc.add_section()
+        new_section.top_margin = Inches(0.5)
+        new_section.bottom_margin = Inches(0.5)
+        new_section.left_margin = Inches(0.75)
+        new_section.right_margin = Inches(0.75)
 
     # === TITLE ===
     title = doc.add_paragraph()
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    title.paragraph_format.space_after = Pt(20)
+    title.paragraph_format.space_after = Pt(8)
     run = title.add_run("LEAVE & LICENSE AGREEMENT")
     run.bold = True
     run.font.name = 'Calibri'
-    run.font.size = Pt(14)
+    run.font.size = Pt(13)
 
     # === OPENING ===
     add_mixed_para([
@@ -211,6 +224,9 @@ def generate_lla_docx(company: dict) -> bytes:
     ])
 
     add_para('The Licensor and the Licensee are collectively referred to as the "Parties" and individually as a "Party."')
+
+    # Switch to normal margins for page 2 onwards
+    switch_to_normal_margins()
 
     # WHEREAS
     add_heading_text("WHEREAS")
@@ -341,31 +357,26 @@ def generate_lla_docx(company: dict) -> bytes:
     add_heading_text("16. SIGNATURES")
     add_para("IN WITNESS WHEREOF, the Parties hereto have executed this Agreement on the date and year first written above.")
 
-    doc.add_paragraph()
-    add_para("FOR THE LICENSOR", bold=True, align=WD_ALIGN_PARAGRAPH.LEFT)
-    add_para("Thryve Coworking", align=WD_ALIGN_PARAGRAPH.LEFT)
-    add_para("Name: Amit Mehta", align=WD_ALIGN_PARAGRAPH.LEFT)
-    add_para("Designation: Marketing Head", align=WD_ALIGN_PARAGRAPH.LEFT)
-    add_para("Signature: ________________", align=WD_ALIGN_PARAGRAPH.LEFT)
-    add_para(f"Date: {data['start_date']}", align=WD_ALIGN_PARAGRAPH.LEFT)
+    add_para("FOR THE LICENSOR", bold=True, align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
+    add_para("Thryve Coworking", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
+    add_para("Name: Amit Mehta", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
+    add_para("Designation: Marketing Head", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
+    add_para("Signature: ________________", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
+    add_para(f"Date: {data['start_date']}", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(6))
 
-    doc.add_paragraph()
-    add_para("FOR THE LICENSEE", bold=True, align=WD_ALIGN_PARAGRAPH.LEFT)
-    add_para(f"Name of Company: {data['company_name']}", align=WD_ALIGN_PARAGRAPH.LEFT)
-    add_para(f"Authorized Signatory: {data['signatory']}", align=WD_ALIGN_PARAGRAPH.LEFT)
-    add_para(f"Designation: {data['designation']}", align=WD_ALIGN_PARAGRAPH.LEFT)
-    add_para("Signature: ________________", align=WD_ALIGN_PARAGRAPH.LEFT)
-    add_para(f"Date: {data['start_date']}", align=WD_ALIGN_PARAGRAPH.LEFT)
+    add_para("FOR THE LICENSEE", bold=True, align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
+    add_para(f"Name of Company: {data['company_name']}", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
+    add_para(f"Authorized Signatory: {data['signatory']}", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
+    add_para(f"Designation: {data['designation']}", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
+    add_para("Signature: ________________", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
+    add_para(f"Date: {data['start_date']}", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(6))
 
-    doc.add_paragraph()
-    add_para("WITNESSES:", bold=True, align=WD_ALIGN_PARAGRAPH.LEFT)
-    doc.add_paragraph()
-    add_para("1. Name: ________________", align=WD_ALIGN_PARAGRAPH.LEFT)
-    add_para("   Address: ________________", align=WD_ALIGN_PARAGRAPH.LEFT)
-    add_para("   Signature: ________________", align=WD_ALIGN_PARAGRAPH.LEFT)
-    doc.add_paragraph()
-    add_para("2. Name: ________________", align=WD_ALIGN_PARAGRAPH.LEFT)
-    add_para("   Address: ________________", align=WD_ALIGN_PARAGRAPH.LEFT)
+    add_para("WITNESSES:", bold=True, align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(4))
+    add_para("1. Name: ________________", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
+    add_para("   Address: ________________", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
+    add_para("   Signature: ________________", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(4))
+    add_para("2. Name: ________________", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
+    add_para("   Address: ________________", align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
     add_para("   Signature: ________________", align=WD_ALIGN_PARAGRAPH.LEFT)
 
     # Write to bytes
