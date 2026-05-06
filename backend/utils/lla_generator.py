@@ -331,14 +331,18 @@ def generate_lla_docx(company: dict) -> bytes:
             None, "Business losses", "Data loss", "Interruption of services due to external factors", "Acts of God, electrical failures, or internet breakdowns",
             ("13.2", "The maximum liability of the Licensor shall not exceed the monthly license fee."),
         ]),
-        ("14. GOVERNING LAW & JURISDICTION", [
-            ("14.1", "This Agreement shall be governed by the laws of India."),
-            ("14.2", "Courts in Faridabad, Haryana shall have exclusive jurisdiction."),
+        ("14. PROFESSIONAL INTEGRITY AND NON-SOLICITATION", [
+            ("14.1", "Member Protection: To maintain the professional integrity of the Thryve community, the Licensee agrees not to actively solicit or entice away employees of other member companies operating within the premises."),
+            ("14.2", "Penalty: Any breach of this provision will be considered a material breach of this Agreement, and Thryve Coworking reserves the right to terminate the License of the violator community immediately without a refund of the security deposit."),
         ]),
-        ("15. MISCELLANEOUS", [
-            ("15.1", "Any amendments must be in writing and signed by both Parties."),
-            ("15.2", "Notices shall be served via email and registered post."),
-            ("15.3", "If any clause is held invalid, the remaining clauses shall remain enforceable."),
+        ("15. GOVERNING LAW & JURISDICTION", [
+            ("15.1", "This Agreement shall be governed by the laws of India."),
+            ("15.2", "Courts in Faridabad, Haryana shall have exclusive jurisdiction."),
+        ]),
+        ("16. MISCELLANEOUS", [
+            ("16.1", "Any amendments must be in writing and signed by both Parties."),
+            ("16.2", "Notices shall be served via email and registered post."),
+            ("16.3", "If any clause is held invalid, the remaining clauses shall remain enforceable."),
         ]),
     ]:
         add_heading_text(title_text)
@@ -353,8 +357,8 @@ def generate_lla_docx(company: dict) -> bytes:
             elif in_bullets:
                 add_bullet(item)
 
-    # Section 16 - Signatures
-    add_heading_text("16. SIGNATURES")
+    # Section 17 - Signatures
+    add_heading_text("17. SIGNATURES")
     add_para("IN WITNESS WHEREOF, the Parties hereto have executed this Agreement on the date and year first written above.")
 
     add_para("FOR THE LICENSOR", bold=True, align=WD_ALIGN_PARAGRAPH.LEFT, space_after=Pt(1))
