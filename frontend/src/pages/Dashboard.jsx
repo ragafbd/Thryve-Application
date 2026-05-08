@@ -46,6 +46,7 @@ export default function Dashboard() {
   });
   const [recentInvoices, setRecentInvoices] = useState([]);
   const [pendingCharges, setPendingCharges] = useState({ company_charges: [], guest_charges: [], total_pending: 0 });
+  const [monthlyStats, setMonthlyStats] = useState({ month: '', totalInvoiced: 0, collected: 0, pending: 0, overdue: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -63,7 +64,35 @@ export default function Dashboard() {
         ]);
         
         if (statsRes.data && !statsRes.error) setInvoiceStats(statsRes.data);
-        if (invoicesRes.data && !invoicesRes.error) setRecentInvoices(invoicesRes.data.slice(0, 5));
+        if (invoicesRes.data && !invoicesRes.error) {
+          setRecentInvoices(invoicesRes.data.slice(0, 5));
+          
+          // Calculate current month stats
+          const now = new Date();
+          const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+          const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+          const monthLabel = `${monthNames[now.getMonth()]}, ${now.getFullYear()}`;
+          
+          const monthInvoices = invoicesRes.data.filter(inv => 
+            (inv.billing_month && inv.billing_month === currentMonth) ||
+            (inv.invoice_date && inv.invoice_date.startsWith(currentMonth))
+          );
+          
+          const mCollected = monthInvoices.filter(i => i.status === 'paid').reduce((s, i) => s + (i.grand_total || 0), 0);
+          const mPending = monthInvoices.filter(i => i.status === 'pending').reduce((s, i) => s + (i.grand_total || 0), 0);
+          const mOverdue = monthInvoices.filter(i => i.status === 'overdue').reduce((s, i) => s + (i.grand_total || 0), 0);
+          
+          // Total overdue includes ALL overdue invoices (not just current month)
+          const totalOverdue = invoicesRes.data.filter(i => i.status === 'overdue').reduce((s, i) => s + (i.grand_total || 0), 0);
+          
+          setMonthlyStats({
+            month: monthLabel,
+            totalInvoiced: mCollected + mPending + mOverdue,
+            collected: mCollected,
+            pending: mPending,
+            overdue: totalOverdue,
+          });
+        }
         if (mgmtStatsRes.data && !mgmtStatsRes.error) setManagementStats(mgmtStatsRes.data);
         if (chargesRes.data && !chargesRes.error) setPendingCharges(chargesRes.data);
       } catch (error) {
@@ -153,7 +182,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Financial Summary Row */}
+      {/* Monthly Summary Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="border border-slate-200">
           <CardContent className="p-4">
@@ -163,9 +192,9 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-xl font-bold text-slate-900 font-mono">
-                  ₹{invoiceStats.total_revenue.toLocaleString('en-IN')}
+                  ₹{monthlyStats.totalInvoiced.toLocaleString('en-IN')}
                 </p>
-                <p className="text-xs text-slate-500">Total Revenue</p>
+                <p className="text-xs text-slate-500">{monthlyStats.month} Total</p>
               </div>
             </div>
           </CardContent>
@@ -178,9 +207,9 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-xl font-bold text-slate-900 font-mono">
-                  ₹{invoiceStats.paid_amount.toLocaleString('en-IN')}
+                  ₹{monthlyStats.collected.toLocaleString('en-IN')}
                 </p>
-                <p className="text-xs text-slate-500">Collected</p>
+                <p className="text-xs text-slate-500">{monthlyStats.month} Collected</p>
               </div>
             </div>
           </CardContent>
@@ -193,9 +222,9 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-xl font-bold text-slate-900 font-mono">
-                  ₹{invoiceStats.pending_amount.toLocaleString('en-IN')}
+                  ₹{monthlyStats.pending.toLocaleString('en-IN')}
                 </p>
-                <p className="text-xs text-slate-500">Pending</p>
+                <p className="text-xs text-slate-500">{monthlyStats.month} Pending</p>
               </div>
             </div>
           </CardContent>
@@ -207,8 +236,10 @@ export default function Dashboard() {
                 <AlertTriangle className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-xl font-bold text-red-600 font-mono">{invoiceStats.overdue_count}</p>
-                <p className="text-xs text-slate-500">Overdue Invoices</p>
+                <p className="text-xl font-bold text-red-600 font-mono">
+                  ₹{monthlyStats.overdue.toLocaleString('en-IN')}
+                </p>
+                <p className="text-xs text-slate-500">Total Overdue</p>
               </div>
             </div>
           </CardContent>
