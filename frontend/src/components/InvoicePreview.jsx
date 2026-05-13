@@ -358,8 +358,8 @@ export default function InvoicePreview({ invoice, isPreview = false }) {
 
       {/* Declaration */}
       <div className="p-4 border-t border-slate-300 text-xs text-slate-600">
-        <p><span className="font-semibold">Declaration:</span> We declare that this invoice shows the actual price of the Services described and that all particulars are true and correct.</p>
-        <p className="mt-2"><span className="font-semibold">Late Payment Policy:</span> A late fee of Rs. 500/- per day will be charged for any payment received after the due date. Thryve reserves the right to suspend or terminate services in case of non-payment.</p>
+        <p><span className="font-semibold">Late Payment Policy:</span> A late fee of Rs. 500/- per day will be charged for any payment received after the due date. Thryve Coworking reserves the right to suspend or terminate services in case of non-payment.</p>
+        <p className="mt-2"><span className="font-semibold">Declaration:</span> We declare that this invoice shows the actual price of the Services described and that all particulars are true and correct.</p>
       </div>
 
       {/* Footer */}

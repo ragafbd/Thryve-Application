@@ -503,16 +503,16 @@ def generate_pdf_from_html(invoice: dict) -> bytes:
     pdf.set_xy(M, y)
     pdf.set_font("Helvetica", "B", 8)
     pdf.set_text_color(*C_SLATE_600)
-    pdf.cell(18, 4, "Declaration: ", ln=0)
-    pdf.set_font("Helvetica", "", 8)
-    pdf.cell(0, 4, "We declare that this invoice shows the actual price of the Services described and that all particulars are true and correct.", ln=1)
-    pdf.set_xy(M, pdf.get_y())
-    pdf.set_font("Helvetica", "B", 8)
     pdf.cell(32, 4, "Late Payment Policy: ", ln=0)
     pdf.set_font("Helvetica", "", 8)
     pdf.cell(0, 4, "A late fee of Rs. 500/- per day will be charged for any payment received after the due date.", ln=1)
     pdf.set_xy(M, pdf.get_y())
-    pdf.cell(0, 4, "Thryve reserves the right to suspend or terminate services in case of non-payment.", ln=1)
+    pdf.cell(0, 4, "Thryve Coworking reserves the right to suspend or terminate services in case of non-payment.", ln=1)
+    pdf.set_xy(M, pdf.get_y() + 1)
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.cell(18, 4, "Declaration: ", ln=0)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.cell(0, 4, "We declare that this invoice shows the actual price of the Services described and that all particulars are true and correct.", ln=1)
 
     y = pdf.get_y() + 3
 
