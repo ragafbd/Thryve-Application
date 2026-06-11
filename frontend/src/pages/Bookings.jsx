@@ -729,7 +729,7 @@ export default function Bookings() {
                   <tbody>
                     {historyBookings.map((b) => (
                       <tr key={b.id} className="border-b hover:bg-slate-50">
-                        <td className="p-3 text-[#2E375B]">{b.date}</td>
+                        <td className="p-3 text-[#2E375B]">{b.date ? b.date.split('-').reverse().join('/') : ''}</td>
                         <td className="p-3 font-medium text-[#2E375B]">{b.room_name}</td>
                         <td className="p-3 text-[#2E375B]">{b.start_time} - {b.end_time}</td>
                         <td className="p-3 text-[#2E375B]">
