@@ -504,9 +504,11 @@ async def bulk_terminate_members(data: BulkTerminate, current_user: dict = Depen
 async def get_bookings(
     date: Optional[str] = None,
     room_id: Optional[str] = None,
-    member_id: Optional[str] = None
+    member_id: Optional[str] = None,
+    history_days: Optional[int] = None,
+    upcoming_only: Optional[bool] = None
 ):
-    """Get bookings with optional filters"""
+    """Get bookings with optional filters. Use history_days=45 for last 45 days."""
     query = {"status": {"$ne": "cancelled"}}
     if date:
         query["date"] = date
@@ -514,8 +516,16 @@ async def get_bookings(
         query["room_id"] = room_id
     if member_id:
         query["member_id"] = member_id
+    if history_days:
+        from datetime import datetime, timedelta, timezone
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=history_days)).strftime('%Y-%m-%d')
+        query["date"] = {"$gte": cutoff}
+    if upcoming_only:
+        from datetime import datetime, timezone
+        today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+        query["date"] = {"$gte": today}
     
-    bookings = await db.bookings.find(query, {"_id": 0}).sort([("date", 1), ("start_time", 1)]).to_list(500)
+    bookings = await db.bookings.find(query, {"_id": 0}).sort([("date", -1), ("start_time", -1)]).to_list(1000)
     return bookings
 
 @router.get("/bookings/availability")
@@ -709,11 +719,21 @@ async def create_booking(booking_data: BookingCreate, current_user: dict = Depen
     if not member:
         raise HTTPException(status_code=400, detail="Invalid member")
     
+    # Calculate credits needed based on room type
+    room_name_upper = (room.get("name") or "").upper()
+    credit_cost_per_slot = room.get("credit_cost_per_slot", 5)
+    slot_duration = room.get("slot_duration", 30)
+    credits_needed = int((duration / slot_duration) * credit_cost_per_slot)
+    
     # Calculate credits and billing
-    member_credits = member.get("meeting_room_credits", 0) - member.get("credits_used", 0)
-    credits_to_use = min(duration, member_credits) if member_credits > 0 else 0
-    billable_minutes = duration - credits_to_use
-    billable_amount = (billable_minutes / 60) * room["hourly_rate"] if billable_minutes > 0 else 0
+    company = await db.companies.find_one({"company_name": member.get("company_name")}, {"_id": 0})
+    company_total_credits = company.get("total_credits", 0) if company else 0
+    company_credits_used = company.get("credits_used", 0) if company else 0
+    available_credits = max(0, company_total_credits - company_credits_used)
+    
+    credits_to_use = min(credits_needed, available_credits)
+    billable_credits = credits_needed - credits_to_use
+    billable_amount = billable_credits * (room.get("hourly_rate", 0) / credit_cost_per_slot) if billable_credits > 0 else 0
     
     booking = Booking(
         room_id=booking_data.room_id,
@@ -728,6 +748,7 @@ async def create_booking(booking_data: BookingCreate, current_user: dict = Depen
         purpose=booking_data.purpose or "",
         attendees=booking_data.attendees,
         credits_used=credits_to_use,
+        credits_required=credits_needed,
         billable_amount=round(billable_amount, 2),
         created_by=current_user.get("id")
     )
@@ -735,10 +756,10 @@ async def create_booking(booking_data: BookingCreate, current_user: dict = Depen
     doc = booking.model_dump()
     await db.bookings.insert_one(doc)
     
-    # Update member's credits used
-    if credits_to_use > 0:
-        await db.members.update_one(
-            {"id": booking_data.member_id},
+    # Update company's credits used
+    if credits_to_use > 0 and company:
+        await db.companies.update_one(
+            {"id": company["id"]},
             {"$inc": {"credits_used": credits_to_use}}
         )
     
@@ -769,12 +790,14 @@ async def cancel_booking(booking_id: str, current_user: dict = Depends(get_curre
         update_data["billable_amount"] = 0
         update_data["cancellation_charge"] = False
         
-        # Restore credits if applicable
+        # Restore credits if applicable - refund to company
         if booking.get("credits_used", 0) > 0:
-            await db.members.update_one(
-                {"id": booking["member_id"]},
-                {"$inc": {"credits_used": -booking["credits_used"]}}
-            )
+            company_name = booking.get("company_name")
+            if company_name:
+                await db.companies.update_one(
+                    {"company_name": company_name},
+                    {"$inc": {"credits_used": -booking["credits_used"]}}
+                )
     else:
         # Late cancellation - charge applies
         update_data["cancellation_charge"] = True
