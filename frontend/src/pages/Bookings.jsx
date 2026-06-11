@@ -56,6 +56,8 @@ export default function Bookings() {
   const [disableFromDate, setDisableFromDate] = useState("");
   const [disableReason, setDisableReason] = useState("");
   const [toggling, setToggling] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyBookings, setHistoryBookings] = useState([]);
   
   // Booking dialog
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
@@ -131,6 +133,16 @@ export default function Bookings() {
     try {
       const response = await axios.get(`${API}/management/bookings`);
       setBookings(response.data);
+    } catch (error) {
+      // silenced
+    }
+  };
+
+  const fetchHistory = async () => {
+    try {
+      const response = await axios.get(`${API}/management/bookings?history_days=45`);
+      setHistoryBookings(response.data);
+      setShowHistory(true);
     } catch (error) {
       // silenced
     }
@@ -675,6 +687,76 @@ export default function Bookings() {
             );
           })()}
         </CardContent>
+      </Card>
+
+      {/* Booking History */}
+      <Card className="border border-[#2E375B]/10">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-semibold font-[Manrope] flex items-center gap-2 text-[#2E375B]">
+              <Clock className="w-5 h-5" />
+              Booking History (Last 45 Days)
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => showHistory ? setShowHistory(false) : fetchHistory()}
+              className="border-[#2E375B]/20 text-[#2E375B]"
+              data-testid="toggle-history-btn"
+            >
+              {showHistory ? "Hide" : "Show History"}
+            </Button>
+          </div>
+        </CardHeader>
+        {showHistory && (
+          <CardContent>
+            {historyBookings.length === 0 ? (
+              <p className="text-center py-4 text-slate-500">No bookings in the last 45 days</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-slate-50">
+                      <th className="text-left p-3 text-[#2E375B]">Date</th>
+                      <th className="text-left p-3 text-[#2E375B]">Room</th>
+                      <th className="text-left p-3 text-[#2E375B]">Time</th>
+                      <th className="text-left p-3 text-[#2E375B]">Company</th>
+                      <th className="text-left p-3 text-[#2E375B]">Member</th>
+                      <th className="text-left p-3 text-[#2E375B]">Credits</th>
+                      <th className="text-left p-3 text-[#2E375B]">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {historyBookings.map((b) => (
+                      <tr key={b.id} className="border-b hover:bg-slate-50">
+                        <td className="p-3 text-[#2E375B]">{b.date}</td>
+                        <td className="p-3 font-medium text-[#2E375B]">{b.room_name}</td>
+                        <td className="p-3 text-[#2E375B]">{b.start_time} - {b.end_time}</td>
+                        <td className="p-3 text-[#2E375B]">
+                          {b.is_guest ? <span className="text-amber-600">{b.guest_company || "Walk-in"}</span> : (b.company_name || "-")}
+                        </td>
+                        <td className="p-3 text-[#2E375B]">
+                          {b.is_guest ? b.guest_name : (b.member_name || "Admin")}
+                        </td>
+                        <td className="p-3 text-[#2E375B]">{b.credits_required || b.credits_used || 0}</td>
+                        <td className="p-3">
+                          <Badge className={
+                            b.payment_status === 'paid' || b.payment_status === 'invoiced' 
+                              ? 'bg-emerald-100 text-emerald-700' 
+                              : 'bg-amber-100 text-amber-700'
+                          }>
+                            {b.payment_status || 'pending'}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="text-xs text-slate-400 mt-2 text-right">{historyBookings.length} bookings</p>
+              </div>
+            )}
+          </CardContent>
+        )}
       </Card>
 
       {/* Booking Dialog */}
